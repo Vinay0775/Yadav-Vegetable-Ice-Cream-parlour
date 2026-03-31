@@ -112,13 +112,67 @@
         </div>
     </div>
 
+    <!-- Success Celebration Modal -->
+    <div id="successOverlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(255, 255, 255, 0.95); z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(5px);">
+        <div class="text-center p-5 rounded-4 bg-white shadow-lg" style="transform: translateY(50px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-width: 400px; border: 1px solid #eee;">
+            <div class="mb-3 text-success">
+                <i class="bi bi-check-circle-fill" style="font-size: 5rem; animation: popIn 0.5s ease forwards;"></i>
+            </div>
+            <h3 class="fw-bold mb-2 text-dark" id="successTitle">Welcome!</h3>
+            <p class="text-muted mb-0 fs-5" id="successMessage">Successfully logged in.</p>
+        </div>
+    </div>
+    <style>@keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }</style>
+
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="script.js"></script>
     <script>
+
+        function showSuccessCelebration(title, message, redirectUrl) {
+            const overlay = document.getElementById('successOverlay');
+            document.getElementById('successTitle').innerText = title;
+            document.getElementById('successMessage').innerText = message;
+            
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+            overlay.querySelector('div').style.transform = 'translateY(0)';
+            
+            // Trigger Confetti
+            var duration = 2500;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#198754', '#ffc107', '#fd7e14', '#0dcaf0', '#d63384'],
+                    zIndex: 10000
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#198754', '#ffc107', '#fd7e14', '#0dcaf0', '#d63384'],
+                    zIndex: 10000
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 2500); // Redirect after 2.5 seconds
+        }
 
         let isSignup = false;
 
@@ -195,16 +249,14 @@
                         joinedAt: new Date().toISOString()
                     });
 
-                    alert(`Welcome ${name}, you have successfully signed up!`);
-                    window.location.href = 'profile.html';
+                    showSuccessCelebration("Account Created!", `Welcome ${name || 'User'}, your account is ready.`, 'profile.html');
 
                 } else {
                     // Standard Login Validation
                     const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
                     const user = userCredential.user;
                     
-                    alert(`Welcome ${user.displayName || 'back'}, you successfully logged in!`);
-                    window.location.href = 'index.html'; // Or profile.html
+                    showSuccessCelebration("Login Successful!", `Welcome back, ${user.displayName || 'User'}.`, 'index.html');
                 }
             } catch(error) {
                 console.error("Auth Error", error);
@@ -213,6 +265,7 @@
                 if (error.code === 'auth/email-already-in-use') alert("This email is already registered. Please Login instead.");
                 else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') alert("Incorrect email or password. Try exactly again.");
                 else if (error.code === 'auth/weak-password') alert("Password should be at least 6 characters.");
+                else if (error.code === 'auth/operation-not-allowed') alert("🚨 ERROR: Email/Password Auth is disabled!\n\nGo to Firebase Console -> Authentication -> Sign-in Method and ENABLE 'Email/Password' to fix this.");
                 else alert(error.message);
                 
                 submitBtn.disabled = false;
@@ -220,35 +273,52 @@
             }
         });
 
-        // Genuine Google Account Authentication
-        const provider = new firebase.auth.GoogleAuthProvider();
+        // Authentic Social Login Logic
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        const facebookProvider = new firebase.auth.FacebookAuthProvider();
         
         window.socialLogin = async function(providerName) {
-            if (providerName === 'Google') {
-                try {
-                    const result = await window.auth.signInWithPopup(provider);
-                    const user = result.user;
-                    
-                    // Verify if they exist in firestore collection to avoid overwriting their joining date
-                    const userDocSnap = await window.db.collection("users").doc(user.uid).get();
-                    if (!userDocSnap.exists) {
-                        await window.db.collection("users").doc(user.uid).set({
-                            uid: user.uid,
-                            name: user.displayName,
-                            email: user.email,
-                            phone: user.phoneNumber || 'Not provided',
-                            joinedAt: new Date().toISOString()
-                        });
-                    }
-                    
-                    alert(`Welcome ${user.displayName}! Successfully authenticated with Google.`);
-                    window.location.href = 'profile.html';
-                } catch(error) {
-                    console.error("Popup Error:", error);
-                    alert("Google Login cancelled or failed! " + error.message);
+            try {
+                let provider = null;
+                
+                if (providerName === 'Google') provider = googleProvider;
+                else if (providerName === 'Facebook') provider = facebookProvider;
+                else {
+                    alert(`${providerName} login is not fully supported yet.`);
+                    return;
                 }
-            } else {
-                alert(providerName + " login feature logic is structurally identical to Google logic. Real API keys for Twitter/Fb are required in your Firebase Console dashboard to activate this.");
+
+                // Warn user if trying to run OAuth on a local file path
+                if (window.location.protocol === 'file:') {
+                    alert(`🚨 ERROR: Social Login (${providerName}) DOES NOT WORK with 'file://' URLs (double-clicking the HTML file).\n\nPlease open this project using a local server like VS Code Live Server (http://127.0.0.1:5500) or test it on your deployed website!`);
+                    return;
+                }
+
+                const result = await window.auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                // Verify if they exist in firestore collection to avoid overwriting their joining date
+                const userDocSnap = await window.db.collection("users").doc(user.uid).get();
+                if (!userDocSnap.exists) {
+                    await window.db.collection("users").doc(user.uid).set({
+                        uid: user.uid,
+                        name: user.displayName || 'User',
+                        email: user.email || '',
+                        phone: user.phoneNumber || 'Not provided',
+                        joinedAt: new Date().toISOString()
+                    });
+                }
+                
+                showSuccessCelebration("Awesome!", `Welcome ${user.displayName || 'back'}! Successfully authenticated with ${providerName}.`, 'profile.html');
+            } catch(error) {
+                console.error("Popup Error:", error);
+                if (error.code === 'auth/account-exists-with-different-credential') {
+                    alert("⚠️ You already have an account with the same email using a different provider (like Google/Email). Please log in with that original provider instead.");
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    alert(`⚠️ Domain not authorized!\n\nPlease add '${window.location.hostname}' to the 'Authorized Domains' list in your Firebase Console -> Authentication -> Settings.`);
+                } else {
+                    alert(`❌ ${providerName} Login failed!\nCause: ` + error.message);
+                }
             }
         }
 
