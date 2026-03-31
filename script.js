@@ -18,8 +18,8 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
-const auth = firebase.auth();
-const db = firebase.firestore();
+window.auth = firebase.auth();
+window.db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     let currentUser = null;
     
-    auth.onAuthStateChanged((user) => {
+    window.auth.onAuthStateChanged((user) => {
         const loginIconLinks = document.querySelectorAll('a[href="login.html"]');
         if (user) {
             currentUser = user;
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.logoutGlobal = function() {
-        auth.signOut().then(() => {
+        window.auth.signOut().then(() => {
             window.location.href = 'login.html';
         }).catch(err => console.error(err));
     };
@@ -437,10 +437,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // Save Order globally in 'orders' collection
-                await db.collection("orders").doc(orderId).set(orderData);
+                await window.db.collection("orders").doc(orderId).set(orderData);
                 
                 // Add reference under user profile tracking
-                await db.collection(`users/${currentUser.uid}/my_orders`).add({ orderId: orderId, date: orderData.date });
+                await window.db.collection(`users/${currentUser.uid}/my_orders`).add({ orderId: orderId, date: orderData.date });
 
                 alert(`Payment Success! Your order has been placed.\nTracking ID: ${orderId}`);
                 cart = [];
@@ -460,11 +460,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const customerOrdersGrid = document.getElementById('customerOrdersGrid');
     if (customerOrdersGrid) {
-        auth.onAuthStateChanged(async (user) => {
+        window.auth.onAuthStateChanged(async (user) => {
             if(user) {
                 customerOrdersGrid.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-success"></div><p class="mt-2 text-muted">Loading your orders securely...</p></div>';
                 try {
-                    const querySnapshot = await db.collection("orders")
+                    const querySnapshot = await window.db.collection("orders")
                         .where("uid", "==", user.uid)
                         .orderBy("createdAt", "desc")
                         .get();
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async function loadAdminData() {
             try {
                 // Warning: In production, grabbing entire "orders" collection requires admin auth rules!
-                const querySnapshot = await db.collection("orders").orderBy("createdAt", "desc").get();
+                const querySnapshot = await window.db.collection("orders").orderBy("createdAt", "desc").get();
                 
                 let rev = 0;
                 let tableHtml = '';
