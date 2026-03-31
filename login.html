@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup - Yadav Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-bg { background-color: #f8f9fa; }
+        .login-card { max-width: 480px; width: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+        .social-btn { border-radius: 50px; padding: 10px 20px; font-weight: 500; transition: all 0.3s ease; }
+        .social-btn i { font-size: 1.2rem; }
+        .btn-google { background-color: #fff; color: #444; border: 1px solid #ddd; }
+        .btn-google:hover { background-color: #f1f1f1; }
+        .btn-facebook { background-color: #1877F2; color: #fff; border: 1px solid #1877F2; }
+        .btn-facebook:hover { background-color: #166fe5; color: #fff;}
+        .btn-twitter { background-color: #000; color: #fff; border: 1px solid #000; }
+        .btn-twitter:hover { background-color: #333; color: #fff;}
+        
+        /* Toggle Styles */
+        .auth-toggle { display: flex; background: #f1f1f1; border-radius: 50px; padding: 5px; margin-bottom: 30px; }
+        .auth-toggle-btn { flex: 1; text-align: center; padding: 10px; border-radius: 50px; cursor: pointer; font-weight: 600; color: #666; transition: all 0.3s ease; }
+        .auth-toggle-btn.active { background: #198754; color: #fff; box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3); }
+        
+        .signup-fields { display: none; }
+        .is-signup .signup-fields { display: block; }
+        .is-signup .login-only { display: none; }
+    </style>
+</head>
+<body class="login-bg d-flex align-items-center min-vh-100 py-5">
+
+    <div class="container d-flex justify-content-center">
+        <div class="card login-card border-0 bg-white mt-4">
+            <div class="p-4 p-sm-5">
+                <div class="text-center mb-4">
+                    <a class="text-decoration-none fw-bold fs-3 logo-text d-inline-block" href="index.html">
+                        Yadav <span class="text-success">Store</span> <span class="text-pink fs-5">& Ice-Cream</span>
+                    </a>
+                    <p class="text-muted mt-2" id="authSubtitle">Welcome back! Please login to your account.</p>
+                </div>
+
+                <div class="auth-toggle">
+                    <div class="auth-toggle-btn active" id="toggleLogin" onclick="setAuthMode('login')">Login</div>
+                    <div class="auth-toggle-btn" id="toggleSignup" onclick="setAuthMode('signup')">Sign Up</div>
+                </div>
+
+                <form id="authForm">
+                    <div class="mb-3 signup-fields">
+                        <label class="form-label text-muted small fw-medium">Full Name</label>
+                        <input type="text" id="authName" class="form-control form-control-lg bg-light border-0 shadow-none px-4 rounded-pill" placeholder="Vinay Yadav">
+                    </div>
+                    
+                    <div class="mb-3 signup-fields mt-3" style="display:none;">
+                        <label class="form-label text-muted small fw-medium">Mobile Number</label>
+                        <input type="tel" id="authPhone" class="form-control form-control-lg bg-light border-0 shadow-none px-4 rounded-pill" placeholder="9876543210">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-medium">Email address</label>
+                        <input type="email" id="authEmail" class="form-control form-control-lg bg-light border-0 shadow-none px-4 rounded-pill" placeholder="name@example.com" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between login-only">
+                            <label class="form-label text-muted small fw-medium">Password</label>
+                            <a href="#" onclick="window.resetPassword(); return false;" class="text-success text-decoration-none small fw-medium">Forgot Password?</a>
+                        </div>
+                        <label class="form-label text-muted small fw-medium signup-fields" style="display:none;">Create Password</label>
+                        <input type="password" id="authPassword" class="form-control form-control-lg bg-light border-0 shadow-none px-4 rounded-pill" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="mb-4 mx-2 form-check login-only">
+                        <input type="checkbox" class="form-check-input bg-success border-success shadow-none" id="rememberMe">
+                        <label class="form-check-label text-muted small" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <div class="d-grid mb-4">
+                        <button type="submit" id="authSubmitBtn" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm hover-lift">Login to Account</button>
+                    </div>
+                </form>
+
+                <div class="d-flex align-items-center my-4">
+                    <hr class="flex-grow-1 text-muted opacity-25">
+                    <span class="px-3 text-muted small fw-medium" id="socialText">OR LOGIN WITH</span>
+                    <hr class="flex-grow-1 text-muted opacity-25">
+                </div>
+
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn social-btn btn-google d-flex align-items-center justify-content-center gap-2 hover-lift" onclick="socialLogin('Google')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-google" viewBox="0 0 16 16"><path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z"/></svg> 
+                        Google
+                    </button>
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn social-btn w-50 btn-facebook d-flex align-items-center justify-content-center gap-2 hover-lift" onclick="socialLogin('Facebook')">
+                            <i class="bi bi-facebook"></i> Facebook
+                        </button>
+                        <button type="button" class="btn social-btn w-50 btn-twitter d-flex align-items-center justify-content-center gap-2 hover-lift" onclick="socialLogin('Twitter')">
+                            <i class="bi bi-twitter-x"></i> Twitter
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-5 pt-3 border-top">
+                    <a href="index.html" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i> Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let isSignup = false;
+
+        window.setAuthMode = function(mode) {
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const subtitle = document.getElementById('authSubtitle');
+            const socialText = document.getElementById('socialText');
+            
+            if (mode === 'signup') {
+                isSignup = true;
+                document.getElementById('toggleSignup').classList.add('active');
+                document.getElementById('toggleLogin').classList.remove('active');
+                document.body.classList.add('is-signup');
+                
+                document.getElementById('authName').setAttribute('required', 'true');
+                document.getElementById('authPhone').setAttribute('required', 'true');
+                
+                submitBtn.innerText = 'Create Account';
+                subtitle.innerText = 'Join Yadav Store & Ice-Cream today!';
+                socialText.innerText = 'OR SIGN UP WITH';
+                
+                document.querySelectorAll('.signup-fields').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.login-only').forEach(el => el.style.display = 'none');
+            } else {
+                isSignup = false;
+                document.getElementById('toggleLogin').classList.add('active');
+                document.getElementById('toggleSignup').classList.remove('active');
+                document.body.classList.remove('is-signup');
+                
+                document.getElementById('authName').removeAttribute('required');
+                document.getElementById('authPhone').removeAttribute('required');
+                
+                submitBtn.innerText = 'Login to Account';
+                subtitle.innerText = 'Welcome back! Please login to your account.';
+                socialText.innerText = 'OR LOGIN WITH';
+                
+                document.querySelectorAll('.signup-fields').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.login-only').forEach(el => el.style.display = 'block'); // reset forgotten password etc.
+                document.querySelector('.d-flex.justify-content-between.login-only').style.display = 'flex'; // special flex rule
+            }
+        }
+
+        window.setAuthMode('login'); // default
+
+        // Handle the main form submission for both generic Login and Sign Up
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing...";
+            
+            try {
+                if (isSignup) {
+                    // Create User in Firebase Authentication
+                    const name = document.getElementById('authName').value.trim();
+                    const phone = document.getElementById('authPhone').value.trim();
+                    
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+
+                    // Update display name natively in Firebase
+                    await user.updateProfile({ displayName: name });
+
+                    // Save custom metadata payload (phone, email, joining date) immediately to Firestore
+                    await db.collection("users").doc(user.uid).set({
+                        uid: user.uid,
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        joinedAt: new Date().toISOString()
+                    });
+
+                    alert(`Welcome ${name}, you have successfully signed up!`);
+                    window.location.href = 'profile.html';
+
+                } else {
+                    // Standard Login Validation
+                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+                    
+                    alert(`Welcome ${user.displayName || 'back'}, you successfully logged in!`);
+                    window.location.href = 'index.html'; // Or profile.html
+                }
+            } catch(error) {
+                console.error("Auth Error", error);
+                
+                // Detailed, user friendly error mapping
+                if (error.code === 'auth/email-already-in-use') alert("This email is already registered. Please Login instead.");
+                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') alert("Incorrect email or password. Try exactly again.");
+                else if (error.code === 'auth/weak-password') alert("Password should be at least 6 characters.");
+                else alert(error.message);
+                
+                submitBtn.disabled = false;
+                submitBtn.innerText = isSignup ? 'Create Account' : 'Login to Account';
+            }
+        });
+
+        // Genuine Google Account Authentication
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        window.socialLogin = async function(providerName) {
+            if (providerName === 'Google') {
+                try {
+                    const result = await auth.signInWithPopup(provider);
+                    const user = result.user;
+                    
+                    // Verify if they exist in firestore collection to avoid overwriting their joining date
+                    const userDocSnap = await db.collection("users").doc(user.uid).get();
+                    if (!userDocSnap.exists) {
+                        await db.collection("users").doc(user.uid).set({
+                            uid: user.uid,
+                            name: user.displayName,
+                            email: user.email,
+                            phone: user.phoneNumber || 'Not provided',
+                            joinedAt: new Date().toISOString()
+                        });
+                    }
+                    
+                    alert(`Welcome ${user.displayName}! Successfully authenticated with Google.`);
+                    window.location.href = 'profile.html';
+                } catch(error) {
+                    console.error("Popup Error:", error);
+                    alert("Google Login cancelled or failed! " + error.message);
+                }
+            } else {
+                alert(providerName + " login feature logic is structurally identical to Google logic. Real API keys for Twitter/Fb are required in your Firebase Console dashboard to activate this.");
+            }
+        }
+
+        // Active Forgot Password Reset Logic
+        window.resetPassword = async function() {
+            const email = prompt("Enter your registered email address to receive a secure password reset link:");
+            if (email) {
+                try {
+                    await auth.sendPasswordResetEmail(email.trim());
+                    alert("A password reset link has been successfully dispatched to your email inbox! Please check your spam folder as well.");
+                } catch(error) {
+                    console.error("Reset Error", error);
+                    if (error.code === 'auth/user-not-found') alert("No account found matching this email.");
+                    else alert("Failed to send: " + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice-Cream Parlour - Yadav Store</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+
+    <!-- Topbar -->
+    <div class="topbar py-2 d-none d-lg-block">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="topbar-left small text-muted">
+                <span><i class="bi bi-geo-alt-fill text-success"></i> 123 Farm Road, Green City, IN</span>
+                <span class="ms-3"><i class="bi bi-clock-fill text-success"></i> Mon-Fri: 8:00AM - 9:00PM</span>
+            </div>
+            <div class="topbar-right small">
+                <span><i class="bi bi-envelope-fill text-success"></i> support@yadavstore.com</span>
+                <span class="ms-3 fw-bold text-dark">Free Delivery on orders over ₹500! 🚚</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header py-3 bg-white border-bottom align-items-center">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <a class="text-decoration-none fw-bold fs-3 logo-text order-1" style="white-space:nowrap;" href="index.html">
+                Yadav <span class="text-success">Store</span> <span class="text-pink fs-6 d-none d-sm-inline">& Ice-Cream</span>
+            </a>
+
+            <div class="input-group search-bar order-3 order-md-2 mx-auto w-100 mt-3 mt-md-0 d-flex" style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
+                <select id="globalSearchCategory" class="form-select border-success shadow-none bg-light text-muted d-none d-sm-block" style="max-width: 130px;">
+                    <option value="All">All Categories</option>
+                    <option value="Vegetables">Veggies</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Ice-Creams" selected>Ice-Creams</option>
+                </select>
+                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none w-auto" placeholder="Search products...">
+                <button id="globalSearchBtn" class="btn btn-success px-3 bg-success border-success" type="button"><i class="bi bi-search"></i></button>
+            </div>
+
+            <div class="header-icons d-flex align-items-center gap-3 order-2 order-md-3 ms-auto ms-md-0">
+                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Login/Profile"><i class="bi bi-person"></i></a>
+                <a href="orders.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-none d-sm-block" title="My Orders"><i class="bi bi-box-seam"></i></a>
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites">
+                    <i class="bi bi-heart"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
+                </a>
+                <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center" title="Cart">
+                    <i class="bi bi-cart3"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="mainNavbar">
+        <div class="container">
+            <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="mainNav">
+                <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center text-center mt-3 mt-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link text-success" href="fresh-veggies.html">Fresh Veggies</a></li>
+                    <li class="nav-item"><a class="nav-link text-warning" href="fresh-fruits.html">Fresh Fruits</a></li>
+                    <li class="nav-item"><a class="nav-link active text-pink" href="ice-cream-parlour.html">Ice-Cream Parlour</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header py-5 bg-light-pink mb-5 border-bottom border-pink border-opacity-25">
+        <div class="container text-center py-4">
+            <h1 class="display-4 fw-bold text-dark mb-2">Premium <span class="text-pink">Ice-Creams</span></h1>
+            <p class="lead text-muted max-w-700 mx-auto">Indulge with Hocco's finest flavors. From simple cones to luxurious cakes, treat yourself.</p>
+        </div>
+    </div>
+
+    <!-- Products Section with Sidebar Filters -->
+    <section class="products-section pb-5 bg-light">
+        <div class="container">
+            <div class="row g-5">
+                
+                <!-- Sidebar Filters -->
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4 border-bottom pb-2 border-pink"><i class="bi bi-funnel me-2 text-pink"></i> Filters</h5>
+                            
+                            <!-- Categories -->
+                            <h6 class="fw-bold mb-3">Categories</h6>
+                            <div class="filter-categories mb-4" id="categoryFilterContainer">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filter-category-checkbox" type="radio" name="categoryFilter" id="catAll" value="All" checked>
+                                    <label class="form-check-label text-muted" for="catAll">All Ice-Creams</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filter-category-checkbox" type="radio" name="categoryFilter" id="catScooper" value="Scooperstar Cups">
+                                    <label class="form-check-label text-muted" for="catScooper">Scooper Cups</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filter-category-checkbox" type="radio" name="categoryFilter" id="catChoco" value="Choco Bar">
+                                    <label class="form-check-label text-muted" for="catChoco">Choco Bars</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filter-category-checkbox" type="radio" name="categoryFilter" id="catCakes" value="Ice-Cream Cakes">
+                                    <label class="form-check-label text-muted" for="catCakes">Ice-Cream Cakes</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input filter-category-checkbox" type="radio" name="categoryFilter" id="catCone" value="Chillo Cone">
+                                    <label class="form-check-label text-muted" for="catCone">Chillo Cones</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Filter -->
+                            <h6 class="fw-bold mb-3 mt-4">Max Price Range</h6>
+                            <div class="mb-4">
+                                <input type="range" class="form-range" id="priceRange" min="20" max="1500" value="1500" step="10">
+                                <div class="d-flex justify-content-between text-muted small mt-2">
+                                    <span>₹20</span>
+                                    <span id="priceValueDisplay" class="fw-bold text-pink">₹1500</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Grid Area -->
+                <div class="col-lg-9">
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm">
+                        <p class="mb-0 text-muted fw-medium" id="resultsCount">Showing results</p>
+                        <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+                            <label class="text-muted small text-nowrap fw-medium"><i class="bi bi-sort-down"></i> Sort By:</label>
+                            <select class="form-select form-select-sm border-0 shadow-none bg-light rounded-pill px-3 py-2 fw-medium text-dark" id="sortSelect" style="width: auto;">
+                                <option value="default">Default</option>
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="rating">Top Rated</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Grid -->
+                    <!-- data-catalog-category limits this page to render only 'Ice-Creams' -->
+                    <div class="row g-4" id="productGrid" data-catalog-category="Ice-Creams">
+                        <div class="col-12 text-center py-5 text-muted">Loading delicious ice-creams...</div>
+                    </div>
+
+                    <nav class="mt-5" aria-label="Page navigation">
+                      <ul class="pagination justify-content-center" id="paginationNav">
+                      </ul>
+                    </nav>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Global Product Modal -->
+    <div id="productModal" class="product-modal d-none">
+        <div class="modal-overlay"></div>
+        <div class="modal-content shadow-lg rounded-4 p-4 position-relative bg-white text-center border-top border-4 border-pink">
+            <button class="btn-close modal-close-btn position-absolute top-0 end-0 m-3" aria-label="Close"></button>
+            <div class="modal-image-container py-4 bg-light-pink rounded-4 mb-3" style="height: 250px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <img id="modalProductImage" src="" alt="Product" class="img-fluid h-100 object-fit-cover drop-shadow-img">
+            </div>
+            <h3 class="fw-bold mb-1" id="modalProductTitle">Product Name</h3>
+            <p class="text-muted small mb-3" id="modalProductDesc">Description goes here.</p>
+            <h4 class="fw-bold text-pink mb-3" id="modalProductPrice">₹0</h4>
+            <div class="d-flex gap-2 justify-content-center">
+                <input type="number" class="form-control text-center w-25 shadow-none border-pink" value="1" min="1" id="modalProductQty">
+                <button class="btn btn-pink px-4 rounded-pill fw-medium" id="modalAddToCartBtn"><i class="bi bi-cart-plus me-2"></i> Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark-green text-light pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4 col-md-6">
+                    <a class="text-decoration-none fw-bold fs-3 text-white mb-3 d-inline-block" href="index.html">
+                        Yadav <span class="text-success">Store</span>
+                    </a>
+                    <p class="text-light-50 pe-lg-4">The most premium organic food store and ice cream parlour in town.</p>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center flex-wrap">
+                <p class="mb-0 text-light-50 small">&copy; 2026 Yadav Store & Ice-Cream. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="catalog.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
