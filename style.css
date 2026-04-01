@@ -697,3 +697,44 @@ body.dark-mode .premium-preloader {
 .fade-pulse {
     animation: pulseFade 1.5s infinite ease-in-out;
 }
+
+/* =========================================================================
+   14. FIXES: ALIGNMENT, OVERFLOW & ANIMATIONS
+   ========================================================================= */
+body, html {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Custom reliable hardware-accelerated fade up for dynamic content */
+.fade-up-custom {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUpStyle 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
+}
+
+@keyframes fadeUpStyle {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Dynamic List Staggering */
+#productGrid > div:nth-child(1) .fade-up-custom { animation-delay: 0.1s; }
+#productGrid > div:nth-child(2) .fade-up-custom { animation-delay: 0.2s; }
+#productGrid > div:nth-child(3) .fade-up-custom { animation-delay: 0.3s; }
+#productGrid > div:nth-child(4) .fade-up-custom { animation-delay: 0.4s; }
+#productGrid > div:nth-child(5) .fade-up-custom { animation-delay: 0.5s; }
+#productGrid > div:nth-child(6) .fade-up-custom { animation-delay: 0.6s; }
+
+/* Global hover lifts for buttons/cards to feel premium */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease !important;
+}
+.hover-lift:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+body.dark-mode .hover-lift:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
+}

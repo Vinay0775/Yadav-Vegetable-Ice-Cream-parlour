@@ -166,21 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         </div>
         
-        <!-- App Banner -->
-        <div class="top-app-banner bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center" id="topAppBanner">
-            <div class="d-flex align-items-center">
-                <img src="assets/images/app_logo.png" alt="Logo" class="rounded me-2 shadow-sm" style="width: 32px; height: 32px;">
-                <div class="small lh-1">
-                    <strong class="d-block mb-1">Get the Ultimate Experience!</strong>
-                    <span class="opacity-75" style="font-size:0.75rem;">Download Yadav Store App</span>
-                </div>
-            </div>
-            <div>
-                <button class="btn btn-sm btn-light rounded-pill fw-bold text-success px-3 me-2" onclick="window.showToast('App Download','Simulated downloading App... Install PWA')">Install</button>
-                <button class="btn btn-sm text-white px-1 shadow-none" onclick="document.getElementById('topAppBanner').style.display='none'"><i class="bi bi-x fs-5"></i></button>
-            </div>
-        </div>
-        
         <!-- Toast Container -->
         <div class="toast-container-global" id="globalToastContainer"></div>
         
@@ -616,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     gridEl.innerHTML += `
                     <div class="col-sm-6 col-md-4 col-xl-3">
-                        <div class="card product-card border-0 ${bgClass} h-100 shadow-sm rounded-4">
+                        <div class="card product-card fade-up-custom border-0 ${bgClass} h-100 shadow-sm rounded-4">
                             ${badgeHtml}
                             <div class="px-4 py-4 text-center position-relative overflow-hidden product-image-wrapper">
                                 <img src="${prod.image}" alt="${prod.title}" class="img-fluid object-fit-cover rounded-circle shadow-sm" style="width:140px; height:140px;">
