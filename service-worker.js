@@ -1,17 +1,16 @@
-const CACHE_NAME = "yadav-store-cache-v2";
+const CACHE_NAME = "yadav-store-cache-v4";
 const urlsToCache = [
-  "/index.html",
+  "/",
   "/style.css",
   "/script.js",
   "/catalog.js"
 ];
 
 self.addEventListener("install", event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log("Opened PWA cache");
-        // We do not fail the install if caches fail in this simple setup
         try {
             return cache.addAll(urlsToCache);
         } catch(e) { console.warn(e) }
@@ -19,16 +18,33 @@ self.addEventListener("install", event => {
   );
 });
 
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+});
+
 self.addEventListener("fetch", event => {
+  // Let the browser handle navigation requests natively to avoid 308 Redirect crashing
+  if (event.request.mode === 'navigate') {
+    return; // Do nothing, skips the service worker entirely for page loads!
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         if (response) {
           return response;
         }
-        return fetch(event.request).catch(() => {
-            // Optional offline fallback logic could go here
-        });
+        return fetch(event.request).catch(() => {});
       })
   );
 });
