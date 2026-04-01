@@ -544,3 +544,156 @@ body.modal-open > *:not(.product-modal) * {
 .star-rating-custom { font-size: 1.5rem; }
 .star-rating-custom i { cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; }
 .star-rating-custom i:hover, .star-rating-custom i.active { transform: scale(1.2); color: #ffc107 !important; }
+
+/* =========================================================================
+   12. DARK MODE & ADVANCED ANIMATIONS
+   ========================================================================= */
+body.dark-mode {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .bg-white,
+body.dark-mode .bg-light,
+body.dark-mode .card,
+body.dark-mode .navbar,
+body.dark-mode .topbar,
+body.dark-mode .main-header,
+body.dark-mode .footer {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .text-dark,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: #f5f5f5 !important;
+}
+
+body.dark-mode .text-muted {
+    color: #aaa !important;
+}
+
+body.dark-mode .modal-content,
+body.dark-mode .live-search-dropdown,
+body.dark-mode .side-cart-drawer,
+body.dark-mode .side-cart-header,
+body.dark-mode .side-cart-footer {
+    background-color: #242424 !important;
+    color: #e0e0e0 !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode .search-suggest-item {
+    border-bottom: 1px solid #333 !important;
+}
+
+body.dark-mode .search-suggest-item:hover,
+body.dark-mode .list-group-item,
+body.dark-mode .review-item {
+    background-color: #2c2c2c !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .bg-light-green,
+body.dark-mode .bg-light-pink {
+    background-color: #2a2a2a !important;
+    border-color: #333 !important;
+}
+
+body.dark-mode .feature-box:hover {
+    background-color: #2c2c2c !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode .navbar-nav .nav-link {
+    color: #e0e0e0 !important;
+}
+body.dark-mode .navbar-nav .nav-link:hover {
+    color: var(--theme-green) !important;
+}
+
+/* Theme Toggle Button Style */
+.theme-toggle-btn {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+.theme-toggle-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+}
+
+/* Fix Suggestion Layout */
+.search-bar { position: relative; }
+.live-search-dropdown {
+    width: 100% !important;
+    box-sizing: border-box;
+    z-index: 10000 !important;
+}
+/* =========================================================================
+   13. PREMIUM FEATURES: PRELOADER, BANNER & GLASSMORPHISM
+   ========================================================================= */
+
+/* Top App Banner */
+.top-app-banner {
+    position: relative;
+    z-index: 1051;
+    transition: all 0.3s ease;
+}
+
+/* Glassmorphism Navbar */
+.navbar.sticky-top {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .navbar.sticky-top,
+body.dark-mode .main-header {
+    background: rgba(30, 30, 30, 0.85) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Premium Preloader */
+.premium-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease-in-out;
+}
+
+body.dark-mode .premium-preloader {
+    background: #121212;
+}
+
+.premium-preloader .loader-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+@keyframes pulseFade {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 15px rgba(122, 183, 48, 0.5)); }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.fade-pulse {
+    animation: pulseFade 1.5s infinite ease-in-out;
+}

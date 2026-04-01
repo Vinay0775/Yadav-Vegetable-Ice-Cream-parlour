@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>My Profile - Yadav Vegetable Ice-Cream Parlour</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,6 +51,8 @@
             display: none;
         }
     </style>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
@@ -62,6 +64,7 @@
                 Yadav <span class="text-success">vegetable & ice-cream parlour</span>
             </a>
             <div class="header-icons d-flex align-items-center gap-3">
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
                 <a href="orders.html" class="text-dark text-decoration-none small fw-medium me-3"><i
                         class="bi bi-box-seam me-1"></i> My Orders</a>
                 <a href="cart.html" class="text-dark text-decoration-none small fw-medium"><i
@@ -213,6 +216,8 @@
             });
         });
     </script>
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
 
 </html>

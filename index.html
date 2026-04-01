@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yadav Vegetable & Ice-Cream Parlour</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
 <body>
@@ -76,6 +78,7 @@
 
             <!-- Icons (Right on mobile and desktop) -->
             <div class="header-icons d-flex align-items-center gap-3 order-2 order-md-3 ms-auto ms-md-0">
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
                 <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
                     title="Login/Profile">
                     <i class="bi bi-person"></i>
@@ -141,7 +144,7 @@
                             <div class="col-md-6 mb-4 mb-md-0 z-index-2">
                                 <span class="badge bg-white text-success mb-3 px-3 py-2 rounded-pill shadow-sm">100%
                                     Organic & Fresh</span>
-                                <h1 class="display-3 fw-bold text-dark mb-3 hero-title">Fresh Vegetables <br><span
+                                <h1 class="display-3 fw-bold text-dark mb-3 hero-title" data-aos="fade-up">Fresh Vegetables <br><span
                                         class="text-success">From Farm</span></h1>
                                 <p class="lead text-muted mb-4">We deliver the freshest and healthiest vegetables right
                                     to your doorstep.</p>
@@ -163,7 +166,7 @@
                             <div class="col-md-6 mb-4 mb-md-0 z-index-2">
                                 <span class="badge bg-white text-pink mb-3 px-3 py-2 rounded-pill shadow-sm">Premium
                                     Quality</span>
-                                <h1 class="display-3 fw-bold text-dark mb-3 hero-title">Delicious Premium <br><span
+                                <h1 class="display-3 fw-bold text-dark mb-3 hero-title" data-aos="fade-up">Delicious Premium <br><span
                                         class="text-pink">Ice-Creams</span></h1>
                                 <p class="lead text-muted mb-4">Indulge in our rich, handcrafted ice creams made with
                                     natural ingredients.</p>
@@ -227,7 +230,7 @@
     <!-- Popular Categories -->
     <section class="categories-section py-5 bg-light">
         <div class="container">
-            <div class="section-title text-center mb-5">
+            <div class="section-title text-center mb-5" data-aos="fade-inline">
                 <p class="text-success fw-bold text-uppercase tracking-wide mb-1">Top Categories</p>
                 <h2 class="display-6 fw-bold text-dark">Explore Our Groceries</h2>
             </div>
@@ -278,7 +281,7 @@
     <!-- Featured Products -->
     <section class="products-section py-5 bg-white">
         <div class="container">
-            <div class="section-title text-center mb-5">
+            <div class="section-title text-center mb-5" data-aos="fade-inline">
                 <p class="text-success fw-bold text-uppercase tracking-wide mb-1">Fresh Additions</p>
                 <h2 class="display-6 fw-bold text-dark">Featured Products</h2>
             </div>
@@ -286,7 +289,7 @@
             <div class="row g-4">
                 <!-- Product 1 -->
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card product-card border-0 bg-light-green h-100">
+                    <div class="card product-card border-0 bg-light-green h-100" data-aos="fade-up" data-aos-duration="600">
                         <div class="badge bg-danger position-absolute top-0 start-0 m-3 z-index-2">-15%</div>
                         <div class="px-4 py-5 text-center position-relative overflow-hidden product-image-wrapper">
                             <span class="fs-1 d-block product-emoji img-fluid">🍅</span>
@@ -320,7 +323,7 @@
 
                 <!-- Product 2 -->
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card product-card border-0 bg-light-pink h-100">
+                    <div class="card product-card border-0 bg-light-pink h-100" data-aos="fade-up" data-aos-duration="600">
                         <div class="px-4 py-5 text-center position-relative overflow-hidden product-image-wrapper">
                             <span class="fs-1 d-block product-emoji img-fluid">🍦</span>
                             <div class="product-action-overlay">
@@ -351,7 +354,7 @@
 
                 <!-- Product 3 -->
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card product-card border-0 bg-light-green h-100">
+                    <div class="card product-card border-0 bg-light-green h-100" data-aos="fade-up" data-aos-duration="600">
                         <div class="badge bg-success position-absolute top-0 start-0 m-3 z-index-2">Fresh</div>
                         <div class="px-4 py-5 text-center position-relative overflow-hidden product-image-wrapper">
                             <span class="fs-1 d-block product-emoji img-fluid">🥦</span>
@@ -383,7 +386,7 @@
 
                 <!-- Product 4 -->
                 <div class="col-sm-6 col-lg-3">
-                    <div class="card product-card border-0 bg-light-pink h-100">
+                    <div class="card product-card border-0 bg-light-pink h-100" data-aos="fade-up" data-aos-duration="600">
                         <div class="px-4 py-5 text-center position-relative overflow-hidden product-image-wrapper">
                             <span class="fs-1 d-block product-emoji img-fluid">🍫</span>
                             <div class="product-action-overlay">
@@ -539,6 +542,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="catalog.js"></script>
     <script src="script.js"></script>
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
 
 </html>

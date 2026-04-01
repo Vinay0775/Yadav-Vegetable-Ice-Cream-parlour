@@ -46,7 +46,7 @@ if(window.db) {
                 // Must be Superadmin or Staff to bypass
                 const checkBypass = async () => {
                    const currentUser = window.auth.currentUser;
-                   if (currentUser && currentUser.email === 'vinayvishwakarma080@gmail.com') return;
+                   if (currentUser && currentUser.email === 'hyadav1317@gmail.com') return;
                    
                    if (currentUser) {
                        try {
@@ -109,7 +109,31 @@ window.toggleWishlist = async function(prodId) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ==========================================
+    
+    // Preloader fadeout logic
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const preloader = document.getElementById('premiumPreloader');
+            if(preloader) {
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.style.display = 'none', 500);
+            }
+        }, 800);
+    });
+
+    // Random Fake Purchase Toasts for premium active feel (Trigger every 45s)
+    setInterval(() => {
+        const names = ["Rahul", "Priya", "Amit", "Sneha", "Vikram", "Anjali"];
+        const products = ["Organic Broccoli", "Vanilla Strawberry Sundae", "Fresh Red Tomatoes", "Dark Choco Cone", "Farm Fresh Apples", "Pure Dairy Milk"];
+        const cities = ["Jaipur", "Malviya Nagar", "Vaishali Nagar", "Mansarovar", "C-Scheme"];
+        const name = names[Math.floor(Math.random()*names.length)];
+        const product = products[Math.floor(Math.random()*products.length)];
+        const city = cities[Math.floor(Math.random()*cities.length)];
+        if(window.showToast && !document.hidden && document.visibilityState === 'visible') {
+            window.showToast("🛒 Live Purchase", `${name} from ${city} just bought ${product}!`);
+        }
+    }, 45000);
+// ==========================================
     // HYBRID CATALOG FETCH
     // ==========================================
     if (window.db) {
@@ -130,9 +154,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
-    // 0. GLOBAL DYNAMIC UI INJECTION
+    // 0. GLOBAL DYNAMIC UI INJECTION & PRELOADER
     // ==========================================
     const dynamicUIHTML = `
+        <!-- Preloader -->
+        <div id="premiumPreloader" class="premium-preloader">
+            <div class="loader-content">
+                <img src="assets/images/app_logo.png" alt="Yadav Store" class="loader-img mb-3 fade-pulse">
+                <div class="spinner-border text-success" role="status"></div>
+                <h5 class="fw-bold mt-3 text-dark tracking-wide">YADAV STORE</h5>
+            </div>
+        </div>
+        
+        <!-- App Banner -->
+        <div class="top-app-banner bg-success text-white py-2 px-3 d-flex justify-content-between align-items-center" id="topAppBanner">
+            <div class="d-flex align-items-center">
+                <img src="assets/images/app_logo.png" alt="Logo" class="rounded me-2 shadow-sm" style="width: 32px; height: 32px;">
+                <div class="small lh-1">
+                    <strong class="d-block mb-1">Get the Ultimate Experience!</strong>
+                    <span class="opacity-75" style="font-size:0.75rem;">Download Yadav Store App</span>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-light rounded-pill fw-bold text-success px-3 me-2" onclick="window.showToast('App Download','Simulated downloading App... Install PWA')">Install</button>
+                <button class="btn btn-sm text-white px-1 shadow-none" onclick="document.getElementById('topAppBanner').style.display='none'"><i class="bi bi-x fs-5"></i></button>
+            </div>
+        </div>
+        
         <!-- Toast Container -->
         <div class="toast-container-global" id="globalToastContainer"></div>
         
@@ -222,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerIconsContainer && document.getElementById('adminPortalLink') === null) {
                 // Check if admin or staff
                 const checkAdmin = async () => {
-                   if (user.email === 'vinayvishwakarma080@gmail.com') return true;
+                   if (user.email === 'hyadav1317@gmail.com') return true;
                    try {
                        const staffDoc = await window.db.collection('roles').doc(user.email).get();
                        return staffDoc.exists;
@@ -451,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchBarContainer.appendChild(dropdown);
             }
 
-            if(query.length < 2) {
+            if(query.length < 1) {
                 dropdown.classList.remove('show');
                 return;
             }
@@ -1122,4 +1170,46 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    // ==========================================
+    // 11. DARK MODE & AOS INITIALIZATION
+    // ==========================================
+    const savedTheme = localStorage.getItem('yadavTheme') || 'light';
+    if(savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+    
+    // Attach listener to any theme toggle buttons on page
+    document.addEventListener('click', (e) => {
+        const themeToggleBtn = e.target.closest('.theme-toggle-btn');
+        if(themeToggleBtn) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('yadavTheme', isDark ? 'dark' : 'light');
+            
+            // Sync all toggle icons on the page
+            document.querySelectorAll('.theme-toggle-btn i').forEach(icon => {
+                if(isDark) {
+                    icon.classList.remove('bi-moon', 'text-dark');
+                    icon.classList.add('bi-sun', 'text-warning');
+                } else {
+                    icon.classList.remove('bi-sun', 'text-warning');
+                    icon.classList.add('bi-moon', 'text-dark');
+                }
+            });
+        }
+    });
+
+    // Initialize initial icon state
+    if(savedTheme === 'dark') {
+        document.querySelectorAll('.theme-toggle-btn i').forEach(icon => {
+            icon.classList.remove('bi-moon', 'text-dark');
+            icon.classList.add('bi-sun', 'text-warning');
+        });
+    }
+
+    // Initialize animations if AOS exists
+    if(typeof window.AOS !== 'undefined') {
+        window.AOS.init({ once: true, duration: 800 });
+    }
 });
