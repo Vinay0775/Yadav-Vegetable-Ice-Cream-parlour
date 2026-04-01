@@ -766,6 +766,92 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // 6.5 CUSTOM ORDER REVIEW MODAL
+    // ==========================================
+    window.openOrderReviewModal = function(productId, productNameEnc) {
+        if(!currentUser) {
+            window.showToast("Wait", "Please log in to leave a review.", true);
+            return;
+        }
+        const productName = unescape(productNameEnc);
+        const existingModal = document.getElementById('customReviewModal');
+        if (existingModal) existingModal.remove();
+
+        const modalHtml = `
+        <div id="customReviewModal" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); z-index: 10005; backdrop-filter: blur(5px);">
+            <div class="bg-white p-4 rounded-4 shadow-lg text-center position-relative" style="max-width: 450px; width: 90%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <button class="btn-close position-absolute top-0 end-0 m-3 shadow-none" onclick="document.getElementById('customReviewModal').remove()"></button>
+                <div class="mb-3">
+                    <i class="bi bi-star-fill text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">Rate Your Purchase</h4>
+                <p class="text-muted small mb-4">How was the <strong>\${productName}</strong>?</p>
+                
+                <div class="star-rating-custom text-muted mb-3 d-flex justify-content-center gap-2" id="orderRevStars">
+                    <i class="bi bi-star-fill text-warning active" data-val="1"></i>
+                    <i class="bi bi-star-fill text-warning active" data-val="2"></i>
+                    <i class="bi bi-star-fill text-warning active" data-val="3"></i>
+                    <i class="bi bi-star-fill text-warning active" data-val="4"></i>
+                    <i class="bi bi-star-fill text-warning active" data-val="5"></i>
+                </div>
+                <input type="hidden" id="orderRevRating" value="5">
+                
+                <textarea id="orderRevText" class="form-control rounded-4 shadow-none border-success mb-3 p-3 bg-light" rows="3" placeholder="Tell us what you loved about it..."></textarea>
+                
+                <button class="btn btn-success w-100 rounded-pill fw-bold hover-lift py-2" id="orderRevSubmitBtn" onclick="submitOrderReview('\${productId}')">Submit Review</button>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Star interaction
+        const stars = document.querySelectorAll('#orderRevStars i');
+        stars.forEach(s => {
+            s.addEventListener('click', function() {
+                const val = parseInt(this.dataset.val);
+                document.getElementById('orderRevRating').value = val;
+                stars.forEach(st => {
+                    if(parseInt(st.dataset.val) <= val) {
+                        st.classList.remove('bi-star', 'text-muted');
+                        st.classList.add('bi-star-fill', 'text-warning', 'active');
+                    } else {
+                        st.classList.remove('bi-star-fill', 'text-warning', 'active');
+                        st.classList.add('bi-star', 'text-muted');
+                    }
+                });
+            });
+        });
+    };
+
+    window.submitOrderReview = async function(pid) {
+        if(!window.db) return;
+        const rating = parseInt(document.getElementById('orderRevRating').value);
+        const text = document.getElementById('orderRevText').value.trim();
+        const btn = document.getElementById('orderRevSubmitBtn');
+        
+        if(!text) { window.showToast('Validation', 'Please write a review message.', true); return; }
+        
+        btn.disabled = true;
+        btn.innerText = 'Submitting...';
+        
+        try {
+            await window.db.collection('reviews').add({ 
+                productId: pid, 
+                name: currentUser.displayName || 'Customer', 
+                uid: currentUser.uid,
+                rating: rating, 
+                text: text, 
+                date: new Date().toISOString() 
+            });
+            document.getElementById('customReviewModal').remove();
+            window.showToast('Success!', 'Thank you! Your review has been submitted. 🎉');
+        } catch(e) { 
+            window.showToast('Error', e.message, true); 
+            btn.disabled = false;
+            btn.innerText = 'Submit Review';
+        }
+    };
+
+    // ==========================================
     // 7. CART PAGE & PAYMENT (FIREBASE SAVING)
     // ==========================================
     const cartContainer = document.getElementById('cartContainer');
@@ -841,13 +927,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         payBtn.addEventListener('click', async () => {
             if (cart.length === 0) {
-                if(window.showToast) window.showToast('Warning', 'Your cart is empty!', true);
-                else alert('Cart is empty!');
+                window.showToast('Warning', 'Your cart is empty!', true);
                 return;
             }
             if (!currentUser) {
-                if(window.showToast) window.showToast('Authentication', 'Please log in to place an order.', true);
-                else alert("Please log in first to place a secured order.");
+                window.showToast('Authentication', 'Please log in first to place a secured order.', true);
                 setTimeout(() => window.location.href = "login.html", 1500);
                 return;
             }
@@ -875,16 +959,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add reference under user profile tracking
                 await window.db.collection(`users/${currentUser.uid}/my_orders`).add({ orderId: orderId, date: orderData.date });
 
-                if(window.showToast) window.showToast('Success', `Order ${orderId} placed successfully!`);
-                else alert(`Payment Success! Your order has been placed.\nTracking ID: ${orderId}`);
+                window.showToast('Success!', `Payment Success! Your order ${orderId} has been placed.`);
                 
                 cart = [];
                 saveCart();
                 setTimeout(() => window.location.href = 'orders.html', 2000);
             } catch (e) {
                 console.error("Order save sync error:", e);
-                if(window.showToast) window.showToast('Error', 'Failed to place order. Check DB rules.', true);
-                else alert("Error placing order! Check your internet connection or DB Rules.");
+                window.showToast('Error', 'Error placing order! Check your internet connection or DB Rules.', true);
                 payBtn.innerText = `Pay Now ₹${total}`;
                 payBtn.disabled = false;
             }
@@ -912,7 +994,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             let listHtml = '';
                             querySnapshot.forEach((docSnap) => {
                                 const o = docSnap.data();
-                                let itemsHtml = o.items.map(i => `<div class="d-flex align-items-center me-3 mb-2"><img src="${i.image}" class="rounded-circle object-fit-cover shadow-sm border me-2" style="width:40px;height:40px;"><span class="small fw-medium">${i.quantity}x ${i.title}</span></div>`).join('');
+                                let itemsHtml = o.items.map(i => `<div class="d-flex align-items-center justify-content-between mb-2 w-100 pe-3"><div class="d-flex align-items-center"><img src="${i.image}" class="rounded-circle object-fit-cover shadow-sm border me-2" style="width:40px;height:40px;"><span class="small fw-medium">${i.quantity}x ${i.title}</span></div><button class="btn btn-sm btn-outline-warning rounded-pill px-3 py-0 fw-bold hover-lift" onclick="window.openOrderReviewModal('${i.id}', '${escape(i.title)}')"><i class="bi bi-star-fill text-warning me-1"></i>Review</button></div>`).join('');
                                 let progWidth = "25%";
                                 let sStr = o.status.toLowerCase();
                                 if(sStr.includes("pack")) progWidth = "50%";

@@ -483,8 +483,7 @@
             const imageUrlFallback = document.getElementById('addImageUrl').value.trim();
 
             if (!title || !price || (!imageFile && !imageUrlFallback)) {
-                if (window.showToast) window.showToast('Validation Error', 'Title, Selling Price, and an Image (File or URL) are required', true);
-                else alert('Please fill required fields');
+                window.showToast('Validation Error', 'Title, Selling Price, and an Image (File or URL) are required', true);
                 return;
             }
 

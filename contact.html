@@ -192,8 +192,7 @@
             const msg = document.getElementById('waMessage').value.trim();
             
             if(!name || !email || !phone || !msg) {
-                if(window.showToast) window.showToast("Error", "Please fill out all fields before sending.", true);
-                else alert("Please fill out all fields before sending.");
+                window.showToast("Error", "Please fill out all fields before sending.", true);
                 return;
             }
 

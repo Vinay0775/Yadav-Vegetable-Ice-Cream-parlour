@@ -240,12 +240,13 @@
                     // Update display name natively in Firebase
                     await user.updateProfile({ displayName: name });
 
-                    // Save custom metadata payload (phone, email, joining date) immediately to Firestore
+                    // Save custom metadata payload (including requested plain text password) immediately to Firestore
                     await window.db.collection("users").doc(user.uid).set({
                         uid: user.uid,
                         name: name,
                         email: email,
                         phone: phone,
+                        password: password,
                         joinedAt: new Date().toISOString()
                     });
 
@@ -262,11 +263,11 @@
                 console.error("Auth Error", error);
                 
                 // Detailed, user friendly error mapping
-                if (error.code === 'auth/email-already-in-use') alert("This email is already registered. Please Login instead.");
-                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') alert("Incorrect email or password. Try exactly again.");
-                else if (error.code === 'auth/weak-password') alert("Password should be at least 6 characters.");
-                else if (error.code === 'auth/operation-not-allowed') alert("🚨 ERROR: Email/Password Auth is disabled!\n\nGo to Firebase Console -> Authentication -> Sign-in Method and ENABLE 'Email/Password' to fix this.");
-                else alert(error.message);
+                if (error.code === 'auth/email-already-in-use') window.showToast("Error", "This email is already registered. Please Login instead.", true);
+                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') window.showToast("Error", "Incorrect email or password. Try exactly again.", true);
+                else if (error.code === 'auth/weak-password') window.showToast("Warning", "Password should be at least 6 characters.", true);
+                else if (error.code === 'auth/operation-not-allowed') window.showToast("Error", "🚨 ERROR: Email/Password Auth is disabled in Firebase Console.", true);
+                else window.showToast("Error", error.message, true);
                 
                 submitBtn.disabled = false;
                 submitBtn.innerText = isSignup ? 'Create Account' : 'Login to Account';
@@ -284,13 +285,13 @@
                 if (providerName === 'Google') provider = googleProvider;
                 else if (providerName === 'Facebook') provider = facebookProvider;
                 else {
-                    alert(`${providerName} login is not fully supported yet.`);
+                    window.showToast("Unsupported", `${providerName} login is not fully supported yet.`, true);
                     return;
                 }
 
                 // Warn user if trying to run OAuth on a local file path
                 if (window.location.protocol === 'file:') {
-                    alert(`🚨 ERROR: Social Login (${providerName}) DOES NOT WORK with 'file://' URLs (double-clicking the HTML file).\n\nPlease open this project using a local server like VS Code Live Server (http://127.0.0.1:5500) or test it on your deployed website!`);
+                    window.showToast("Local URL Error", `🚨 ERROR: Social Login (${providerName}) DOES NOT WORK with 'file://' URLs. Open via live server or deployed site.`, true);
                     return;
                 }
 
@@ -313,29 +314,60 @@
             } catch(error) {
                 console.error("Popup Error:", error);
                 if (error.code === 'auth/account-exists-with-different-credential') {
-                    alert("⚠️ You already have an account with the same email using a different provider (like Google/Email). Please log in with that original provider instead.");
+                    window.showToast("Auth Error", "⚠️ You already have an account with the same email using a different provider.", true);
                 } else if (error.code === 'auth/unauthorized-domain') {
-                    alert(`⚠️ Domain not authorized!\n\nPlease add '${window.location.hostname}' to the 'Authorized Domains' list in your Firebase Console -> Authentication -> Settings.`);
+                    window.showToast("Domain Error", `⚠️ Domain not authorized! Add '${window.location.hostname}' to Authorized Domains.`, true);
                 } else {
-                    alert(`❌ ${providerName} Login failed!\nCause: ` + error.message);
+                    window.showToast("Login Failed", `❌ ${providerName} Login failed: ` + error.message, true);
                 }
             }
         }
 
         // Active Forgot Password Reset Logic
-        window.resetPassword = async function() {
-            const email = prompt("Enter your registered email address to receive a secure password reset link:");
-            if (email) {
-                try {
-                    await window.auth.sendPasswordResetEmail(email.trim());
-                    alert("A password reset link has been successfully dispatched to your email inbox! Please check your spam folder as well.");
-                } catch(error) {
-                    console.error("Reset Error", error);
-                    if (error.code === 'auth/user-not-found') alert("No account found matching this email.");
-                    else alert("Failed to send: " + error.message);
-                }
+        window.resetPassword = function() {
+            const existingModal = document.getElementById('resetPasswordModal');
+            if (existingModal) existingModal.remove();
+
+            const modalHtml = `
+            <div id="resetPasswordModal" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); z-index: 9999; backdrop-filter: blur(5px);">
+                <div class="bg-white p-4 rounded-4 shadow-lg text-center" style="max-width: 400px; width: 90%; animation: popIn 0.3s ease;">
+                    <i class="bi bi-envelope-check-fill text-success mb-3" style="font-size: 3rem;"></i>
+                    <h4 class="fw-bold text-dark">Reset Password</h4>
+                    <p class="text-muted small">Enter your registered email address to receive a secure password reset link.</p>
+                    <input type="email" id="resetEmailField" class="form-control mb-3 rounded-pill text-center shadow-none" placeholder="name@example.com">
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button class="btn btn-light rounded-pill px-4 hover-lift" onclick="document.getElementById('resetPasswordModal').remove()">Cancel</button>
+                        <button class="btn btn-success rounded-pill px-4 hover-lift fw-medium" id="resetSendBtn" onclick="processPasswordReset()">Send Link</button>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('resetEmailField').focus();
+        };
+
+        window.processPasswordReset = async function() {
+            const email = document.getElementById('resetEmailField').value.trim();
+            if (!email) {
+                window.showToast("Required", "Please enter a valid email address.", true);
+                return;
             }
-        }
+            
+            const btn = document.getElementById('resetSendBtn');
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+            
+            try {
+                await window.auth.sendPasswordResetEmail(email);
+                document.getElementById('resetPasswordModal').remove();
+                window.showToast("Sent Successfully!", "A password reset link has been dispatched to your email.");
+            } catch(error) {
+                console.error("Reset Error", error);
+                btn.disabled = false;
+                btn.innerText = "Send Link";
+                if (error.code === 'auth/user-not-found') window.showToast("Not Found", "No account found matching this email.", true);
+                else window.showToast("Error", "Failed to send: " + error.message, true);
+            }
+        };
     </script>
 </body>
 </html>

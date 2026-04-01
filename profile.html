@@ -141,7 +141,7 @@
                 const file = e.target.files[0];
                 if (file) {
                     if(file.size > 2 * 1024 * 1024) {
-                        alert("File too big! Please select an image under 2MB.");
+                        window.showToast("Error", "File too big! Please select an image under 2MB.", true);
                         return;
                     }
 
@@ -152,12 +152,7 @@
                         if(currentUserData) {
                             localStorage.setItem(`yadavProfilePic_${currentUserData.uid}`, base64String);
                         }
-                        
-                        const pOpts = document.createElement('div');
-                        pOpts.className = "alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 shadow z-3";
-                        pOpts.innerHTML = "<i class='bi bi-check-circle-fill me-2'></i> Profile picture updated successfully!";
-                        document.body.appendChild(pOpts);
-                        setTimeout(() => pOpts.remove(), 3000);
+                        window.showToast("Success!", "Profile picture updated successfully!");
                     };
                     reader.readAsDataURL(file);
                 }
@@ -165,13 +160,13 @@
 
             // Logout Handler
             document.getElementById('logoutBtn').addEventListener('click', () => {
-                const conf = confirm('Are you sure you want to log out from Yadav Store?');
-                if (conf) {
+                window.showToast('Logging Out...', 'See you soon!');
+                setTimeout(() => {
                     window.auth.signOut().then(() => {
                         localStorage.removeItem('yadavSession');
                         window.location.href = 'login.html';
                     });
-                }
+                }, 1000);
             });
         });
     </script>

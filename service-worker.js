@@ -1,4 +1,4 @@
-const CACHE_NAME = "yadav-store-cache-v1";
+const CACHE_NAME = "yadav-store-cache-v2";
 const urlsToCache = [
   "/index.html",
   "/style.css",
