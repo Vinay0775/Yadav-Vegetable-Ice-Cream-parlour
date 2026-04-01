@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Yadav Store</title>
+    <title>About Us - Yadav Vegetable</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,17 +17,71 @@
 </head>
 <body>
 
+    <!-- Topbar -->
+    <div class="topbar py-2 d-none d-lg-block">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="topbar-left small text-muted">
+                <span><i class="bi bi-geo-alt-fill text-success"></i> 123 Farm Road, Green City, IN</span>
+                <span class="ms-3"><i class="bi bi-clock-fill text-success"></i> Mon-Fri: 8:00AM - 9:00PM</span>
+            </div>
+            <div class="topbar-right small">
+                <span><i class="bi bi-envelope-fill text-success"></i> support@Yadavvegetable.com</span>
+                <span class="ms-3 fw-bold text-dark">Free Delivery on orders over ₹500! 🚚</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Header -->
-    <header class="main-header py-3 bg-white border-bottom align-items-center">
-        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <a class="text-decoration-none fw-bold fs-3 logo-text" href="index.html">
-                Yadav <span class="text-success">Store</span> <span class="text-pink fs-5">& Ice-Cream</span>
+     <header class="main-header py-3 bg-white border-bottom align-items-center">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <!-- Logo (Left on mobile and desktop) -->
+            <a class="text-decoration-none fw-bold fs-3 logo-text order-1" style="white-space:nowrap;"
+                href="index.html">
+                Yadav <span class="text-success">Vegetable</span> <span class="text-pink fs-6 d-none d-sm-inline">&
+                    Ice-Cream</span>
             </a>
 
-             <div class="header-icons d-flex align-items-center gap-4 ms-lg-0 ms-auto">
-                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"><i class="bi bi-person"></i></a>
-                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative"><i class="bi bi-heart"></i><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span></a>
-                <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-block"><i class="bi bi-cart3"></i><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge" id="cartCount">0</span></a>
+            <!-- Search Bar (Full width on mobile, middle on desktop)
+            <div class="input-group search-bar order-3 order-md-2 mx-auto w-100 mt-3 mt-md-0 d-flex"
+                style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
+                <select id="globalSearchCategory"
+                    class="form-select border-success shadow-none bg-light text-muted d-none d-sm-block"
+                    style="max-width: 130px;">
+                    <option value="All">All Categories</option>
+                    <option value="Vegetables">Veggies</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Ice-Creams">Ice-Creams</option>
+                </select>
+                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none w-auto"
+                    placeholder="Search products...">
+                <button id="globalSearchBtn" class="btn btn-success px-3 bg-success border-success" type="button"><i
+                        class="bi bi-search"></i></button>
+            </div> -->
+
+            <!-- Icons (Right on mobile and desktop) -->
+            <div class="header-icons d-flex align-items-center gap-3 order-2 order-md-3 ms-auto ms-md-0">
+                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
+                    title="Login/Profile">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a href="orders.html"
+                    class="text-dark text-decoration-none fs-5 icon-link position-relative d-none d-sm-block"
+                    title="My Orders">
+                    <i class="bi bi-box-seam"></i>
+                </a>
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites">
+                    <i class="bi bi-heart"></i>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
+                </a>
+                <a href="cart.html"
+                    class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center"
+                    title="Cart">
+                    <i class="bi bi-cart3"></i>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge"
+                        id="cartCount">0</span>
+                </a>
             </div>
         </div>
     </header>
@@ -35,24 +89,29 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="mainNavbar">
         <div class="container">
-             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+            <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
             <div class="collapse navbar-collapse justify-content-center" id="mainNav">
-                <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center text-center mt-3 mt-lg-0">
+                    <li class="nav-item"><a class="nav-link active text-success" href="index.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="fresh-veggies.html">Fresh Veggies</a></li>
-                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream Parlour</a></li>
-                    <li class="nav-item"><a class="nav-link active text-success" href="about-us.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link text-warning" href="fresh-fruits.html">Fresh Fruits</a></li>
+                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream
+                            Parlour</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about-us.html">About Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
                 </ul>
             </div>
         </div>
     </nav>
-
     <!-- Content -->
     <section class="py-5 bg-light-green">
         <div class="container pt-5 pb-5 text-center">
-             <h1 class="display-4 fw-bold mb-4">About <span class="text-success">Yadav Store</span></h1>
-             <p class="lead text-muted max-w-700 mx-auto">We are your neighborhood's premier destination for farm-fresh vegetables and exquisite premium ice creams. Born out of a passion for quality and community, Yadav Store brings the best of both worlds under one roof.</p>
+             <h1 class="display-4 fw-bold mb-4">About <span class="text-success">Yadav Vegetable</span></h1>
+             <p class="lead text-muted max-w-700 mx-auto">We are your neighborhood's premier destination for farm-fresh vegetables and exquisite premium ice creams. Born out of a passion for quality and community, Yadav Vegetable brings the best of both worlds under one roof.</p>
         </div>
     </section>
 
@@ -80,8 +139,8 @@
     <!-- Footer -->
     <footer class="footer bg-dark-green text-light pt-5 pb-3">
         <div class="container text-center">
-             <a class="text-decoration-none fw-bold fs-3 text-white mb-3 d-inline-block" href="index.html">Yadav <span class="text-success">Store</span></a>
-             <p class="text-light-50 small mb-0">&copy; 2026 Yadav Store & Ice-Cream. All Rights Reserved.</p>
+             <a class="text-decoration-none fw-bold fs-3 text-white mb-3 d-inline-block" href="index.html">Yadav <span class="text-success">Vegetable</span></a>
+             <p class="text-light-50 small mb-0">&copy; 2026 Yadav Vegetable & Ice-Cream. All Rights Reserved.</p>
         </div>
     </footer>
 

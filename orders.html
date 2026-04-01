@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,17 +12,19 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="bg-light">
 
     <!-- Topbar -->
     <div class="topbar py-2 d-none d-lg-block">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="topbar-left small text-muted">
-                <span><i class="bi bi-geo-alt-fill text-success"></i> 123 Farm Road, Green City, IN</span>
+                <span><i class="bi bi-geo-alt-fill text-success"></i> Yadav Vegetable store gandhipath vaishali near
+                    vardhman sampada,Jaipur,Rajasthan, IN</span>
                 <span class="ms-3"><i class="bi bi-clock-fill text-success"></i> Mon-Fri: 8:00AM - 9:00PM</span>
             </div>
             <div class="topbar-right small">
-                <span><i class="bi bi-envelope-fill text-success"></i> support@yadavstore.com</span>
+                <span><i class="bi bi-envelope-fill text-success"></i> hemantyadav1317@gmail.com</span>
                 <span class="ms-3 fw-bold text-dark">Free Delivery! 🚚</span>
             </div>
         </div>
@@ -30,31 +33,46 @@
     <!-- Main Header -->
     <header class="main-header py-3 bg-white border-bottom align-items-center">
         <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <a class="text-decoration-none fw-bold fs-3 logo-text order-1" style="white-space:nowrap;" href="index.html">
-                Yadav <span class="text-success">Store</span> <span class="text-pink fs-6 d-none d-sm-inline">& Ice-Cream</span>
+            <a class="text-decoration-none fw-bold fs-3 logo-text order-1" style="white-space:nowrap;"
+                href="index.html">
+                Yadav <span class="text-success">Store</span> <span class="text-pink fs-6 d-none d-sm-inline">&
+                    Ice-Cream</span>
             </a>
 
-            <div class="input-group search-bar order-3 order-md-2 mx-auto w-100 mt-3 mt-md-0 d-flex" style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
-                <select id="globalSearchCategory" class="form-select border-success shadow-none bg-light text-muted d-none d-sm-block" style="max-width: 130px;">
+            <div class="input-group search-bar order-3 order-md-2 mx-auto w-100 mt-3 mt-md-0 d-flex"
+                style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
+                <select id="globalSearchCategory"
+                    class="form-select border-success shadow-none bg-light text-muted d-none d-sm-block"
+                    style="max-width: 130px;">
                     <option value="All">All Categories</option>
                     <option value="Vegetables">Veggies</option>
                     <option value="Fruits">Fruits</option>
                     <option value="Ice-Creams">Ice-Creams</option>
                 </select>
-                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none w-auto" placeholder="Search products...">
-                <button id="globalSearchBtn" class="btn btn-success px-3 bg-success border-success" type="button"><i class="bi bi-search"></i></button>
+                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none w-auto"
+                    placeholder="Search products...">
+                <button id="globalSearchBtn" class="btn btn-success px-3 bg-success border-success" type="button"><i
+                        class="bi bi-search"></i></button>
             </div>
 
             <div class="header-icons d-flex align-items-center gap-3 order-2 order-md-3 ms-auto ms-md-0">
-                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Login/Profile"><i class="bi bi-person"></i></a>
-                <a href="orders.html" class="text-success text-decoration-none fs-5 icon-link position-relative d-none d-sm-block" title="My Orders"><i class="bi bi-box-seam-fill"></i></a>
+                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
+                    title="Login/Profile"><i class="bi bi-person"></i></a>
+                <a href="orders.html"
+                    class="text-success text-decoration-none fs-5 icon-link position-relative d-none d-sm-block"
+                    title="My Orders"><i class="bi bi-box-seam-fill"></i></a>
                 <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites">
                     <i class="bi bi-heart"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
                 </a>
-                <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center" title="Cart">
+                <a href="cart.html"
+                    class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center"
+                    title="Cart">
                     <i class="bi bi-cart3"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge" id="cartCount">0</span>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge"
+                        id="cartCount">0</span>
                 </a>
             </div>
         </div>
@@ -63,15 +81,18 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="mainNavbar">
         <div class="container">
-            <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-center" id="mainNav">
                 <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center text-center mt-3 mt-lg-0">
                     <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-success" href="fresh-veggies.html">Fresh Veggies</a></li>
+                    <li class="nav-item"><a class="nav-link text-success" href="fresh-veggies.html">Fresh Veggies</a>
+                    </li>
                     <li class="nav-item"><a class="nav-link text-warning" href="fresh-fruits.html">Fresh Fruits</a></li>
-                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream Parlour</a></li>
+                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream
+                            Parlour</a></li>
                     <li class="nav-item"><a class="nav-link" href="about-us.html">About Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
                 </ul>
@@ -81,11 +102,14 @@
 
     <!-- Page Header -->
     <div class="page-header py-4 bg-white border-bottom border-secondary border-opacity-10 shadow-sm">
-        <div class="container text-center text-md-start d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h2 class="fw-bold text-dark mb-0"><i class="bi bi-box-seam text-success me-2"></i> My <span class="text-success">Orders</span></h2>
+        <div
+            class="container text-center text-md-start d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2 class="fw-bold text-dark mb-0"><i class="bi bi-box-seam text-success me-2"></i> My <span
+                    class="text-success">Orders</span></h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="index.html" class="text-success text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item"><a href="index.html" class="text-success text-decoration-none">Home</a>
+                    </li>
                     <li class="breadcrumb-item active" aria-current="page">Orders</li>
                 </ol>
             </nav>
@@ -103,12 +127,12 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
+    <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="catalog.js"></script>
     <script src="script.js"></script>
 </body>
-</html>
 
+</html>

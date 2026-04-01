@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,95 +11,432 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .admin-sidebar { background-color: var(--theme-dark-green); min-height: 100vh; }
-        .admin-nav-link { color: rgba(255,255,255,0.7); display: block; padding: 12px 20px; text-decoration: none; border-radius: 8px; margin-bottom: 5px; }
-        .admin-nav-link:hover, .admin-nav-link.active { background-color: rgba(255,255,255,0.1); color: #fff; }
-    </style>
-</head>
-<body class="bg-light">
+    <!DOCTYPE html>
+    <html lang="en">
 
-    <div class="d-flex flex-column flex-md-row">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Dashboard - Yadav Store</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link rel="stylesheet" href="style.css">
+        <style>
+            .admin-sidebar {
+                background-color: var(--theme-dark-green);
+                min-height: 100vh;
+            }
+
+            .admin-nav-link {
+                color: rgba(255, 255, 255, 0.7);
+                display: block;
+                padding: 12px 20px;
+                text-decoration: none;
+                border-radius: 8px;
+                margin-bottom: 5px;
+            }
+
+            .admin-nav-link:hover,
+            .admin-nav-link.active {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #fff;
+            }
+        </style>
+    </head>
+
+<body class="bg-light" style="opacity: 0; transition: opacity 0.5s ease;">
+
+    <div class="d-flex flex-column flex-md-row min-vh-100">
+        <!-- Mobile Sidebar Toggler -->
+        <div
+            class="d-md-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm z-index-2 sticky-top">
+            <a href="index.html" class="text-decoration-none fs-5 fw-bold text-white">Yadav <span
+                    class="text-success">Admin</span></a>
+            <button class="btn btn-dark border-secondary" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#adminSidebar">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+        </div>
+
         <!-- Sidebar -->
-        <div class="admin-sidebar p-3 text-white" style="width: 100%; max-width: 250px;">
-            <a class="text-decoration-none fw-bold fs-4 text-white d-block mb-5 text-center" href="index.html">
+        <div class="admin-sidebar bg-dark p-3 text-white offcanvas-md offcanvas-start shadow" tabindex="-1"
+            id="adminSidebar" style="width: 260px; z-index: 1045;">
+            <div class="offcanvas-header d-md-none border-bottom border-secondary mb-3 pb-3">
+                <h5 class="offcanvas-title text-success fw-bold">Yadav Admin</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                    data-bs-target="#adminSidebar"></button>
+            </div>
+            <a class="text-decoration-none fw-bold fs-4 text-white d-none d-md-block mb-5 text-center mt-3"
+                href="index.html">
                 Yadav <span class="text-success">Admin</span>
             </a>
-            
-            <nav class="nav flex-column">
-                <a href="#" class="admin-nav-link active"><i class="bi bi-grid-1x2-fill me-2"></i> Dashboard</a>
-                <a href="#" class="admin-nav-link"><i class="bi bi-box-seam me-2"></i> Orders <span class="badge bg-warning text-dark ms-2 rounded-pill">New</span></a>
-                <a href="#" class="admin-nav-link"><i class="bi bi-people-fill me-2"></i> Customers</a>
-                <a href="#" class="admin-nav-link"><i class="bi bi-basket-fill me-2"></i> Products</a>
-                <a href="#" class="admin-nav-link"><i class="bi bi-bar-chart-fill me-2"></i> Analytics</a>
-                <a href="#" class="admin-nav-link mt-5 text-danger"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
+
+            <nav class="nav flex-column h-100">
+                <a href="#sec-dashboard" class="admin-nav-link active superadmin-only" data-tab="sec-dashboard"><i
+                        class="bi bi-grid-1x2-fill me-2"></i> Dashboard</a>
+                <a href="#sec-orders" class="admin-nav-link" data-tab="sec-orders"><i class="bi bi-box-seam me-2"></i>
+                    Orders <span class="badge bg-warning text-dark ms-2 rounded-pill">New</span></a>
+                <a href="#sec-products" class="admin-nav-link" data-tab="sec-products"><i
+                        class="bi bi-basket-fill me-2"></i> Manage Products</a>
+                <a href="#sec-enquiries" class="admin-nav-link" data-tab="sec-enquiries"><i
+                        class="bi bi-chat-dots-fill me-2"></i> Enquiries <span
+                        class="badge bg-danger ms-1 rounded-circle p-1 d-none" id="newEnqDot"></span></a>
+                <a href="#sec-analytics" class="admin-nav-link superadmin-only" data-tab="sec-analytics"><i
+                        class="bi bi-bar-chart-fill me-2"></i> Analytics</a>
+                <a href="#sec-settings" class="admin-nav-link superadmin-only" data-tab="sec-settings"><i
+                        class="bi bi-gear-fill me-2"></i> Settings</a>
+                <a href="#sec-staff" class="admin-nav-link superadmin-only" data-tab="sec-staff"><i
+                        class="bi bi-shield-lock-fill me-2"></i> Staff Access</a>
+
+                <a href="#"
+                    onclick="if(window.logoutGlobal){window.logoutGlobal();}else{window.location.href='index.html';}"
+                    class="admin-nav-link mt-auto mb-4 text-danger"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
             </nav>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow-1 p-4 p-md-5">
+        <div class="flex-grow-1 p-3 p-md-5 w-100 overflow-hidden">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold text-dark mb-0">Overview</h3>
-                <div class="d-flex align-items-center gap-3">
-                    <span class="text-muted"><i class="bi bi-calendar3 me-2"></i> Today</span>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle shadow-sm" style="width: 40px;">
+                <h3 class="fw-bold text-dark mb-0" id="adminPageTitle">Dashboard</h3>
+                <div class="d-flex align-items-center gap-3 ms-auto">
+                    <span class="text-muted d-none d-sm-inline"><i class="bi bi-calendar3 me-2"></i> <span
+                            id="adminCurrentDate">Today</span></span>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle shadow-sm"
+                        style="width: 40px;">
                 </div>
             </div>
 
-            <!-- Stats -->
-            <div class="row g-4 mb-5" id="adminOrdersGrid">
-                <!-- Data fetched by script.js checking adminGrid presence -->
-                <div class="col-sm-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1">Total Revenue</p>
-                            <h3 class="fw-bold text-success mb-0" id="totalSalesVal">₹0</h3>
+            <!-- DASHBOARD TAB -->
+            <div id="sec-dashboard" class="admin-section active">
+                <div class="row g-4 mb-5" id="adminOrdersGrid">
+                    <!-- Data fetched by script.js checking adminGrid presence -->
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Total Revenue</p>
+                                <h3 class="fw-bold text-success mb-0" id="totalSalesVal">₹0</h3>
+                            </div>
+                            <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 fs-3"><i
+                                    class="bi bi-currency-rupee"></i></div>
                         </div>
-                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 fs-3"><i class="bi bi-currency-rupee"></i></div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Total Orders</p>
+                                <h3 class="fw-bold text-primary mb-0" id="totalOrdersCount">0</h3>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 fs-3"><i
+                                    class="bi bi-bag-check-fill"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Total Enquiries</p>
+                                <h3 class="fw-bold text-warning mb-0" id="activeUsersCount">0</h3>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 fs-3"><i
+                                    class="bi bi-chat-dots-fill"></i></div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1">Total Orders</p>
-                            <h3 class="fw-bold text-primary mb-0" id="totalOrdersCount">0</h3>
+
+                <!-- Chart & Recent Activity -->
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0">Sales Growth (Last 7 Days)</h5>
+                            </div>
+                            <div class="card-body p-4 w-100">
+                                <canvas id="growthChart" height="120"></canvas>
+                            </div>
                         </div>
-                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 fs-3"><i class="bi bi-bag-check-fill"></i></div>
                     </div>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
-                        <div>
-                            <p class="text-muted small mb-1">Active Users</p>
-                            <h3 class="fw-bold text-warning mb-0" id="activeUsersCount">0</h3>
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0">Recent Activity</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="recentActivityList">
+                                    <li class="list-group-item p-4 text-center text-muted small border-0">Loading
+                                        activity...</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 fs-3"><i class="bi bi-people-fill"></i></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Orders Table -->
-            <div class="card border-0 shadow-sm rounded-4 bg-white">
-                <div class="card-header bg-white border-bottom p-4">
-                    <h5 class="fw-bold mb-0">Recent Orders</h5>
+            <!-- ANALYTICS TAB -->
+            <div id="sec-analytics" class="admin-section d-none">
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-5">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-calculator me-2 text-primary"></i> Smart Price
+                            Calculator</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small">Original Price (₹)</label>
+                                <input type="number" id="calcOrig" class="form-control shadow-none border-success"
+                                    placeholder="e.g. 100" min="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small">Discount (%)</label>
+                                <input type="number" id="calcDisc" class="form-control shadow-none border-warning"
+                                    placeholder="e.g. 10" min="0" max="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small">Tax/GST (%)</label>
+                                <input type="number" id="calcTax" class="form-control shadow-none border-danger"
+                                    placeholder="e.g. 5" min="0" max="100">
+                            </div>
+                            <div class="col-md-3">
+                                <div
+                                    class="p-3 bg-light border border-success border-opacity-25 rounded-3 text-center h-100 d-flex flex-column justify-content-center">
+                                    <span class="d-block text-muted small mb-1">Final Selling Price</span>
+                                    <h4 class="fw-bold text-success mb-0" id="calcFinal">₹0.00</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light text-muted small">
-                                <tr>
-                                    <th class="py-3 px-4 fw-medium border-0">Tracking ID</th>
-                                    <th class="py-3 fw-medium border-0">Date</th>
-                                    <th class="py-3 fw-medium border-0">Customer</th>
-                                    <th class="py-3 fw-medium border-0">Items</th>
-                                    <th class="py-3 fw-medium border-0">Total</th>
-                                    <th class="py-3 px-4 fw-medium border-0">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminTableBody">
-                                <!-- injected via JS -->
-                            </tbody>
-                        </table>
+            </div>
+
+            <!-- PRODUCTS TAB -->
+            <div id="sec-products" class="admin-section d-none">
+                <!-- Live Products CMS Table -->
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-5">
+                    <div
+                        class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2 text-primary"></i> Manage Live Catalog
+                        </h5>
+                        <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm"
+                            onclick="document.getElementById('adminAddProductForm').scrollIntoView({behavior:'smooth'})"><i
+                                class="bi bi-plus-lg me-1"></i> Add New</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light text-muted small position-sticky top-0 z-index-2">
+                                    <tr>
+                                        <th class="py-3 px-4 border-0">Image</th>
+                                        <th class="py-3 border-0">Product Name</th>
+                                        <th class="py-3 border-0">Category</th>
+                                        <th class="py-3 border-0">Price (₹)</th>
+                                        <th class="py-3 px-4 text-end border-0">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cmsProductsTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5"><span
+                                                class="spinner-border text-primary spinner-border-sm me-2"></span>
+                                            Loading catalog...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add New Product (Firebase Sync) -->
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-5">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-cloud-arrow-up me-2 text-success"></i> Add New Product
+                            to Catalog</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="adminAddProductForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small">Product Title *</label>
+                                    <input type="text" id="addTitle" class="form-control shadow-none" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small">Category *</label>
+                                    <select id="addCat" class="form-select shadow-none" required>
+                                        <option value="Vegetables">Vegetables</option>
+                                        <option value="Fresh Fruits">Fresh Fruits</option>
+                                        <option value="Ice-Creams">Ice-Creams</option>
+                                        <option value="Dairy">Dairy</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small">Selling Price (₹) *</label>
+                                    <input type="number" id="addPrice" class="form-control shadow-none" required
+                                        min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Original Price (₹)</label>
+                                    <input type="number" id="addOrigPrice" class="form-control shadow-none">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small">Upload Image File (Recommended) *</label>
+                                    <input type="file" id="addImageFile" class="form-control shadow-none"
+                                        accept="image/*">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small">OR Image URL</label>
+                                    <input type="url" id="addImageUrl" class="form-control shadow-none"
+                                        placeholder="https://...">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-muted small">Short Description</label>
+                                    <textarea id="addDesc" class="form-control shadow-none" rows="2"></textarea>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="button" onclick="submitNewProduct()" id="submitProdBtn"
+                                        class="btn btn-success px-4 rounded-pill mt-3"><i
+                                            class="bi bi-cloud-arrow-up me-2"></i> Save to Database</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="sec-orders" class="admin-section d-none">
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="fw-bold mb-0">Recent Orders</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light text-muted small">
+                                    <tr>
+                                        <th class="py-3 px-4 fw-medium border-0">Tracking ID</th>
+                                        <th class="py-3 fw-medium border-0">Date</th>
+                                        <th class="py-3 fw-medium border-0">Customer</th>
+                                        <th class="py-3 fw-medium border-0">Items</th>
+                                        <th class="py-3 fw-medium border-0">Total</th>
+                                        <th class="py-3 px-4 fw-medium border-0">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTableBody">
+                                    <!-- injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMERS TAB -->
+            <div id="sec-customers" class="admin-section d-none">
+                <div class="card border-0 shadow-sm rounded-4 bg-white text-center py-5">
+                    <i class="bi bi-people display-1 text-muted mb-3 opacity-50"></i>
+                    <h4>Customer Management</h4>
+                    <p class="text-muted">Customer list and analytics feature coming soon in Phase 4.</p>
+                </div>
+            </div>
+
+            <!-- ENQUIRIES TAB -->
+            <div id="sec-enquiries" class="admin-section d-none">
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div
+                        class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Customer Enquiries</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light text-muted small">
+                                    <tr>
+                                        <th class="py-3 px-4 border-0">Date</th>
+                                        <th class="py-3 border-0">Name</th>
+                                        <th class="py-3 border-0">Contact</th>
+                                        <th class="py-3 w-25 border-0">Message</th>
+                                        <th class="py-3 border-0">Status</th>
+                                        <th class="py-3 px-4 border-0 text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enquiriesTableBody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAFF ACCESS TAB (RBAC) -->
+            <div id="sec-staff" class="admin-section d-none superadmin-only">
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock text-primary me-2"></i> Role-Based Access
+                            Control</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="addStaffForm" class="row g-3 align-items-end mb-4">
+                            <div class="col-md-5">
+                                <label class="form-label text-muted small">Staff Email</label>
+                                <input type="email" id="staffEmail" class="form-control shadow-none" required
+                                    placeholder="name@example.com">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Role</label>
+                                <select id="staffRole" class="form-select shadow-none">
+                                    <option value="editor">Editor (Products Only)</option>
+                                    <option value="superadmin">Super Admin (Full Access)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">Grant Access</button>
+                            </div>
+                        </form>
+                        <hr>
+                        <h6 class="fw-bold mt-4 mb-3">Authorized Staff</h6>
+                        <div class="list-group" id="staffList">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB -->
+            <div id="sec-settings" class="admin-section d-none superadmin-only">
+                <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-gear text-secondary me-2"></i> Global Site Settings
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="globalSettingsForm">
+                            <div class="mb-4 form-check form-switch fs-5">
+                                <input class="form-check-input shadow-none" type="checkbox" role="switch"
+                                    id="maintenanceToggle">
+                                <label class="form-check-label ms-2 fw-medium text-danger"
+                                    for="maintenanceToggle">Enable Maintenance Mode</label>
+                                <div class="form-text mt-1 text-muted fs-6">If enabled, normal users will see an "Under
+                                    Construction" page. Super Admins bypass this.</div>
+                            </div>
+                            <hr>
+                            <h6 class="fw-bold mt-4 mb-3">SEO Configuration</h6>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Website Title</label>
+                                <input type="text" id="seoTitle" class="form-control shadow-none"
+                                    placeholder="Yadav Vegetable & Ice-Cream Parlour">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Meta Description</label>
+                                <textarea id="seoDesc" class="form-control shadow-none" rows="2"
+                                    placeholder="Fresh veggies delivered..."></textarea>
+                            </div>
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn btn-success px-4">Save Settings</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -106,14 +444,549 @@
         </div>
     </div>
 
+
+
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase Data SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
     <script src="script.js"></script>
-</body>
-</html>
+    <script>
+        // Smart Calculator Logic
+        function performCalc() {
+            const orig = parseFloat(document.getElementById('calcOrig').value) || 0;
+            const disc = parseFloat(document.getElementById('calcDisc').value) || 0;
+            const tax = parseFloat(document.getElementById('calcTax').value) || 0;
 
+            const discounted = orig - (orig * (disc / 100));
+            const final = discounted + (discounted * (tax / 100));
+
+            document.getElementById('calcFinal').innerText = '₹' + final.toFixed(2);
+        }
+        document.getElementById('calcOrig').addEventListener('input', performCalc);
+        document.getElementById('calcDisc').addEventListener('input', performCalc);
+        document.getElementById('calcTax').addEventListener('input', performCalc);
+
+        // Admin Product Add Logic (Supports Storage Uploads)
+        async function submitNewProduct() {
+            const title = document.getElementById('addTitle').value.trim();
+            const cat = document.getElementById('addCat').value;
+            const price = parseFloat(document.getElementById('addPrice').value);
+            const origPrice = parseFloat(document.getElementById('addOrigPrice').value) || null;
+            const desc = document.getElementById('addDesc').value.trim();
+            const imageFile = document.getElementById('addImageFile').files[0];
+            const imageUrlFallback = document.getElementById('addImageUrl').value.trim();
+
+            if (!title || !price || (!imageFile && !imageUrlFallback)) {
+                if (window.showToast) window.showToast('Validation Error', 'Title, Selling Price, and an Image (File or URL) are required', true);
+                else alert('Please fill required fields');
+                return;
+            }
+
+            const btn = document.getElementById('submitProdBtn');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Uploading...';
+            btn.disabled = true;
+
+            try {
+                let finalImageUrl = imageUrlFallback;
+
+                // If file is selected, push to Firebase Storage
+                if (imageFile) {
+                    const storageRef = firebase.storage().ref();
+                    const fileRef = storageRef.child(`products/${Date.now()}_${imageFile.name}`);
+                    const uploadTask = await fileRef.put(imageFile);
+                    finalImageUrl = await uploadTask.ref.getDownloadURL();
+                }
+
+                await window.db.collection('products').add({
+                    title: title,
+                    category: cat,
+                    price: price,
+                    originalPrice: origPrice,
+                    image: finalImageUrl,
+                    desc: desc,
+                    rating: 5,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                if (window.showToast) window.showToast('Success', 'Product published globally!');
+                document.getElementById('adminAddProductForm').reset();
+                window.loadAdminCatalog(); // Refresh CMS Table
+
+            } catch (e) {
+                console.error("Product Creation Error: ", e);
+                if (window.showToast) window.showToast('Error', e.message, true);
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // Live CMS Catalog Loading
+        window.loadAdminCatalog = async () => {
+            const tbody = document.getElementById('cmsProductsTableBody');
+            if (!tbody) return;
+
+            try {
+                const snap = await window.db.collection('products').orderBy('createdAt', 'desc').limit(50).get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No products found. Start adding!</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                    <tr>
+                        <td class="px-4"><img src="${data.image}" class="rounded shadow-sm border" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                        <td class="fw-bold">${data.title}</td>
+                        <td><span class="badge bg-light text-dark border">${data.category}</span></td>
+                        <td class="text-success fw-bold">₹${data.price}</td>
+                        <td class="px-4 text-end">
+                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Delete Product" onclick="deleteAdminProduct('${doc.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                console.error("Failed to fetch CMS catalog: ", e);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Database Error. Could not load products.</td></tr>';
+            }
+        };
+
+        window.deleteAdminProduct = async (id) => {
+            if (!confirm('Are you strictly sure you want to delete this product? This gets removed from live catalog instantly.')) return;
+            try {
+                await window.db.collection('products').doc(id).delete();
+                if (window.showToast) window.showToast('Deleted', 'Product removed from database.');
+                window.loadAdminCatalog();
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // ==========================================
+        // ADMIN SECURITY & SPA NAVIGATION LOGIC
+        // ==========================================
+        window.onload = () => {
+            // Role Based Security Lock
+            window.auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    document.body.innerHTML = '<div class="text-center mt-5"><h3>Unauthorized Access. Redirecting...</h3></div>';
+                    setTimeout(() => { window.location.replace('index.html'); }, 100);
+                    return;
+                }
+
+                // Super Admin Override
+                if (user.email === 'vinayvishwakarma080@gmail.com') {
+                    window.CURRENT_ROLE = 'superadmin';
+                    grantAdminAccess();
+                    loadAdminData(); // Begin pulling stats
+                    return;
+                }
+
+                // Check Firestore for Staff Role
+                try {
+                    const docSnap = await window.db.collection('roles').doc(user.email).get();
+                    if (docSnap.exists) {
+                        window.CURRENT_ROLE = docSnap.data().role; // 'editor' or 'superadmin'
+                        grantAdminAccess();
+
+                        // Mask UI for basic Editors
+                        if (window.CURRENT_ROLE === 'editor') {
+                            document.querySelectorAll('.superadmin-only').forEach(el => el.classList.add('d-none'));
+                            // Click Products tab by default as they can't see Dashboard
+                            document.querySelector('[data-tab="sec-products"]').click();
+                        } else {
+                            loadAdminData();
+                        }
+                    } else {
+                        // Logged in, but unauthorized customer
+                        document.body.innerHTML = '<div class="text-center mt-5"><h3>Unauthorized Access. Restricted to Staff.</h3></div>';
+                        setTimeout(() => { window.location.replace('index.html'); }, 1500);
+                    }
+                } catch (e) {
+                    console.error("RBAC Check Failed:", e);
+                    window.location.replace('index.html');
+                }
+            });
+
+            function grantAdminAccess() {
+                document.body.style.opacity = "1";
+                if (document.getElementById('adminCurrentDate')) {
+                    document.getElementById('adminCurrentDate').innerText = new Date().toLocaleDateString();
+                }
+            }
+
+            // SPA Navigation Tabs
+            document.querySelectorAll('.admin-nav-link[data-tab]').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    // Close Offcanvas on mobile if open
+                    const offcanvasEl = document.getElementById('adminSidebar');
+                    if (offcanvasEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
+                        const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
+                        if (bsOffcanvas) bsOffcanvas.hide();
+                    }
+
+                    // Update link active states
+                    document.querySelectorAll('.admin-nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Toggle section visibility
+                    const targetId = this.dataset.tab;
+                    document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) targetEl.classList.remove('d-none');
+
+                    // Update Top Title
+                    if (document.getElementById('adminPageTitle')) {
+                        document.getElementById('adminPageTitle').innerHTML = this.innerHTML.replace('<i', '<i class="text-primary"').replace('me-2', 'me-2');
+                    }
+                });
+            });
+
+            // =========================
+            // CORE DATA LOADERS
+            // =========================
+            window.loadAdminData = () => {
+                if (window.CURRENT_ROLE === 'superadmin') {
+                    loadStaffList();
+                }
+                window.loadAdminCatalog();
+                window.loadAdminEnquiries();
+                window.loadDashboardAnalytics();
+                window.loadGlobalSettings();
+                // (Optional) Re-trigger other listeners if needed. script.js already triggers on auth state globally.
+            };
+
+            // GLOBAL SETTINGS LOGIC
+            window.loadGlobalSettings = async () => {
+                if (window.CURRENT_ROLE !== 'superadmin') return;
+                try {
+                    const doc = await window.db.collection('settings').doc('global').get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const mt = document.getElementById('maintenanceToggle');
+                        if (mt) mt.checked = !!data.maintenanceMode;
+                        const t = document.getElementById('seoTitle');
+                        if (t) t.value = data.seoTitle || '';
+                        const d = document.getElementById('seoDesc');
+                        if (d) d.value = data.seoDesc || '';
+                    }
+                } catch (e) { console.error("Error loading settings:", e); }
+            };
+
+            const gsf = document.getElementById('globalSettingsForm');
+            if (gsf) {
+                gsf.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (window.CURRENT_ROLE !== 'superadmin') return;
+
+                    const btn = gsf.querySelector('button');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
+
+                    try {
+                        const mt = document.getElementById('maintenanceToggle').checked;
+                        const t = document.getElementById('seoTitle').value.trim();
+                        const d = document.getElementById('seoDesc').value.trim();
+
+                        await window.db.collection('settings').doc('global').set({
+                            maintenanceMode: mt,
+                            seoTitle: t,
+                            seoDesc: d,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+
+                        if (window.showToast) window.showToast('Success', 'Global Site Settings updated.');
+                    } catch (err) {
+                        console.error(err);
+                        if (window.showToast) window.showToast('Error', err.message, true);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Save Settings';
+                    }
+                });
+            }
+
+            // STAFF MANAGEMENT LOGIC
+            const addStaffForm = document.getElementById('addStaffForm');
+            if (addStaffForm) {
+                addStaffForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (window.CURRENT_ROLE !== 'superadmin') return;
+
+                    const email = document.getElementById('staffEmail').value.trim();
+                    const role = document.getElementById('staffRole').value;
+                    if (!email) return;
+
+                    const btn = addStaffForm.querySelector('button');
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    btn.disabled = true;
+
+                    try {
+                        await window.db.collection('roles').doc(email).set({
+                            role: role,
+                            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        addStaffForm.reset();
+                        window.loadStaffList();
+                        if (window.showToast) window.showToast('Success', `Staff ${role} access granted.`);
+                    } catch (err) {
+                        console.error("Error adding staff:", err);
+                        if (window.showToast) window.showToast('Error', err.message, true);
+                    }
+                    btn.innerHTML = 'Grant Access';
+                    btn.disabled = false;
+                });
+            }
+
+            window.loadStaffList = async () => {
+                const listEl = document.getElementById('staffList');
+                if (!listEl) return;
+                listEl.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div></div>';
+                try {
+                    const snap = await window.db.collection('roles').get();
+                    if (snap.empty) {
+                        listEl.innerHTML = '<p class="text-muted small">No extra staff members. You are the only admin.</p>';
+                        return;
+                    }
+                    let html = '';
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-start-0 border-end-0 border-top-0 border-bottom mx-3 py-3">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark">${doc.id}</h6>
+                                <span class="badge ${data.role === 'superadmin' ? 'bg-primary' : 'bg-secondary'} px-2 py-1">${data.role.toUpperCase()}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Revoke Access" onclick="removeStaff('${doc.id}')"><i class="bi bi-trash"></i></button>
+                        </div>`;
+                    });
+                    listEl.innerHTML = html;
+                } catch (e) {
+                    listEl.innerHTML = '<p class="text-danger small">Error loading staff list.</p>';
+                }
+            };
+
+            window.removeStaff = async (email) => {
+                if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
+                try {
+                    await window.db.collection('roles').doc(email).delete();
+                    window.loadStaffList();
+                    if (window.showToast) window.showToast('Removed', 'Staff access revoked.');
+                } catch (e) {
+                    console.error(e);
+                    if (window.showToast) window.showToast('Error', e.message, true);
+                }
+            };
+
+            // ENQUIRY MANAGEMENT LOGIC
+            window.loadAdminEnquiries = () => {
+                window.db.collection('enquiries').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                    const tbody = document.getElementById('enquiriesTableBody');
+                    if (!tbody) return;
+                    let html = '';
+                    let unreadCount = 0;
+
+                    if (snap.empty) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No messages yet.</td></tr>';
+                        return;
+                    }
+
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        const dateNum = data.createdAt ? data.createdAt.toDate() : new Date();
+                        const dateStr = dateNum.toLocaleDateString();
+
+                        if (data.status === 'pending') unreadCount++;
+
+                        html += `
+                        <tr class="${data.status === 'pending' ? 'table-warning' : ''}">
+                            <td class="text-muted small">${dateStr}</td>
+                            <td class="fw-bold">${data.name}</td>
+                            <td>
+                                <div><i class="bi bi-telephone text-muted me-1"></i> ${data.phone}</div>
+                                <div class="small text-muted"><i class="bi bi-envelope me-1"></i> ${data.email}</div>
+                            </td>
+                            <td><p class="mb-0 small text-wrap text-break" style="max-height: 80px; overflow-y: auto;">${data.message}</p></td>
+                            <td>
+                                <span class="badge ${data.status === 'pending' ? 'bg-danger' : 'bg-success'} dropdown-toggle" style="cursor:pointer;" data-bs-toggle="dropdown">${data.status.toUpperCase()}</span>
+                                <ul class="dropdown-menu shadow">
+                                    <li><button class="dropdown-item small py-2" onclick="updateEnquiryStatus('${doc.id}', 'pending')">Mark Pending 🔴</button></li>
+                                    <li><button class="dropdown-item small py-2" onclick="updateEnquiryStatus('${doc.id}', 'resolved')">Mark Resolved 🟢</button></li>
+                                </ul>
+                            </td>
+                            <td class="text-end">
+                                <a href="https://wa.me/91${data.phone.replace(/\\D/g, '')}?text=Hello ${data.name}, from Yadav Store!" target="_blank" class="btn btn-sm btn-outline-success shadow-sm" title="Reply on WA"><i class="bi bi-whatsapp"></i></a>
+                                <button class="btn btn-sm btn-outline-danger ms-1 shadow-sm" title="Delete" onclick="deleteEnquiry('${doc.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        `;
+                    });
+
+                    tbody.innerHTML = html;
+
+                    // Update Notification Dot on Sidebar
+                    const dot = document.getElementById('newEnqDot');
+                    if (dot) {
+                        if (unreadCount > 0) {
+                            dot.innerText = unreadCount;
+                            dot.classList.remove('d-none');
+                        } else {
+                            dot.classList.add('d-none');
+                        }
+                    }
+                }, error => {
+                    console.error("Enquiry Snap Error:", error);
+                });
+            };
+
+            window.updateEnquiryStatus = async (id, status) => {
+                await window.db.collection('enquiries').doc(id).update({ status: status });
+            };
+
+            window.deleteEnquiry = async (id) => {
+                if (confirm('Delete this message permanently?')) {
+                    await window.db.collection('enquiries').doc(id).delete();
+                }
+            };
+
+            // DASHBOARD ANALYTICS (CHART & ACTIVITY)
+            window.loadDashboardAnalytics = async () => {
+                if (window.CURRENT_ROLE !== 'superadmin') return;
+
+                const db = window.db;
+                const activityList = document.getElementById('recentActivityList');
+                let activities = [];
+
+                try {
+                    // Fetch recent Enquiries
+                    const enqSnap = await db.collection('enquiries').orderBy('createdAt', 'desc').limit(5).get();
+                    enqSnap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.createdAt) activities.push({ type: 'enquiry', time: d.createdAt.toDate(), data: d });
+                    });
+
+                    // Fetch recent Orders
+                    const ordSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(5).get();
+                    let dailySales = {}; // 'YYYY-MM-DD': amount
+
+                    // Pre-fill last 7 days with 0
+                    for (let i = 6; i >= 0; i--) {
+                        let d = new Date();
+                        d.setDate(d.getDate() - i);
+                        dailySales[d.toLocaleDateString('en-CA')] = 0; // standard YYYY-MM-DD style
+                    }
+
+                    // Process up to 50 orders for the chart
+                    const allOrdSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(50).get();
+                    allOrdSnap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.createdAt) {
+                            const dateObj = d.createdAt.toDate();
+                            const dateStr = dateObj.toLocaleDateString('en-CA');
+
+                            // For Activity List
+                            if (activities.length < 10 && d.status === 'Processing') {
+                                activities.push({ type: 'order', time: dateObj, data: d, id: doc.id });
+                            }
+
+                            // For Chart
+                            if (dailySales[dateStr] !== undefined) {
+                                dailySales[dateStr] += (d.totalPrice || 0);
+                            }
+                        }
+                    });
+
+                    // SORT & RENDER ACTIVITY
+                    activities.sort((a, b) => b.time - a.time);
+                    if (activities.length === 0) {
+                        activityList.innerHTML = '<li class="list-group-item p-4 text-center text-muted small border-0">No recent activity</li>';
+                    } else {
+                        let actHtml = '';
+                        activities.slice(0, 5).forEach(act => {
+                            if (act.type === 'enquiry') {
+                                actHtml += `<li class="list-group-item px-4 py-3 border-0 border-bottom">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div class="small fw-bold text-dark"><i class="bi bi-envelope text-warning me-2"></i> ${act.data.name} sent message</div>
+                                        <small class="text-muted" style="font-size: 0.70rem;">${act.time.toLocaleDateString()}</small>
+                                    </div>
+                                </li>`;
+                            } else {
+                                actHtml += `<li class="list-group-item px-4 py-3 border-0 border-bottom">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <div class="small fw-bold text-dark"><i class="bi bi-box-seam text-success me-2"></i> Order ${act.id.slice(-6).toUpperCase()}</div>
+                                        <small class="text-success fw-bold">₹${act.data.totalPrice}</small>
+                                    </div>
+                                </li>`;
+                            }
+                        });
+                        activityList.innerHTML = actHtml;
+                    }
+
+                    // RENDER CHART
+                    renderGrowthChart(Object.keys(dailySales), Object.values(dailySales));
+
+                } catch (e) {
+                    console.error("Dashboard Analytics Error:", e);
+                    activityList.innerHTML = '<li class="list-group-item p-4 text-center text-danger small border-0">Failed to load</li>';
+                }
+            };
+
+            let growthChartInstance = null;
+            function renderGrowthChart(labels, data) {
+                const ctx = document.getElementById('growthChart');
+                if (!ctx) return;
+
+                if (growthChartInstance) {
+                    growthChartInstance.destroy();
+                }
+
+                growthChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels.map(l => l.substring(5)), // Convert YYYY-MM-DD to MM-DD
+                        datasets: [{
+                            label: 'Daily Revenue (₹)',
+                            data: data,
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#198754',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f0f0f0' }, ticks: { textStrokeColor: '#999' } },
+                            x: { grid: { display: false }, ticks: { textStrokeColor: '#999' } }
+                        }
+                    }
+                });
+            }
+
+        };
+    </script>
+</body>
+
+</html>

@@ -97,14 +97,17 @@
             const profileEmail = document.getElementById('profileEmail');
             const profileImage = document.getElementById('profileImage');
             
+            let currentUserData = null; // Store current user for upload access
+            
             // Listen to real Firebase Auth State
             window.auth.onAuthStateChanged(async (user) => {
                 if (user) {
+                    currentUserData = user;
                     profileName.innerText = user.displayName || 'Store Customer';
                     profileEmail.innerText = user.email || 'customer@example.com';
                     
                     // Display Google DP if available, otherwise check LocalStorage custom image
-                    const savedImage = localStorage.getItem('yadavProfilePic');
+                    const savedImage = localStorage.getItem(`yadavProfilePic_${user.uid}`);
                     if (savedImage) {
                         profileImage.src = savedImage;
                     } else if (user.photoURL) {
@@ -146,7 +149,9 @@
                     reader.onload = function(event) {
                         const base64String = event.target.result;
                         profileImage.src = base64String;
-                        localStorage.setItem('yadavProfilePic', base64String);
+                        if(currentUserData) {
+                            localStorage.setItem(`yadavProfilePic_${currentUserData.uid}`, base64String);
+                        }
                         
                         const pOpts = document.createElement('div');
                         pOpts.className = "alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 shadow z-3";

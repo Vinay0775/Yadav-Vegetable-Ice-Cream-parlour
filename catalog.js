@@ -152,6 +152,19 @@ const YADAV_CATALOG = [
 
     // --- ICE CREAMS ---
     {
+        id: 'i7',
+        title: 'Vanilla Strawberry Sundae',
+        category: 'Ice-Creams',
+        subCategory: 'Scooperstar Cups',
+        price: 120,
+        originalPrice: 150,
+        image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🍨',
+        rating: 5,
+        badge: 'Featured',
+        desc: 'Classic vanilla ice cream topped with sweet strawberry syrup and a cherry.'
+    },
+    {
         id: 'i1',
         title: 'Belgian Choconut Cup',
         category: 'Ice-Creams',

@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin.html
+Allow: /
+Sitemap: https://yadavvegetablestore.com/sitemap.xml
