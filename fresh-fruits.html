@@ -106,12 +106,12 @@
         <!-- Navigation Menu (Desktop separate row & Mobile Offcanvas) -->
         <nav class="navbar navbar-expand-lg navbar-light bg-white py-0 p-lg-0" id="mainNavbar">
             <div class="container">
-                <div class="offcanvas-lg offcanvas-end bg-white w-100" tabindex="-1" id="mainNav"
+                <div class="offcanvas-lg offcanvas-end bg-white" tabindex="-1" id="mainNav"
                     style="--bs-offcanvas-width: 280px;">
                     <div class="offcanvas-header border-bottom d-lg-none py-3">
                         <h5 class="offcanvas-title fw-bold logo-text text-dark fs-4" style="font-size:1.5rem;">Yadav
                             <span class="text-success">Menu</span></h5>
-                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" data-bs-target="#mainNav"></button>
                     </div>
                     <div class="offcanvas-body d-flex align-items-lg-center">
                         <!-- Navigation Links -->
@@ -135,6 +135,11 @@
                             </li>
                             <li class="nav-item d-lg-none"><a class="nav-link text-dark" href="login.html"><i
                                         class="bi bi-person me-2 text-success"></i>Profile Login</a></li>
+                            <li class="nav-item d-lg-none mt-4 mb-3 px-2">
+                                <a href="app_logo.png" download="YadavStoreApp.png" class="btn btn-success w-100 rounded-pill d-flex justify-content-center align-items-center gap-2 fw-bold shadow-sm p-2">
+                                    <img src="app_logo.png" alt="App Logo" height="24" class="rounded bg-white p-1"> Download App
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>

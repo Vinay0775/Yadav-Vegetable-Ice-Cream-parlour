@@ -32,15 +32,9 @@ filesToUpdate.forEach(file => {
         let content = fs.readFileSync(file, 'utf8');
         let updatedContent = content;
         
-        // Find existing header and replace
-        // It could be <!-- Topbar --> ... </nav>
-        // Or <!-- Main Header --> ... </nav>
-        // Or <!-- Simple Header --> ... </header>
-        // Or <!-- Desktop Header & Navigation Wrapper --> ... </nav> </div>
-        
-        let oldHeaderRegex1 = /<!-- Topbar -->[\s\S]*?<\/nav>(\s*<\/div>)?/;
-        let oldHeaderRegex2 = /<!-- Main Header -->[\s\S]*?<\/nav>(\s*<\/div>)?/;
-        let oldHeaderRegex3 = /<!-- Desktop Header & Navigation Wrapper -->[\s\S]*?<\/nav>\s*<\/div>/;
+        let oldHeaderRegex1 = /<!-- Desktop Header & Navigation Wrapper -->[\s\S]*?<\/nav>\s*<\/div>/;
+        let oldHeaderRegex2 = /<!-- Topbar -->[\s\S]*?<\/nav>(\s*<\/div>)?/;
+        let oldHeaderRegex3 = /<!-- Main Header -->[\s\S]*?<\/nav>(\s*<\/div>)?/;
         
         if (oldHeaderRegex1.test(content)) {
             updatedContent = content.replace(oldHeaderRegex1, newHeader);
@@ -59,4 +53,4 @@ filesToUpdate.forEach(file => {
     }
 });
 
-console.log("Done updating headers!");
+console.log("Done updating headers across all files!");

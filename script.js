@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 preloader.style.opacity = '0';
                 setTimeout(() => preloader.style.display = 'none', 500);
             }
-        }, 800);
+        }, 200);
     });
 
     // Random Fake Purchase Toasts for premium active feel (Trigger every 45s)
