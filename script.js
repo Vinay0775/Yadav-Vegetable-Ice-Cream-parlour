@@ -17,6 +17,40 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// PWA: Store the install prompt event for manual triggering
+window.deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the default mini-infobar from appearing automatically
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    window.deferredPrompt = e;
+});
+
+// PWA: Function to trigger the actual app installation
+window.installApp = async function() {
+    if (window.deferredPrompt) {
+        // Show the native install prompt
+        window.deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await window.deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            if(window.showToast) window.showToast("Success", "App is installing to your device! 🎉");
+        }
+        // We've used the prompt, and can't use it again, throw it away
+        window.deferredPrompt = null;
+    } else {
+        // If the PWA is already installed or browser prevents it
+        if(window.showToast) window.showToast("Information", "App is already installed or your browser requires you to use 'Add to Home screen' manually from options.");
+    }
+    
+    // Close the sidebar if it's open
+    const sidebar = document.getElementById('mainNav');
+    if (sidebar) {
+        const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebar);
+        if (bsOffcanvas) bsOffcanvas.hide();
+    }
+};
+
 // ==========================================
 // GLOBAL SETTINGS LISTENER (SEO & MAINTENANCE)
 // ==========================================
