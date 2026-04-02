@@ -473,16 +473,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 4. GLOBAL SEARCH LOGIC
     // ==========================================
-    const searchInput = document.getElementById('globalSearchInput');
-    const searchBtn = document.getElementById('globalSearchBtn');
+    const searchInputs = [document.getElementById('globalSearchInput'), document.getElementById('globalSearchInputMobile')].filter(Boolean);
+    const searchBtns = [document.getElementById('globalSearchBtn'), document.getElementById('globalSearchBtnMobile')].filter(Boolean);
     const searchCategory = document.getElementById('globalSearchCategory');
 
-    function performSearch() {
-        if (!searchInput) return;
-        const query = searchInput.value.trim().toLowerCase();
+    function performSearch(query) {
+        if (!query) return;
         const cat = searchCategory ? searchCategory.value : 'All';
-
-        if (query === '') return;
 
         localStorage.setItem('yadavSearchQuery', query);
         localStorage.setItem('yadavSearchCat', cat);
@@ -496,16 +493,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (searchBtn) searchBtn.addEventListener('click', performSearch);
-    if (searchInput) {
-        searchInput.addEventListener('keyup', (e) => { 
-            if (e.key === 'Enter') performSearch(); 
+    searchBtns.forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+            const currentInput = searchInputs[idx];
+            if(currentInput) performSearch(currentInput.value.trim().toLowerCase());
+        });
+    });
+
+    searchInputs.forEach(input => {
+        input.addEventListener('keyup', (e) => { 
+            if (e.key === 'Enter') performSearch(e.target.value.trim().toLowerCase()); 
         });
 
         // Live Search Suggestion Feature
-        searchInput.addEventListener('input', (e) => {
+        input.addEventListener('input', (e) => {
             const query = e.target.value.trim().toLowerCase();
-            const searchBarContainer = document.querySelector('.search-bar');
+            const searchBarContainer = e.target.closest('.search-bar') || e.target.closest('.input-group');
             const dropdown = document.getElementById('liveSearchDropdown');
             
             if(!dropdown || !searchBarContainer) return;
@@ -552,15 +555,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 dropdown.classList.add('show');
             }
         });
+    });
 
-        // Close dropdown when clicked outside
-        document.addEventListener('click', (e) => {
-            const dropdown = document.getElementById('liveSearchDropdown');
-            if(dropdown && !e.target.closest('.search-bar')) {
-                dropdown.classList.remove('show');
-            }
-        });
-    }
+    // Close dropdown when clicked outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('liveSearchDropdown');
+        if(dropdown && !e.target.closest('.search-bar') && !e.target.closest('.input-group')) {
+            dropdown.classList.remove('show');
+        }
+    });
 
 
     // ==========================================
