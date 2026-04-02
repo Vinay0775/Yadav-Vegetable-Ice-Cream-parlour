@@ -24,6 +24,15 @@ body {
 /* Overriding Bootstrap Colors */
 .text-success { color: var(--theme-green) !important; }
 .bg-success { background-color: var(--theme-green) !important; border-color: var(--theme-green) !important; }
+/* Utilities & Controls */
+.filter-category-checkbox, 
+.form-check-label, 
+#sortSelect, 
+.pagination .page-link {
+    cursor: pointer !important;
+}
+
+ul.pagination li.active a { background-color: var(--theme-light-green); border-color: var(--theme-light-green); color: #fff;}
 .btn-success { background-color: var(--theme-green); border-color: var(--theme-green); color: #fff; }
 .btn-success:hover { background-color: var(--theme-green-dark); border-color: var(--theme-green-dark); }
 .btn-outline-success { color: var(--theme-green); border-color: var(--theme-green); }
@@ -58,10 +67,36 @@ body {
 }
 
 /* Main Header */
+.main-header {
+    position: relative;
+    z-index: 1030; /* Higher than navbar sticky-top */
+}
 .logo-text { 
     font-family: 'Jost', sans-serif; 
     display: inline-block;
     transition: transform 0.3s ease-in-out;
+}
+/* Navbar Offcanvas Fix & Active Link */
+.navbar-nav .nav-link { position: relative; }
+.navbar-nav .nav-link.active::after {
+    content: ''; position: absolute;
+    bottom: -2px; left: 50%; transform: translateX(-50%);
+    width: 25px; height: 3px; background-color: currentColor;
+    border-radius: 4px;
+}
+@media (max-width: 991px) {
+    .offcanvas-body .nav-link {
+        color: #2c2c2c !important;
+        font-size: 1.1rem;
+        padding: 0.75rem 0 !important;
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    .offcanvas-body .navbar-nav {
+        align-items: flex-start !important;
+        width: 100%;
+    }
 }
 .logo-text:hover {
     transform: scale(1.1);
@@ -110,8 +145,27 @@ body {
 }
 
 /* Hero Section */
-.hero-section { overflow: hidden; }
-.hero-section .carousel-item { min-height: 80vh; }
+.hero-section { 
+    position: relative;
+    overflow: hidden; 
+}
+.hero-section::before {
+    content: '';
+    position: absolute;
+    bottom: -50%; left: -50%; width: 200%; height: 100%;
+    background-image: linear-gradient(rgba(122, 183, 48, 0.4) 2px, transparent 2px),
+                      linear-gradient(90deg, rgba(122, 183, 48, 0.4) 2px, transparent 2px);
+    background-size: 60px 60px;
+    transform: perspective(600px) rotateX(75deg) translateY(100px);
+    animation: moveGrid3D 8s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+@keyframes moveGrid3D {
+    0% { transform: perspective(600px) rotateX(75deg) translateY(100px) translateZ(0); }
+    100% { transform: perspective(600px) rotateX(75deg) translateY(100px) translateZ(60px); }
+}
+.hero-section .carousel-item { min-height: 80vh; z-index: 1; position: relative; }
 .hero-title { font-size: 4rem; line-height: 1.1; letter-spacing: -1px; }
 
 @media (max-width: 768px) {
@@ -127,8 +181,10 @@ body {
 }
 .hero-img-anim {
     animation: floatAnim 6s ease-in-out infinite;
+    will-change: transform;
 }
-.drop-shadow-img { filter: drop-shadow(0px 20px 30px rgba(0,0,0,0.15)); }
+/* Removed hardware-heavy drop-shadow for performance */
+.drop-shadow-img { filter: none; border-radius: 50%; box-shadow: 0px 20px 30px rgba(0,0,0,0.1); }
 
 /* Features */
 .icon-circle {
@@ -234,6 +290,29 @@ body {
     animation: pulseSmooth 3s ease-in-out infinite;
 }
 
+/* Banner specific animations */
+@keyframes animFloatUp {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(1deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+.anim-float-up { animation: animFloatUp 6s ease-in-out infinite; will-change: transform; transition: all 0.3s; }
+
+@keyframes animSwing {
+    0% { transform: rotate(0deg); }
+    33% { transform: rotate(3deg); }
+    66% { transform: rotate(-3deg); }
+    100% { transform: rotate(0deg); }
+}
+.anim-swing { animation: animSwing 5s ease-in-out infinite; will-change: transform; transform-origin: top center; transition: all 0.3s; }
+
+@keyframes animPulseGlow {
+    0% { transform: scale(1); filter: brightness(1) drop-shadow(0 5px 15px rgba(232, 58, 89, 0.1)); }
+    50% { transform: scale(1.03); filter: brightness(1.05) drop-shadow(0 15px 25px rgba(232, 58, 89, 0.3)); }
+    100% { transform: scale(1); filter: brightness(1) drop-shadow(0 5px 15px rgba(232, 58, 89, 0.1)); }
+}
+.anim-pulse-glow { animation: animPulseGlow 4s ease-in-out infinite; will-change: transform, filter; transition: all 0.3s; }
+
 /* Modal Styles with Background Blur Option */
 body.modal-open {
     overflow: hidden;
@@ -312,7 +391,7 @@ body.modal-open > *:not(.product-modal) * {
     color: white;
     font-size: 28px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    z-index: 999;
+    z-index: 1050 !important; /* Above filters */
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -338,9 +417,18 @@ body.modal-open > *:not(.product-modal) * {
 }
 .scroll-top-icon:hover { background-color: var(--theme-green); color: white; }
 
+@media (max-width: 768px) {
+    .sticky-icon {
+        width: 45px; height: 45px; font-size: 22px; right: 15px;
+    }
+    .whatsapp-icon { bottom: 70px; }
+    .scroll-top-icon { bottom: 15px; }
+}
+
 /* Premium Product Image Animations */
 .product-image-wrapper img {
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform;
 }
 .product-card:hover .product-image-wrapper img {
     transform: scale(1.1) rotate(3deg);
@@ -566,7 +654,11 @@ body.dark-mode .footer {
 }
 
 body.dark-mode .text-dark,
-body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+body.dark-mode .navbar-nav .nav-link,
+body.dark-mode .offcanvas-body .nav-link,
+body.dark-mode .logo-text,
+body.dark-mode .offcanvas-title {
     color: #f5f5f5 !important;
 }
 
@@ -578,7 +670,10 @@ body.dark-mode .modal-content,
 body.dark-mode .live-search-dropdown,
 body.dark-mode .side-cart-drawer,
 body.dark-mode .side-cart-header,
-body.dark-mode .side-cart-footer {
+body.dark-mode .side-cart-footer,
+body.dark-mode .offcanvas-lg,
+body.dark-mode .offcanvas-body,
+body.dark-mode .offcanvas-header {
     background-color: #242424 !important;
     color: #e0e0e0 !important;
     border-color: #333 !important;
@@ -647,46 +742,35 @@ body.dark-mode .navbar-nav .nav-link:hover {
     transition: all 0.3s ease;
 }
 
-/* Glassmorphism Navbar */
+/* Elegant Navbar (No glassmorphism to avoid offcanvas mobile bug) */
 .navbar.sticky-top {
-    background: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 1050 !important;
 }
 
 body.dark-mode .navbar.sticky-top,
 body.dark-mode .main-header {
-    background: rgba(30, 30, 30, 0.85) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(30, 30, 30, 0.98) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Premium Preloader */
-.premium-preloader {
+/* Preloader */
+.preloader {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: #ffffff;
-    z-index: 99999;
+    z-index: 9999;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.5s ease;
 }
-
-body.dark-mode .premium-preloader {
-    background: #121212;
-}
-
-.premium-preloader .loader-img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-}
+.dark-mode .preloader { background: #121212; }
+.preloader.fade-out { opacity: 0; pointer-events: none; }
+.pulse-text { animation: pulseText 1.5s infinite; }
+@keyframes pulseText { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
 @keyframes pulseFade {
     0% { transform: scale(0.95); opacity: 0.7; }

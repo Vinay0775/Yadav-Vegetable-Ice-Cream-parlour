@@ -46,7 +46,6 @@ if(window.db) {
                 // Must be Superadmin or Staff to bypass
                 const checkBypass = async () => {
                    const currentUser = window.auth.currentUser;
-                   if (currentUser && currentUser.email === 'hyadav1317@gmail.com') return;
                    
                    if (currentUser) {
                        try {
@@ -158,12 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const dynamicUIHTML = `
         <!-- Preloader -->
-        <div id="premiumPreloader" class="premium-preloader">
-            <div class="loader-content">
-                <img src="assets/images/app_logo.png" alt="Yadav Store" class="loader-img mb-3 fade-pulse">
-                <div class="spinner-border text-success" role="status"></div>
-                <h5 class="fw-bold mt-3 text-dark tracking-wide">YADAV STORE</h5>
+        <div id="premiumPreloader" class="preloader">
+            <div class="position-relative d-flex justify-content-center align-items-center mb-4" style="width: 130px; height: 130px;">
+                <div class="spinner-border text-success position-absolute w-100 h-100" style="border-width: 4px;" role="status"></div>
+                <span class="logo-text fw-bold fs-4 m-0 text-center lh-sm text-dark" style="z-index: 1;">Yadav<br><span class="text-success">Store</span></span>
             </div>
+            <p class="text-muted fw-medium pulse-text">Preparing fresh catalogue...</p>
         </div>
         
         <!-- Toast Container -->
@@ -255,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerIconsContainer && document.getElementById('adminPortalLink') === null) {
                 // Check if admin or staff
                 const checkAdmin = async () => {
-                   if (user.email === 'hyadav1317@gmail.com') return true;
                    try {
                        const staffDoc = await window.db.collection('roles').doc(user.email).get();
                        return staffDoc.exists;

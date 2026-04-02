@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Your Cart - Yadav Store</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,52 +19,96 @@
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
+
 <body>
 
-    <!-- Main Header -->
-    <header class="main-header py-3 bg-white border-bottom align-items-center">
-        <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <!-- Logo -->
-            <a class="text-decoration-none fw-bold fs-3 logo-text" href="index.html">
-                Yadav <span class="text-success">Store</span> <span class="text-pink fs-5">& Ice-Cream</span>
+    <!-- Desktop Header & Navigation Wrapper -->
+    <div class="sticky-top w-100 shadow-sm" style="z-index: 1050;">
+    <!-- Main Header (Logo, Search, Icons) -->
+    <header class="main-header py-2 py-lg-3 bg-white border-bottom">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+            
+            <!-- Mobile/Desktop: Left (Logo) -->
+            <a class="navbar-brand fw-bold fs-3 logo-text m-0 p-0" style="white-space:nowrap;" href="index.html">
+                Yadav <span class="text-success">Vegetable</span> <span class="text-pink fs-6 d-none d-sm-inline">& Ice-Cream</span>
             </a>
 
-            <!-- Icons -->
-            <div class="header-icons d-flex align-items-center gap-4 ms-lg-0 ms-auto">
+            <!-- Desktop Search Bar (Center) -->
+            <div class="input-group search-bar d-none d-lg-flex mx-auto" style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
+                <select id="globalSearchCategory" class="form-select border-success shadow-none bg-light text-muted" style="max-width: 140px;">
+                    <option value="All">All Categories</option>
+                    <option value="Vegetables">Veggies</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Ice-Creams">Ice-Creams</option>
+                </select>
+                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none" placeholder="Search products...">
+                <button id="globalSearchBtn" class="btn btn-success px-4 bg-success border-success" type="button"><i class="bi bi-search"></i></button>
+            </div>
+
+            <!-- Desktop Icons (Right) -->
+            <div class="header-icons d-none d-lg-flex align-items-center gap-3 ms-auto">
                 <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
-                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative">
-                    <i class="bi bi-person"></i>
-                </a>
-                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative">
+                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Login/Profile"><i class="bi bi-person"></i></a>
+                <a href="orders.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="My Orders"><i class="bi bi-box-seam"></i></a>
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites">
                     <i class="bi bi-heart"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
                 </a>
-                <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-block">
+                <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center" title="Cart">
                     <i class="bi bi-cart3"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge" id="cartCount">0</span>
                 </a>
             </div>
+
+            <!-- Mobile: Right (Cart & Hamburger) -->
+            <div class="d-flex d-lg-none align-items-center gap-3 ms-auto">
+                <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
+                <a href="cart.html" class="text-dark text-decoration-none fs-5 position-relative icon-link" title="Cart">
+                    <i class="bi bi-cart3"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge">0</span>
+                </a>
+                <button class="navbar-toggler border-0 shadow-none p-0 ms-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNav">
+                    <i class="bi bi-list fs-1 text-dark"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Search Bar (Full width below) -->
+            <div class="w-100 d-lg-none mt-2">
+                <div class="input-group search-bar mx-auto w-100">
+                    <input type="text" id="globalSearchInputMobile" class="form-control border-success shadow-none bg-light text-dark" placeholder="Search products...">
+                    <button id="globalSearchBtnMobile" class="btn btn-success px-3 bg-success border-success" type="button"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="mainNavbar">
+    <!-- Navigation Menu (Desktop separate row & Mobile Offcanvas) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-0 p-lg-0" id="mainNavbar">
         <div class="container">
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-center" id="mainNav">
-                <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="fresh-veggies.html">Fresh Veggies</a></li>
-                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream Parlour</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.html">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-                </ul>
+            <div class="offcanvas-lg offcanvas-end bg-white w-100" tabindex="-1" id="mainNav" style="--bs-offcanvas-width: 280px;">
+                <div class="offcanvas-header border-bottom d-lg-none py-3">
+                    <h5 class="offcanvas-title fw-bold logo-text text-dark fs-4" style="font-size:1.5rem;">Yadav <span class="text-success">Menu</span></h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body d-flex align-items-lg-center">
+                    <!-- Navigation Links -->
+                    <ul class="navbar-nav flex-lg-row ms-lg-auto justify-content-lg-end align-items-lg-center w-100 gap-2 gap-lg-4 fw-medium text-uppercase small text-nowrap py-3 py-lg-0">
+                        <li class="nav-item"><a class="nav-link active text-success px-lg-0 py-lg-3" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="fresh-veggies.html">Veggies</a></li>
+                        <li class="nav-item"><a class="nav-link text-warning px-lg-0 py-lg-3" href="fresh-fruits.html">Fruits</a></li>
+                        <li class="nav-item"><a class="nav-link text-pink px-lg-0 py-lg-3" href="ice-cream-parlour.html">Ice-Cream</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="about-us.html">About</a></li>
+                        <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="contact.html">Contact</a></li>
+                        
+                        <!-- Mobile Only extra links -->
+                        <li class="nav-item d-lg-none border-top pt-3 mt-2"><a class="nav-link text-dark" href="orders.html"><i class="bi bi-box-seam me-2 text-success"></i>My Orders</a></li>
+                        <li class="nav-item d-lg-none"><a class="nav-link text-dark" href="login.html"><i class="bi bi-person me-2 text-success"></i>Profile Login</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
+    </div>
 
     <!-- Page Header -->
     <div class="page-header py-4 mb-5 border-bottom">
@@ -79,7 +125,7 @@
                     <h4 class="fw-bold mb-0">Order Summary</h4>
                     <span class="text-muted small" id="cartItemsText">0 Items</span>
                 </div>
-                
+
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                     <div class="card-body p-0" id="cartContainer">
                         <!-- Items injected via JS -->
@@ -92,12 +138,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
                     <div class="card-body p-4 p-xl-5">
                         <h4 class="fw-bold mb-4 border-bottom pb-3">Cart Total</h4>
-                        
+
                         <div class="d-flex justify-content-between mb-3 text-muted">
                             <span>Subtotal</span>
                             <span class="fw-medium text-dark" id="cartSubtotal">₹0</span>
@@ -110,14 +156,17 @@
                             <span>Estimated Tax</span>
                             <span class="fw-medium text-dark" id="cartTax">₹0</span>
                         </div>
-                        
+
                         <div class="d-flex justify-content-between mb-4">
                             <h5 class="fw-bold mb-0">Total</h5>
                             <h5 class="fw-bold text-success mb-0" id="cartTotal">₹0</h5>
                         </div>
-                        
-                        <a href="payment.html" class="btn btn-success w-100 rounded-pill fw-bold py-3 p-btn mb-2">Proceed to Checkout <i class="bi bi-lock-fill ms-2"></i></a>
-                        <p class="text-center text-muted small mt-2 mb-0"><i class="bi bi-shield-check text-success"></i> Secure Checkout Process</p>
+
+                        <a href="payment.html"
+                            class="btn btn-success w-100 rounded-pill fw-bold py-3 p-btn mb-2">Proceed to Checkout <i
+                                class="bi bi-lock-fill ms-2"></i></a>
+                        <p class="text-center text-muted small mt-2 mb-0"><i
+                                class="bi bi-shield-check text-success"></i> Secure Checkout Process</p>
                     </div>
                 </div>
             </div>
@@ -126,7 +175,7 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
+    <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -135,5 +184,5 @@
     <!-- AOS Animation JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
-</html>
 
+</html>

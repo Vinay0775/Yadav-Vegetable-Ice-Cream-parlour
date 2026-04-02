@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Contact Us - Yadav Vegetable & Ice-Cream Parlour</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,100 +17,141 @@
 </head>
 
 <body>
-
     <!-- Topbar -->
     <div class="topbar py-2 d-none d-lg-block">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="topbar-left small text-muted">
-                <span><i class="bi bi-geo-alt-fill text-success"></i>Yadav Vegetable store gandhipath
-                    Jaipur,Rajasthan</span>
-                <span class="ms-3"><i class="bi bi-clock-fill text-success"></i> Everyday: 8:00AM - 9:00PM</span>
+                <span><i class="bi bi-geo-alt-fill text-success"></i> Yadav Vegetable store gandhipath
+                    Jaipur,Rajasthan </span>
+                <span class="ms-3"><i class="bi bi-clock-fill text-success"></i> Mon-Fri: 8:00AM - 9:00PM</span>
             </div>
             <div class="topbar-right small">
-                <span><i class="bi bi-envelope-fill text-success"></i> hemantyadav1317@gmail.com</span>
+                <span><i class="bi bi-envelope-fill text-success"></i> support@yadavstore.com</span>
                 <span class="ms-3 fw-bold text-dark">Free Delivery on orders over ₹500! 🚚</span>
             </div>
         </div>
     </div>
 
+    <!-- Desktop Header & Navigation Wrapper -->
+    <div class="sticky-top w-100 shadow-sm" style="z-index: 1050;">
+        <!-- Main Header (Logo, Search, Icons) -->
+        <header class="main-header py-2 py-lg-3 bg-white border-bottom">
+            <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
 
-    <!-- Main Header -->
-    <header class="main-header py-3 bg-white border-bottom align-items-center">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <!-- Logo (Left on mobile and desktop) -->
-            <a class="text-decoration-none fw-bold fs-3 logo-text order-1" style="white-space:nowrap;"
-                href="index.html">
-                Yadav <span class="text-success">Vegetable</span> <span class="text-pink fs-6 d-none d-sm-inline">&
-                    Ice-Cream</span>
-            </a>
+                <!-- Mobile/Desktop: Left (Logo) -->
+                <a class="navbar-brand fw-bold fs-3 logo-text m-0 p-0" style="white-space:nowrap;" href="index.html">
+                    Yadav <span class="text-success">Vegetable</span> <span class="text-pink fs-6 d-none d-sm-inline">&
+                        Ice-Cream</span>
+                </a>
 
-            <!-- Search Bar (Full width on mobile, middle on desktop)
-            <div class="input-group search-bar order-3 order-md-2 mx-auto w-100 mt-3 mt-md-0 d-flex"
-                style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
-                <select id="globalSearchCategory"
-                    class="form-select border-success shadow-none bg-light text-muted d-none d-sm-block"
-                    style="max-width: 130px;">
-                    <option value="All">All Categories</option>
-                    <option value="Vegetables">Veggies</option>
-                    <option value="Fruits">Fruits</option>
-                    <option value="Ice-Creams">Ice-Creams</option>
-                </select>
-                <input type="text" id="globalSearchInput" class="form-control border-success shadow-none w-auto"
-                    placeholder="Search products...">
-                <button id="globalSearchBtn" class="btn btn-success px-3 bg-success border-success" type="button"><i
-                        class="bi bi-search"></i></button>
-            </div> -->
+                <!-- Desktop Search Bar (Center) -->
+                <div class="input-group search-bar d-none d-lg-flex mx-auto"
+                    style="max-width: 500px; flex: 1 1 auto; min-width: 250px;">
+                    <select id="globalSearchCategory" class="form-select border-success shadow-none bg-light text-muted"
+                        style="max-width: 140px;">
+                        <option value="All">All Categories</option>
+                        <option value="Vegetables">Veggies</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Ice-Creams">Ice-Creams</option>
+                    </select>
+                    <input type="text" id="globalSearchInput" class="form-control border-success shadow-none"
+                        placeholder="Search products...">
+                    <button id="globalSearchBtn" class="btn btn-success px-4 bg-success border-success" type="button"><i
+                            class="bi bi-search"></i></button>
+                </div>
 
-            <!-- Icons (Right on mobile and desktop) -->
-            <div class="header-icons d-flex align-items-center gap-3 order-2 order-md-3 ms-auto ms-md-0">
-                <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
-                <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
-                    title="Login/Profile">
-                    <i class="bi bi-person"></i>
-                </a>
-                <a href="orders.html"
-                    class="text-dark text-decoration-none fs-5 icon-link position-relative d-none d-sm-block"
-                    title="My Orders">
-                    <i class="bi bi-box-seam"></i>
-                </a>
-                <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites">
-                    <i class="bi bi-heart"></i>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
-                </a>
-                <a href="cart.html"
-                    class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center"
-                    title="Cart">
-                    <i class="bi bi-cart3"></i>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge"
-                        id="cartCount">0</span>
-                </a>
+                <!-- Desktop Icons (Right) -->
+                <div class="header-icons d-none d-lg-flex align-items-center gap-3 ms-auto">
+                    <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2"
+                        title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
+                    <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
+                        title="Login/Profile"><i class="bi bi-person"></i></a>
+                    <a href="orders.html" class="text-dark text-decoration-none fs-5 icon-link position-relative"
+                        title="My Orders"><i class="bi bi-box-seam"></i></a>
+                    <a href="#" class="text-dark text-decoration-none fs-5 icon-link position-relative"
+                        title="Favorites">
+                        <i class="bi bi-heart"></i>
+                        <span
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count">0</span>
+                    </a>
+                    <a href="cart.html"
+                        class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center"
+                        title="Cart">
+                        <i class="bi bi-cart3"></i>
+                        <span
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge"
+                            id="cartCount">0</span>
+                    </a>
+                </div>
+
+                <!-- Mobile: Right (Cart & Hamburger) -->
+                <div class="d-flex d-lg-none align-items-center gap-3 ms-auto">
+                    <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn"
+                        title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
+                    <a href="cart.html" class="text-dark text-decoration-none fs-5 position-relative icon-link"
+                        title="Cart">
+                        <i class="bi bi-cart3"></i>
+                        <span
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge">0</span>
+                    </a>
+                    <button class="navbar-toggler border-0 shadow-none p-0 ms-1" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#mainNav">
+                        <i class="bi bi-list fs-1 text-dark"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Search Bar (Full width below) -->
+                <div class="w-100 d-lg-none mt-2">
+                    <div class="input-group search-bar mx-auto w-100">
+                        <input type="text" id="globalSearchInputMobile"
+                            class="form-control border-success shadow-none bg-light text-dark"
+                            placeholder="Search products...">
+                        <button id="globalSearchBtnMobile" class="btn btn-success px-3 bg-success border-success"
+                            type="button"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top" id="mainNavbar">
-        <div class="container">
-            <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse"
-                data-bs-target="#mainNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <!-- Navigation Menu (Desktop separate row & Mobile Offcanvas) -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-0 p-lg-0" id="mainNavbar">
+            <div class="container">
+                <div class="offcanvas-lg offcanvas-end bg-white w-100" tabindex="-1" id="mainNav"
+                    style="--bs-offcanvas-width: 280px;">
+                    <div class="offcanvas-header border-bottom d-lg-none py-3">
+                        <h5 class="offcanvas-title fw-bold logo-text text-dark fs-4" style="font-size:1.5rem;">Yadav
+                            <span class="text-success">Menu</span>
+                        </h5>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas"></button>
+                    </div>
+                    <div class="offcanvas-body d-flex align-items-lg-center">
+                        <!-- Navigation Links -->
+                        <ul
+                            class="navbar-nav flex-lg-row ms-lg-auto justify-content-lg-start align-items-lg-center w-100 gap-2 gap-lg-4 fw-medium text-uppercase small text-nowrap py-3 py-lg-0">
+                            <li class="nav-item"><a class="nav-link active text-success px-lg-0 py-lg-3"
+                                    href="index.html">Home</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3"
+                                    href="fresh-veggies.html">Veggies</a></li>
+                            <li class="nav-item"><a class="nav-link text-warning px-lg-0 py-lg-3"
+                                    href="fresh-fruits.html">Fruits</a></li>
+                            <li class="nav-item"><a class="nav-link text-pink px-lg-0 py-lg-3"
+                                    href="ice-cream-parlour.html">Ice-Cream</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="about-us.html">About</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="contact.html">Contact</a>
+                            </li>
 
-            <div class="collapse navbar-collapse justify-content-center" id="mainNav">
-                <ul class="navbar-nav gap-4 fw-medium text-uppercase small align-items-center text-center mt-3 mt-lg-0">
-                    <li class="nav-item"><a class="nav-link active text-success" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="fresh-veggies.html">Fresh Veggies</a></li>
-                    <li class="nav-item"><a class="nav-link text-warning" href="fresh-fruits.html">Fresh Fruits</a></li>
-                    <li class="nav-item"><a class="nav-link text-pink" href="ice-cream-parlour.html">Ice-Cream
-                            Parlour</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about-us.html">About Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-                </ul>
+                            <!-- Mobile Only extra links -->
+                            <li class="nav-item d-lg-none border-top pt-3 mt-2"><a class="nav-link text-dark"
+                                    href="orders.html"><i class="bi bi-box-seam me-2 text-success"></i>My Orders</a>
+                            </li>
+                            <li class="nav-item d-lg-none"><a class="nav-link text-dark" href="login.html"><i
+                                        class="bi bi-person me-2 text-success"></i>Profile Login</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
 
     <!-- Content -->
     <section class="py-5 bg-light">

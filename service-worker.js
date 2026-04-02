@@ -1,4 +1,4 @@
-const CACHE_NAME = "yadav-store-cache-v4";
+const CACHE_NAME = "yadav-store-cache-v5";
 const urlsToCache = [
   "/",
   "/style.css",
@@ -33,18 +33,25 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  // Let the browser handle navigation requests natively to avoid 308 Redirect crashing
+  // Let the browser handle navigation requests natively
   if (event.request.mode === 'navigate') {
-    return; // Do nothing, skips the service worker entirely for page loads!
+    return;
   }
 
+  // Network First, fallback to cache for other assets
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).catch(() => {});
-      })
+    fetch(event.request).then(response => {
+      // Clone response and cache it
+      if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+          });
+      }
+      return response;
+    }).catch(() => {
+      // If network fails, try cache
+      return caches.match(event.request);
+    })
   );
 });
