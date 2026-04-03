@@ -125,12 +125,13 @@ window.db = firebase.firestore();
 
 // Wishlist Function
 window.toggleWishlist = async function(prodId) {
-    if(!currentUser) {
+    const activeUser = window.auth?.currentUser;
+    if(!activeUser) {
         window.showToast("Wait!", "Please login to save to favorites", true);
         window.location.href = "login.html";
         return;
     }
-    const r = window.db.collection('users').doc(currentUser.uid).collection('wishlist').doc(prodId);
+    const r = window.db.collection('users').doc(activeUser.uid).collection('wishlist').doc(prodId);
     if(window.userWishlist.includes(prodId)) {
         await r.delete();
         window.showToast("Removed", "Removed from favorites!");
@@ -141,6 +142,12 @@ window.toggleWishlist = async function(prodId) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+    }).format(Number(amount) || 0);
+    window.formatCurrency = formatCurrency;
 
     
     // Preloader fadeout logic
@@ -227,19 +234,37 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showToast = function(title, msg, isError = false) {
         const container = document.getElementById('globalToastContainer');
         if(!container) return;
+        const toastIcon = isError ? 'bi-x-circle-fill' : (String(title).toLowerCase().includes('cart') ? 'bi-bag-check-fill' : 'bi-stars');
         const toast = document.createElement('div');
         toast.className = `styled-toast ${isError ? 'toast-error' : ''}`;
-        toast.innerHTML = `<i class="bi bg-white ${isError ? 'bi-x-circle-fill' : 'bi-check-circle-fill'}"></i>
-                           <div><p class="toast-title">${title}</p><p class="toast-msg">${msg}</p></div>`;
+        toast.innerHTML = `
+            <div class="toast-accent"></div>
+            <div class="toast-icon-wrap">
+                <i class="bi ${toastIcon}"></i>
+            </div>
+            <div class="toast-copy">
+                <p class="toast-title">${title}</p>
+                <p class="toast-msg">${msg}</p>
+            </div>
+            <button class="toast-close-btn" type="button" aria-label="Close notification">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="toast-progress"></div>
+        `;
         container.appendChild(toast);
-        // Animate in
-        requestAnimationFrame(() => toast.classList.add('show'));
-        // Animate out
-        setTimeout(() => {
+        const dismissToast = () => {
             toast.classList.remove('show');
             toast.classList.add('hide');
-            setTimeout(() => toast.remove(), 400); // Wait for transition
-        }, 3000);
+            setTimeout(() => toast.remove(), 400);
+        };
+        let autoDismiss = setTimeout(dismissToast, 3600);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        toast.querySelector('.toast-close-btn').addEventListener('click', dismissToast);
+        toast.addEventListener('mouseenter', () => clearTimeout(autoDismiss));
+        toast.addEventListener('mouseleave', () => {
+            clearTimeout(autoDismiss);
+            autoDismiss = setTimeout(dismissToast, 1800);
+        });
     };
 
     // ==========================================
@@ -260,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.auth.onAuthStateChanged((user) => {
         const loginIconLinks = document.querySelectorAll('a[href="login.html"]');
+        const favoriteIconLinks = document.querySelectorAll('a[title="Favorites"]');
         if (user) {
             currentUser = user;
             
@@ -282,6 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show Orders tab on Desktop
             const ordersIcon = document.querySelector('a[href="orders.html"]');
             if (ordersIcon) ordersIcon.classList.remove('d-none');
+            favoriteIconLinks.forEach(link => {
+                link.href = 'profile.html';
+                link.title = 'Saved Favorites';
+            });
 
             // Inject Admin Portal Link icon for Owner / Staff
             const headerIconsContainer = document.querySelector('.header-icons');
@@ -326,6 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const ordersIcon = document.querySelector('a[href="orders.html"]');
             if (ordersIcon) ordersIcon.classList.add('d-none');
+            favoriteIconLinks.forEach(link => {
+                link.href = 'login.html';
+                link.title = 'Login to save favorites';
+            });
             // Remove Admin link if present
             const adminLink = document.getElementById('adminPortalLink');
             if (adminLink) adminLink.remove();
@@ -424,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (cart.length === 0) {
             bodyEl.innerHTML = '<div class="text-center text-muted mt-5"><i class="bi bi-cart-x display-3"></i><p class="mt-3">Cart is Empty</p></div>';
-            totalEl.innerText = '₹0';
+            totalEl.innerText = formatCurrency(0);
             return;
         }
 
@@ -438,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${item.image}" alt="">
                 <div class="flex-grow-1">
                     <h6 class="mb-1 fw-bold fs-6">${item.title}</h6>
-                    <div class="text-success fw-bold small">₹${item.price}</div>
+                    <div class="text-success fw-bold small">${formatCurrency(item.price)}</div>
                     <div class="d-flex align-items-center mt-2">
                         <button class="btn btn-sm btn-light border p-0 px-2 side-qty-btn" data-idx="${index}" data-change="-1">-</button>
                         <span class="mx-2 small fw-bold">${item.quantity}</span>
@@ -446,14 +480,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div class="text-end">
-                    <div class="fw-bold mb-2">₹${t}</div>
+                    <div class="fw-bold mb-2">${formatCurrency(t)}</div>
                     <button class="btn btn-sm text-danger p-0 side-rem-btn" data-idx="${index}"><i class="bi bi-trash"></i></button>
                 </div>
             </div>`;
         });
         bodyEl.innerHTML = html;
         const tax = subtotal * 0.05;
-        totalEl.innerText = `₹${Math.ceil(subtotal + tax)}`;
+        totalEl.innerText = formatCurrency(Math.ceil(subtotal + tax));
 
         bodyEl.querySelectorAll('.side-qty-btn').forEach(btn => btn.addEventListener('click', function() {
             const idx = parseInt(this.dataset.idx);
@@ -543,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <img src="${r.image}" alt="">
                             <div>
                                 <h6 class="mb-0 fw-bold fs-6 text-dark">${r.title}</h6>
-                                <span class="text-success small fw-medium">₹${r.price}</span>
+                                <span class="text-success small fw-medium">${formatCurrency(r.price)}</span>
                             </div>
                         </div>
                     `;
@@ -618,14 +652,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resultsCount) resultsCount.innerText = `Showing ${startIndex + (totalItems > 0 ? 1 : 0)}–${endIndex} of ${totalItems} results`;
 
             if (pageItems.length === 0) {
-                gridEl.innerHTML = '<div class="col-12 py-5 text-center text-muted"><h4>No products found!</h4><button class="btn btn-outline-success mt-3" onclick="window.location.reload()">Clear Filters</button></div>';
+                gridEl.innerHTML = '<div class="col-12 py-5 text-center text-muted"><h4>No products found!</h4><button class="btn btn-outline-success mt-3" onclick="window.clearCatalogFilters && window.clearCatalogFilters()">Clear Filters</button></div>';
             } else {
                 pageItems.forEach(prod => {
                     const isPink = prod.category === 'Ice-Creams';
                     const colorClass = isPink ? 'pink' : 'success';
                     const bgClass = isPink ? 'bg-light-pink' : 'bg-light-green';
                     let badgeHtml = prod.badge ? `<div class="badge bg-${colorClass === 'pink' ? 'danger' : 'success'} position-absolute top-0 start-0 m-3 z-index-2">${prod.badge}</div>` : '';
-                    let originalStr = prod.originalPrice ? `<span class="text-muted text-decoration-line-through small me-2">₹${prod.originalPrice}</span>` : '';
+                    let originalStr = prod.originalPrice ? `<span class="text-muted text-decoration-line-through small me-2">${formatCurrency(prod.originalPrice)}</span>` : '';
                     let starsHtml = '';
                     for (let i = 1; i <= 5; i++) {
                         if (i <= Math.floor(prod.rating)) starsHtml += '<i class="bi bi-star-fill"></i>';
@@ -651,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="rating text-warning mb-2 small">${starsHtml}</div>
                                 <div class="d-flex justify-content-center align-items-center mb-3">
                                     ${originalStr}
-                                    <span class="fs-5 fw-bold text-${colorClass}">₹${prod.price}</span>
+                                    <span class="fs-5 fw-bold text-${colorClass}">${formatCurrency(prod.price)}</span>
                                 </div>
                                 <button class="btn btn-outline-${colorClass} w-100 rounded-pill fw-medium dynamic-add-cart" data-prod="${prodJson}"><i class="bi bi-cart-plus me-2"></i> Add to Cart</button>
                             </div>
@@ -709,10 +743,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (priceRange) {
             priceRange.addEventListener('input', (e) => {
                 currentMaxPrice = e.target.value;
-                document.getElementById('priceValueDisplay').innerText = `₹${currentMaxPrice}`;
+                document.getElementById('priceValueDisplay').innerText = formatCurrency(currentMaxPrice);
             });
             priceRange.addEventListener('change', () => { renderDynamicGrid(1); });
         }
+
+        window.clearCatalogFilters = function () {
+            currentSort = 'default';
+            currentSubCat = 'All';
+            if (sortSelect) sortSelect.value = 'default';
+            if (priceRange) {
+                priceRange.value = priceRange.max || 9999;
+                currentMaxPrice = Number(priceRange.value);
+            } else {
+                currentMaxPrice = 9999;
+            }
+            document.querySelectorAll('.filter-category-checkbox').forEach(cb => {
+                cb.checked = cb.value === 'All';
+            });
+            const priceValueDisplay = document.getElementById('priceValueDisplay');
+            if (priceValueDisplay) priceValueDisplay.innerText = formatCurrency(currentMaxPrice);
+            renderDynamicGrid(1);
+            window.showToast('Filters Reset', 'All products are visible again.');
+        };
 
         document.querySelectorAll('.filter-category-checkbox').forEach(radio => {
             radio.addEventListener('change', (e) => { currentSubCat = e.target.value; renderDynamicGrid(1); });
@@ -738,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('modalProductImage').src = data.image;
                 document.getElementById('modalProductTitle').innerText = data.title;
                 document.getElementById('modalProductDesc').innerText = data.desc || `Fresh and high quality direct from Yadav Store.`;
-                document.getElementById('modalProductPrice').innerText = `₹${data.price}`;
+                document.getElementById('modalProductPrice').innerText = formatCurrency(data.price);
                 document.getElementById('modalProductQty').value = 1;
 
                 // REVIEWS INJECTION
@@ -1092,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
                     <div><span class="d-block text-muted small mb-1">Order Placed</span><h6 class="fw-bold mb-0">${new Date(order.date).toLocaleDateString()}</h6></div>
-                    <div class="text-end"><span class="d-block text-muted small mb-1">Total Amount</span><h6 class="fw-bold text-success mb-0">â‚¹${order.totalAmount}</h6></div>
+                    <div class="text-end"><span class="d-block text-muted small mb-1">Total Amount</span><h6 class="fw-bold text-success mb-0">${formatCurrency(order.totalAmount)}</h6></div>
                     <div class="text-end d-none d-md-block"><span class="d-block text-muted small mb-1">Track ID</span><h6 class="fw-bold text-primary font-monospace mb-0">${order.id}</h6></div>
                 </div>
                 <div class="card-body p-4">
@@ -1119,12 +1172,12 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `<div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                 <div class="d-flex align-items-center"><img src="${item.image}" class="img-fluid rounded object-fit-cover shadow-sm me-3" style="width:50px; height:50px;">
                     <div><h6 class="fw-bold mb-0">${item.title}</h6><span class="text-muted small">Qty: ${item.quantity}</span></div></div>
-                <span class="fw-bold">₹${item.price * item.quantity}</span></div>`;
+                <span class="fw-bold">${formatCurrency(item.price * item.quantity)}</span></div>`;
         });
         if (document.getElementById('paymentCartItems')) document.getElementById('paymentCartItems').innerHTML = html;
-        if (document.getElementById('paymentSubtotal')) document.getElementById('paymentSubtotal').innerText = `₹${subtotal}`;
-        if (document.getElementById('paymentTotal')) document.getElementById('paymentTotal').innerText = `₹${total}`;
-        payBtn.innerText = `Pay Now ₹${total}`;
+        if (document.getElementById('paymentSubtotal')) document.getElementById('paymentSubtotal').innerText = formatCurrency(subtotal);
+        if (document.getElementById('paymentTotal')) document.getElementById('paymentTotal').innerText = formatCurrency(total);
+        payBtn.innerText = `Pay Now ${formatCurrency(total)}`;
 
         payBtn.addEventListener('click', async () => {
             if (cart.length === 0) {
@@ -1170,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error("Order save sync error:", e);
                 window.showToast('Error', 'Error placing order! Check your internet connection or DB Rules.', true);
-                payBtn.innerText = `Pay Now ₹${total}`;
+                payBtn.innerText = `Pay Now ${formatCurrency(total)}`;
                 payBtn.disabled = false;
             }
         });
@@ -1259,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                                     <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
                                         <div><span class="d-block text-muted small mb-1">Order Placed</span><h6 class="fw-bold mb-0">${new Date(o.date).toLocaleDateString()}</h6></div>
-                                        <div class="text-end"><span class="d-block text-muted small mb-1">Total Amount</span><h6 class="fw-bold text-success mb-0">₹${o.totalAmount}</h6></div>
+                                        <div class="text-end"><span class="d-block text-muted small mb-1">Total Amount</span><h6 class="fw-bold text-success mb-0">${formatCurrency(o.totalAmount)}</h6></div>
                                         <div class="text-end d-none d-md-block"><span class="d-block text-muted small mb-1">Track ID</span><h6 class="fw-bold text-primary font-monospace mb-0">${o.id}</h6></div>
                                     </div>
                                     <div class="card-body p-4">
@@ -1304,12 +1357,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td class="text-muted small">${d.toLocaleDateString()} ${d.toLocaleTimeString()}</td>
                         <td>${o.customerName}<br><small class="text-muted">${o.customerEmail}</small></td>
                         <td>${names}</td>
-                        <td class="fw-bold text-success">₹${o.totalAmount}</td>
+                        <td class="fw-bold text-success">${formatCurrency(o.totalAmount)}</td>
                         <td><span class="badge bg-warning text-dark px-3 py-2 rounded-pill">${o.status}</span></td>
                     </tr>`;
                 });
 
-                document.getElementById('totalSalesVal').innerText = '₹' + rev;
+                document.getElementById('totalSalesVal').innerText = formatCurrency(rev);
                 document.getElementById('totalOrdersCount').innerText = querySnapshot.size;
                 document.getElementById('adminTableBody').innerHTML = tableHtml || '<tr><td colspan="6" class="text-center py-4">No real orders found in Firebase.</td></tr>';
             } catch (e) {
@@ -1331,6 +1384,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // 10. GLOBAL EVENT DELEGATION (Static Elements)
     // ==========================================
     document.addEventListener('click', function(e) {
+        const favoriteHeaderLink = e.target.closest('a[title="Favorites"], a[title="Saved Favorites"], a[title="Login to save favorites"]');
+        if (favoriteHeaderLink) {
+            e.preventDefault();
+            if (window.auth?.currentUser) {
+                window.location.href = 'profile.html';
+            } else {
+                window.showToast('Login Required', 'Please log in to view your saved favorites.', true);
+                setTimeout(() => window.location.href = 'login.html', 800);
+            }
+            return;
+        }
+
+        const wishlistBtn = e.target.closest('.wishlist-btn');
+        if (wishlistBtn) {
+            e.preventDefault();
+            if (wishlistBtn.dataset.id && window.toggleWishlist) {
+                window.toggleWishlist(wishlistBtn.dataset.id);
+            }
+            return;
+        }
+
         // Handle static Add to Cart buttons
         const addBtn = e.target.closest('.dynamic-add-cart');
         if(addBtn && !addBtn.dataset.bound) { // Prevent double-firing if already bound in dynamic grid
@@ -1354,6 +1428,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    const newsletterEmailInput = document.getElementById('newsletterEmail');
+    const newsletterBtn = document.getElementById('newsletterSubscribeBtn');
+    if (newsletterEmailInput && newsletterBtn) {
+        const submitNewsletterLead = async () => {
+            const email = newsletterEmailInput.value.trim().toLowerCase();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                window.showToast('Invalid Email', 'Please enter a valid email address to unlock your offer.', true);
+                newsletterEmailInput.focus();
+                return;
+            }
+
+            newsletterBtn.disabled = true;
+            const originalLabel = newsletterBtn.innerHTML;
+            newsletterBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving';
+
+            try {
+                await window.db.collection('newsletter_leads').doc(email).set({
+                    email,
+                    source: 'homepage_cta',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                newsletterEmailInput.value = '';
+                window.showToast('Offer Unlocked', 'Welcome aboard. Use code YADAV20 on your first order.');
+            } catch (error) {
+                console.error('Newsletter save failed:', error);
+                window.showToast('Sync Delayed', 'Your discount code is YADAV20. Please try again in a moment.', true);
+            } finally {
+                newsletterBtn.disabled = false;
+                newsletterBtn.innerHTML = originalLabel;
+            }
+        };
+
+        newsletterBtn.addEventListener('click', submitNewsletterLead);
+        newsletterEmailInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitNewsletterLead();
+            }
+        });
+    }
     // ==========================================
     // 11. DARK MODE & AOS INITIALIZATION
     // ==========================================
