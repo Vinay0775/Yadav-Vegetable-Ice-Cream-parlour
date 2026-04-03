@@ -976,6 +976,139 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCartPage();
     }
 
+    function sortOrdersByLatest(orders = []) {
+        return [...orders].sort((a, b) => {
+            const aTime = Number(a?.createdAt) || new Date(a?.date || 0).getTime() || 0;
+            const bTime = Number(b?.createdAt) || new Date(b?.date || 0).getTime() || 0;
+            return bTime - aTime;
+        });
+    }
+
+    function normalizeOrderData(rawOrder = {}, fallbackId = '') {
+        const createdAt = Number(rawOrder.createdAt) || new Date(rawOrder.date || Date.now()).getTime();
+        return {
+            ...rawOrder,
+            id: rawOrder.id || rawOrder.orderId || fallbackId,
+            items: Array.isArray(rawOrder.items) ? rawOrder.items : [],
+            totalAmount: Number(rawOrder.totalAmount) || 0,
+            status: rawOrder.status || 'Processing',
+            date: rawOrder.date || new Date(createdAt).toISOString(),
+            createdAt
+        };
+    }
+
+    async function mirrorOrdersToUserCollection(uid, orders = []) {
+        if (!uid || !orders.length) return;
+        const batch = window.db.batch();
+
+        orders.forEach(order => {
+            const normalizedOrder = normalizeOrderData(order, order?.id || order?.orderId || '');
+            if (!normalizedOrder.id) return;
+            const userOrderRef = window.db.collection('users').doc(uid).collection('my_orders').doc(normalizedOrder.id);
+            batch.set(userOrderRef, normalizedOrder, { merge: true });
+        });
+
+        await batch.commit();
+    }
+
+    async function fetchGlobalOrdersForUser(uid) {
+        if (!uid) return [];
+        const snap = await window.db.collection('orders').where('uid', '==', uid).get();
+        return sortOrdersByLatest(snap.docs.map(docSnap => normalizeOrderData(docSnap.data(), docSnap.id)));
+    }
+
+    async function hydrateCustomerOrders(user, orderDocs) {
+        const hydratedOrders = await Promise.all(orderDocs.map(async (docSnap) => {
+            const rawOrder = docSnap.data() || {};
+            const orderId = rawOrder.id || rawOrder.orderId || docSnap.id;
+
+            if (Array.isArray(rawOrder.items) && rawOrder.items.length) {
+                return normalizeOrderData(rawOrder, orderId);
+            }
+
+            try {
+                const globalOrderDoc = await window.db.collection('orders').doc(orderId).get();
+                if (globalOrderDoc.exists) {
+                    const fullOrder = normalizeOrderData(globalOrderDoc.data(), orderId);
+                    await mirrorOrdersToUserCollection(user.uid, [fullOrder]);
+                    return fullOrder;
+                }
+            } catch (e) {
+                console.warn(`Could not hydrate legacy order ${orderId}:`, e);
+            }
+
+            return normalizeOrderData(rawOrder, orderId);
+        }));
+
+        return sortOrdersByLatest(hydratedOrders);
+    }
+
+    function buildCustomerOrderCard(order) {
+        const itemList = Array.isArray(order.items) ? order.items : [];
+        const itemsHtml = itemList.length
+            ? itemList.map(item => `
+                <div class="d-flex align-items-center justify-content-between mb-2 w-100 pe-3">
+                    <div class="d-flex align-items-center">
+                        <img src="${item.image}" class="rounded-circle object-fit-cover shadow-sm border me-2" style="width:40px;height:40px;">
+                        <span class="small fw-medium">${item.quantity}x ${item.title}</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3 py-0 fw-bold hover-lift" onclick="window.openOrderReviewModal('${item.id}', '${escape(item.title || 'Product')}')"><i class="bi bi-star-fill text-warning me-1"></i>Review</button>
+                </div>
+            `).join('')
+            : '<div class="text-muted small">Items details are being synced. Your order is still saved.</div>';
+
+        let progWidth = '25%';
+        const statusString = String(order.status || 'Processing').toLowerCase();
+        if (statusString.includes('pack')) progWidth = '50%';
+        if (statusString.includes('ship') || statusString.includes('out')) progWidth = '75%';
+        if (statusString.includes('deliver')) progWidth = '100%';
+        const step1 = true;
+        const step2 = parseInt(progWidth, 10) >= 50;
+        const step3 = parseInt(progWidth, 10) >= 75;
+        const step4 = parseInt(progWidth, 10) === 100;
+
+        const trackerHtml = `
+            <div class="order-tracker mt-4">
+                <div class="tracker-progress" style="width: ${progWidth}"></div>
+                <div class="tracker-step ${step1 ? 'active' : ''}">
+                    <div class="tracker-icon"><i class="bi bi-cart-check"></i></div>
+                    <div class="tracker-label d-none d-sm-block">Processing</div>
+                </div>
+                <div class="tracker-step ${step2 ? 'active' : ''}">
+                    <div class="tracker-icon"><i class="bi bi-box-seam"></i></div>
+                    <div class="tracker-label d-none d-sm-block">Packed</div>
+                </div>
+                <div class="tracker-step ${step3 ? 'active' : ''}">
+                    <div class="tracker-icon"><i class="bi bi-truck"></i></div>
+                    <div class="tracker-label d-none d-sm-block">Shipped</div>
+                </div>
+                <div class="tracker-step ${step4 ? 'active' : ''}">
+                    <div class="tracker-icon"><i class="bi bi-house-check"></i></div>
+                    <div class="tracker-label d-none d-sm-block">Delivered</div>
+                </div>
+            </div>`;
+
+        return `
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                    <div><span class="d-block text-muted small mb-1">Order Placed</span><h6 class="fw-bold mb-0">${new Date(order.date).toLocaleDateString()}</h6></div>
+                    <div class="text-end"><span class="d-block text-muted small mb-1">Total Amount</span><h6 class="fw-bold text-success mb-0">â‚¹${order.totalAmount}</h6></div>
+                    <div class="text-end d-none d-md-block"><span class="d-block text-muted small mb-1">Track ID</span><h6 class="fw-bold text-primary font-monospace mb-0">${order.id}</h6></div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap mb-3 border-bottom pb-3">${itemsHtml}</div>
+                    ${trackerHtml}
+                </div>
+            </div>`;
+    }
+
+    function renderCustomerOrders(targetEl, orders = []) {
+        const finalOrders = sortOrdersByLatest(orders.map(order => normalizeOrderData(order)));
+        targetEl.innerHTML = finalOrders.length
+            ? finalOrders.map(order => buildCustomerOrderCard(order)).join('')
+            : '<div class="text-center py-5 text-muted"><i class="bi bi-bag-x display-1 d-block mb-3"></i><h4>No order history found</h4><a href="index.html" class="btn btn-success mt-3 rounded-pill">Start Shopping</a></div>';
+    }
+
     const payBtn = document.getElementById('payNowBtn');
     if (payBtn) {
         let subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
@@ -1021,11 +1154,13 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                // Save Order globally in 'orders' collection
-                await window.db.collection("orders").doc(orderId).set(orderData);
+                const batch = window.db.batch();
+                const globalOrderRef = window.db.collection('orders').doc(orderId);
+                const userOrderRef = window.db.collection('users').doc(currentUser.uid).collection('my_orders').doc(orderId);
 
-                // Add reference under user profile tracking
-                await window.db.collection(`users/${currentUser.uid}/my_orders`).add({ orderId: orderId, date: orderData.date });
+                batch.set(globalOrderRef, orderData);
+                batch.set(userOrderRef, orderData);
+                await batch.commit();
 
                 window.showToast('Success!', `Payment Success! Your order ${orderId} has been placed.`);
                 
@@ -1054,6 +1189,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card border-0 shadow-sm rounded-4 mb-4 skeleton-loader" style="height: 180px;"></div>
                 `;
                 try {
+                    window.db.collection('users')
+                        .doc(user.uid)
+                        .collection('my_orders')
+                        .onSnapshot(async (querySnapshot) => {
+                            if (querySnapshot.empty) {
+                                const fallbackOrders = await fetchGlobalOrdersForUser(user.uid);
+                                if (fallbackOrders.length) {
+                                    await mirrorOrdersToUserCollection(user.uid, fallbackOrders);
+                                }
+                                renderCustomerOrders(customerOrdersGrid, fallbackOrders);
+                                return;
+                            }
+                            const liveOrders = await hydrateCustomerOrders(user, querySnapshot.docs);
+                            renderCustomerOrders(customerOrdersGrid, liveOrders);
+                        }, async (error) => {
+                            console.error('User order listener failed:', error);
+                            try {
+                                const fallbackOrders = await fetchGlobalOrdersForUser(user.uid);
+                                if (fallbackOrders.length) {
+                                    await mirrorOrdersToUserCollection(user.uid, fallbackOrders);
+                                }
+                                renderCustomerOrders(customerOrdersGrid, fallbackOrders);
+                            } catch (fallbackError) {
+                                console.error('Fallback order fetch failed:', fallbackError);
+                                customerOrdersGrid.innerHTML = '<div class="text-center py-5 text-danger"><i class="bi bi-exclamation-triangle display-1 d-block mb-3"></i><h4>Permission Error loading orders</h4><p class="small">User orders could not be loaded from Firebase.</p></div>';
+                            }
+                        });
+                    return;
+
                     // REAL-TIME LISTENER
                     window.db.collection("orders")
                         .where("uid", "==", user.uid)
