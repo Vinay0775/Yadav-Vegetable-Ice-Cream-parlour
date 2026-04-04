@@ -962,7 +962,6 @@ body.admin-dashboard .admin-mobile-bar {
 }
 
 body.admin-dashboard .admin-sidebar {
-    position: relative;
     background:
         radial-gradient(circle at top left, rgba(122, 183, 48, 0.18), transparent 28%),
         linear-gradient(180deg, rgba(11, 20, 15, 0.98), rgba(18, 31, 23, 0.94)) !important;
@@ -1268,9 +1267,21 @@ body.admin-dashboard .table-responsive {
 }
 
 @media (max-width: 767px) {
+    body.admin-dashboard .admin-sidebar.offcanvas-md,
+    body.admin-dashboard .admin-sidebar.offcanvas-start {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(82vw, 320px) !important;
+        min-height: 100dvh;
+        z-index: 1080;
+    }
+
     body.admin-dashboard .admin-main-shell {
         padding: 1rem !important;
         overflow: visible !important;
+        margin-top: 0 !important;
     }
 
     body.admin-dashboard .admin-topbar {
@@ -1297,6 +1308,13 @@ body.admin-dashboard .table-responsive {
 
     body.admin-dashboard .admin-sidebar {
         min-height: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    body.admin-dashboard .admin-sidebar {
+        position: relative;
+        min-height: 100vh;
     }
 }
 
