@@ -1937,3 +1937,137 @@ body:not(.admin-dashboard) .main-header {
     }
 
 }
+
+/* =========================================================================
+   19. ADMIN PANEL — premium motion & depth (storefront untouched)
+   ========================================================================= */
+body.admin-dashboard .admin-eyebrow {
+    background: linear-gradient(90deg, rgba(198, 222, 201, 0.85), rgba(177, 222, 137, 0.95), rgba(198, 222, 201, 0.85));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    animation: adminEyebrowShine 8s ease-in-out infinite;
+}
+
+@keyframes adminEyebrowShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+body.admin-dashboard .admin-topbar {
+    animation: adminTopbarIn 0.7s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+@keyframes adminTopbarIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body.admin-dashboard #adminPageTitle {
+    transition: transform 0.35s ease, text-shadow 0.35s ease;
+}
+
+body.admin-dashboard .admin-topbar:hover #adminPageTitle {
+    text-shadow: 0 0 28px rgba(122, 183, 48, 0.25);
+}
+
+body.admin-dashboard .admin-nav-link {
+    transition:
+        transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.3s ease,
+        background 0.3s ease,
+        color 0.3s ease;
+}
+
+body.admin-dashboard .admin-nav-link:hover {
+    transform: translateX(6px) perspective(400px) rotateY(-2deg);
+}
+
+body.admin-dashboard .admin-nav-link.active {
+    transform: translateX(4px);
+}
+
+body.admin-dashboard .card {
+    transition:
+        transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.4s ease,
+        border-color 0.35s ease;
+}
+
+body.admin-dashboard .card:hover {
+    transform: translateY(-4px) perspective(900px) rotateX(1.5deg);
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.28),
+        0 10px 22px rgba(122, 183, 48, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+body.admin-dashboard .table tbody tr {
+    transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.admin-dashboard .table tbody tr:hover {
+    transform: scale(1.008);
+    box-shadow: inset 3px 0 0 rgba(122, 183, 48, 0.55);
+}
+
+body.admin-dashboard .btn:not(:disabled) {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.admin-dashboard .btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+body.admin-dashboard .admin-status-badge {
+    animation: adminPulseSoft 3.5s ease-in-out infinite;
+}
+
+@keyframes adminPulseSoft {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(122, 183, 48, 0.25); }
+    50% { box-shadow: 0 0 0 8px rgba(122, 183, 48, 0); }
+}
+
+body.admin-dashboard .modal-content {
+    animation: adminModalIn 0.45s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+@keyframes adminModalIn {
+    from {
+        opacity: 0;
+        transform: perspective(800px) translateY(18px) rotateX(4deg) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: perspective(800px) translateY(0) rotateX(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.admin-dashboard .admin-eyebrow,
+    body.admin-dashboard .admin-topbar,
+    body.admin-dashboard .admin-status-badge,
+    body.admin-dashboard .modal-content {
+        animation: none !important;
+    }
+
+    body.admin-dashboard .admin-eyebrow {
+        color: rgba(198, 222, 201, 0.72) !important;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        background-clip: unset !important;
+    }
+
+    body.admin-dashboard .card:hover,
+    body.admin-dashboard .table tbody tr:hover {
+        transform: none;
+    }
+}

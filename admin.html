@@ -749,13 +749,42 @@
             window.updateAdminImagePreview(imageId, placeholderId, tempUrl);
         };
 
+        /**
+         * Firebase compat: UploadTask is not always reliably awaitable — use completion callback.
+         */
+        window.completeStorageUpload = function (fileRef, file) {
+            return new Promise((resolve, reject) => {
+                if (!fileRef || !file) {
+                    reject(new Error('Missing file or storage reference'));
+                    return;
+                }
+                try {
+                    const task = fileRef.put(file);
+                    task.on(
+                        'state_changed',
+                        function () {},
+                        function (err) {
+                            reject(err || new Error('Upload failed'));
+                        },
+                        function () {
+                            resolve(task.snapshot);
+                        }
+                    );
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        };
+
         window.uploadAdminProductImage = async function (file, productKey) {
             if (!file) return '';
-            const storageRef = firebase.storage().ref();
+            if (typeof firebase === 'undefined' || !firebase.storage) {
+                throw new Error('Firebase Storage load nahi hua. Page par firebase-storage-compat.js check karo.');
+            }
             const safeName = String(file.name || 'product-image').replace(/[^a-zA-Z0-9._-]/g, '-');
-            const fileRef = storageRef.child(`products/${productKey}_${Date.now()}_${safeName}`);
-            const uploadTask = await fileRef.put(file);
-            return uploadTask.ref.getDownloadURL();
+            const fileRef = firebase.storage().ref().child(`products/${productKey}_${Date.now()}_${safeName}`);
+            const snapshot = await window.completeStorageUpload(fileRef, file);
+            return await snapshot.ref.getDownloadURL();
         };
 
         window.showAdminModal = function (modalEl) {
@@ -945,7 +974,10 @@
                 if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
             } catch (error) {
                 console.error('Product update failed:', error);
-                if (window.showToast) window.showToast('Error', error.message, true);
+                const msg = error && error.code === 'storage/unauthorized'
+                    ? 'Storage permission denied. Firebase Console → Storage → Rules mein upload allow karo.'
+                    : (error && error.message) || 'Save failed';
+                if (window.showToast) window.showToast('Error', msg, true);
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = originalLabel;
@@ -1040,7 +1072,11 @@
             const imageUrlFallback = document.getElementById('addImageUrl').value.trim();
 
             if (!title || !price || (!imageFile && !imageUrlFallback)) {
-                window.showToast('Validation Error', 'Title, Selling Price, and an Image (File or URL) are required', true);
+                if (window.showToast) {
+                    window.showToast('Validation Error', 'Title, Selling Price, and an Image (File or URL) are required', true);
+                } else {
+                    alert('Title, price aur image (file ya URL) zaroori hain.');
+                }
                 return;
             }
 
@@ -1078,12 +1114,15 @@
                 document.getElementById('adminAddProductForm').reset();
                 document.getElementById('addRating').value = 5;
                 window.populateAdminSubCategoryOptions('addSubCat', document.getElementById('addCat').value);
-                window.loadAdminCatalog(); // Refresh CMS Table
+                await window.loadAdminCatalog();
                 if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
 
             } catch (e) {
                 console.error("Product Creation Error: ", e);
-                if (window.showToast) window.showToast('Error', e.message, true);
+                const msg = e && e.code === 'storage/unauthorized'
+                    ? 'Storage permission denied. Rules mein authenticated write allow karo, ya pehle Image URL use karo.'
+                    : (e && e.message) || 'Product save failed';
+                if (window.showToast) window.showToast('Error', msg, true);
             } finally {
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
@@ -1309,8 +1348,8 @@
                 const safe = String(file.name || 'qr').replace(/[^a-zA-Z0-9._-]/g, '-');
                 const path = `site/qr_${Date.now()}_${safe}`;
                 const fileRef = storageRef.child(path);
-                await fileRef.put(file);
-                return fileRef.getDownloadURL();
+                const snapshot = await window.completeStorageUpload(fileRef, file);
+                return await snapshot.ref.getDownloadURL();
             };
 
             const adminQrFile = document.getElementById('adminQrCodeFile');
