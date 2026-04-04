@@ -1255,6 +1255,24 @@ body.admin-dashboard .admin-section {
     min-height: 60vh;
 }
 
+@media (max-width: 767.98px) {
+    body.admin-dashboard .admin-section {
+        min-height: auto;
+    }
+}
+
+body.admin-dashboard .admin-layout-root {
+    min-height: 100dvh;
+}
+
+body.admin-dashboard .admin-content-column {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 body.admin-dashboard .table-responsive {
     border-radius: 24px;
 }
@@ -1315,6 +1333,7 @@ body.admin-dashboard .table-responsive {
     body.admin-dashboard .admin-sidebar {
         position: relative;
         min-height: 100vh;
+        flex-shrink: 0;
     }
 }
 
@@ -1382,4 +1401,96 @@ body.admin-dashboard .table-responsive {
     .product-card .dynamic-add-cart i {
         margin-right: 0.35rem !important;
     }
+}
+
+/* =========================================================================
+   17. THEME CONTRAST (light/dark readability)
+   ========================================================================= */
+body:not(.dark-mode) .main-header .icon-link:not(:hover),
+body:not(.dark-mode) .navbar-toggler i {
+    color: #2c2c2c !important;
+}
+
+body:not(.dark-mode) .theme-toggle-btn i.bi-moon {
+    color: #2c2c2c !important;
+}
+
+body.dark-mode .main-header .icon-link:not(:hover):not(.theme-toggle-btn),
+body.dark-mode .navbar-toggler i {
+    color: #f0f0f0 !important;
+}
+
+body.dark-mode .navbar-nav .nav-link.text-success,
+body.dark-mode .navbar-nav .nav-link.active.text-success {
+    color: var(--theme-green) !important;
+}
+
+body.dark-mode .navbar-nav .nav-link.text-warning {
+    color: #ffcd39 !important;
+}
+
+body.dark-mode .navbar-nav .nav-link.text-pink {
+    color: #ff7a93 !important;
+}
+
+body.dark-mode .bg-warning.text-dark {
+    background-color: #d4a017 !important;
+    color: #1a1a1a !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+body.dark-mode .bg-success.text-white .text-dark {
+    color: #142210 !important;
+}
+
+body.dark-mode ul.pagination li.active a {
+    background-color: var(--theme-green-dark) !important;
+    border-color: var(--theme-green-dark) !important;
+    color: #fff !important;
+}
+
+body.dark-mode .card .text-secondary {
+    color: #b0b8b3 !important;
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+body.dark-mode .list-group-item.text-muted,
+body.dark-mode .list-group-item .text-muted {
+    color: #a8b0ab !important;
+}
+
+body.dark-mode .form-check-label {
+    color: #e8ebe9 !important;
+}
+
+body:not(.dark-mode) .footer .text-white {
+    color: #fff !important;
+}
+
+body:not(.dark-mode) .footer .text-light-50 {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+body.dark-mode .footer .text-white {
+    color: #f5f5f5 !important;
+}
+
+body.dark-mode .footer .text-light-50,
+body.dark-mode .footer .footer-links a {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.dark-mode.login-bg {
+    background-color: #121212 !important;
+}
+
+body.dark-mode .auth-toggle {
+    background: #2c2c2c !important;
+}
+
+body.dark-mode .auth-toggle-btn:not(.active) {
+    color: #c8cec9 !important;
 }

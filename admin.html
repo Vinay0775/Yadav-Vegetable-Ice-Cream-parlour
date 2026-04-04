@@ -34,21 +34,10 @@
         </style>
     </head>
 
-<body class="bg-light admin-dashboard dark-mode" style="opacity: 1; transition: opacity 0.5s ease;">
+<body class="admin-dashboard" style="opacity: 1; transition: opacity 0.5s ease;">
 
-    <div class="d-flex flex-column flex-md-row min-vh-100">
-        <!-- Mobile Sidebar Toggler -->
-        <div
-            class="admin-mobile-bar d-md-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm z-index-2 sticky-top">
-            <a href="index.html" class="text-decoration-none fs-5 fw-bold text-white">Yadav <span
-                    class="text-success">Admin</span></a>
-            <button class="btn btn-dark border-secondary" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#adminSidebar">
-                <i class="bi bi-list fs-4"></i>
-            </button>
-        </div>
-
-        <!-- Sidebar -->
+    <!-- Sidebar first: avoids mobile flex gap where fixed offcanvas sat between header and main -->
+    <div class="admin-layout-root d-flex flex-column flex-md-row min-vh-100 w-100">
         <div class="admin-sidebar bg-dark p-3 text-white offcanvas-md offcanvas-start shadow" tabindex="-1"
             id="adminSidebar" style="width: 260px; z-index: 1045;">
             <div class="offcanvas-header d-md-none border-bottom border-secondary mb-3 pb-3">
@@ -84,8 +73,19 @@
             </nav>
         </div>
 
-        <!-- Main Content -->
-        <div class="admin-main-shell flex-grow-1 p-3 p-md-5 w-100 overflow-hidden">
+        <div class="admin-content-column d-flex flex-column flex-grow-1 min-w-0 min-vh-100">
+            <div
+                class="admin-mobile-bar d-md-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm z-index-2 sticky-top">
+                <a href="index.html" class="text-decoration-none fs-5 fw-bold text-white">Yadav <span
+                        class="text-success">Admin</span></a>
+                <button class="btn btn-dark border-secondary" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#adminSidebar">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="admin-main-shell flex-grow-1 p-3 p-md-5 w-100 overflow-x-hidden">
             <div class="admin-topbar d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                 <div>
                     <p class="admin-eyebrow mb-2">Premium Control Center</p>
@@ -629,6 +629,7 @@
                 </div>
             </div>
 
+        </div>
         </div>
     </div>
 

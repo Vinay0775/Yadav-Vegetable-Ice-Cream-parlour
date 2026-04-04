@@ -1844,16 +1844,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 11. DARK MODE & AOS INITIALIZATION
     // ==========================================
+    const isAdminDashboard = document.body.classList.contains('admin-dashboard');
     const savedTheme = localStorage.getItem('yadavTheme') || 'light';
-    if(savedTheme === 'dark') {
+    if (!isAdminDashboard && savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
     }
-    
+    if (isAdminDashboard) {
+        document.body.classList.remove('dark-mode');
+    }
+
     // Attach listener to any theme toggle buttons on page
     document.addEventListener('click', (e) => {
         const themeToggleBtn = e.target.closest('.theme-toggle-btn');
         if(themeToggleBtn) {
             e.preventDefault();
+            if (document.body.classList.contains('admin-dashboard')) return;
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('yadavTheme', isDark ? 'dark' : 'light');
@@ -1872,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initialize initial icon state
-    if(savedTheme === 'dark') {
+    if (!isAdminDashboard && savedTheme === 'dark') {
         document.querySelectorAll('.theme-toggle-btn i').forEach(icon => {
             icon.classList.remove('bi-moon', 'text-dark');
             icon.classList.add('bi-sun', 'text-warning');
