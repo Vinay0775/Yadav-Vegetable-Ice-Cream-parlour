@@ -1725,8 +1725,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${o.customerName}<br><small class="text-muted">${o.customerEmail}</small></td>
                         <td>${names}</td>
                         <td class="fw-bold text-success">${formatCurrency(amount)}</td>
-                        <td>
-                            <select class="form-select form-select-sm shadow-none border-success" onchange="window.updateAdminOrderStatus('${o.id}', '${o.uid || ''}', this.value)">
+                        <td class="admin-order-status-cell">
+                            <select class="form-select form-select-sm admin-order-status-select shadow-none border-success" onchange="window.updateAdminOrderStatus('${o.id}', '${o.uid || ''}', this.value)">
                                 ${statusOptions}
                             </select>
                         </td>

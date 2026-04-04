@@ -1092,6 +1092,40 @@ body.admin-dashboard textarea::placeholder {
     color: rgba(216, 224, 217, 0.4) !important;
 }
 
+/* Order status <select>: full label + native dropdown readable (avoids light text on white popup) */
+body.admin-dashboard select.admin-order-status-select {
+    min-width: 13.5rem;
+    width: auto;
+    max-width: 100%;
+    color-scheme: light;
+    background-color: #f1f3f5 !important;
+    color: #1a1d1f !important;
+    border-color: rgba(122, 183, 48, 0.5) !important;
+    font-weight: 500;
+    padding-right: 2.25rem;
+}
+
+body.admin-dashboard select.admin-order-status-select:focus {
+    border-color: var(--theme-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(122, 183, 48, 0.25);
+    background-color: #fff !important;
+    color: #1a1d1f !important;
+}
+
+body.admin-dashboard select.admin-order-status-select option {
+    background-color: #fff;
+    color: #212529;
+}
+
+body.admin-dashboard .admin-order-status-cell {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+body.admin-dashboard .sticky-icon {
+    display: none !important;
+}
+
 body.admin-dashboard .btn-light {
     background: rgba(255,255,255,0.06) !important;
     color: #edf5ef !important;
