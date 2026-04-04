@@ -943,3 +943,272 @@ body, html {
 body.dark-mode .hover-lift:hover {
     box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
 }
+
+/* =========================================================================
+   15. PREMIUM ADMIN DASHBOARD
+   ========================================================================= */
+body.admin-dashboard {
+    background:
+        radial-gradient(circle at top right, rgba(122, 183, 48, 0.18), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(232, 58, 89, 0.1), transparent 22%),
+        linear-gradient(180deg, #08110d 0%, #0e1712 48%, #151f1a 100%) !important;
+    color: #edf5ef !important;
+}
+
+body.admin-dashboard .admin-mobile-bar {
+    background: rgba(9, 16, 12, 0.94) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(18px);
+}
+
+body.admin-dashboard .admin-sidebar {
+    position: relative;
+    background:
+        radial-gradient(circle at top left, rgba(122, 183, 48, 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(11, 20, 15, 0.98), rgba(18, 31, 23, 0.94)) !important;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+
+body.admin-dashboard .admin-sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 28%);
+    pointer-events: none;
+}
+
+body.admin-dashboard .admin-nav-link {
+    position: relative;
+    color: rgba(228, 241, 231, 0.72);
+    transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.admin-dashboard .admin-nav-link:hover,
+body.admin-dashboard .admin-nav-link.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(122, 183, 48, 0.18), rgba(61, 94, 47, 0.55));
+    box-shadow: inset 0 0 0 1px rgba(177, 222, 137, 0.12), 0 14px 24px rgba(0,0,0,0.18);
+    transform: translateX(4px);
+}
+
+body.admin-dashboard .admin-main-shell {
+    background: transparent;
+}
+
+body.admin-dashboard .admin-topbar {
+    padding: 1.15rem 1.4rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(13, 23, 18, 0.88), rgba(20, 31, 25, 0.72));
+    box-shadow: 0 24px 60px rgba(0,0,0,0.24);
+    backdrop-filter: blur(18px);
+}
+
+body.admin-dashboard .admin-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(198, 222, 201, 0.72);
+}
+
+body.admin-dashboard .admin-status-badge {
+    border: 1px solid rgba(189, 232, 129, 0.22);
+    background: rgba(122, 183, 48, 0.16);
+    color: #d8f4ad;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+body.admin-dashboard .admin-avatar {
+    border: 2px solid rgba(255,255,255,0.14);
+}
+
+body.admin-dashboard .bg-white,
+body.admin-dashboard .bg-light,
+body.admin-dashboard .card,
+body.admin-dashboard .list-group-item,
+body.admin-dashboard .modal-content,
+body.admin-dashboard .offcanvas-body,
+body.admin-dashboard .offcanvas-header {
+    background: linear-gradient(180deg, rgba(18, 28, 22, 0.96), rgba(13, 21, 17, 0.96)) !important;
+    color: #edf5ef !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+body.admin-dashboard .card,
+body.admin-dashboard .modal-content {
+    box-shadow: 0 24px 50px rgba(0,0,0,0.24) !important;
+}
+
+body.admin-dashboard .card-header,
+body.admin-dashboard .modal-header,
+body.admin-dashboard .modal-footer {
+    background: transparent !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+body.admin-dashboard .text-dark,
+body.admin-dashboard h1,
+body.admin-dashboard h2,
+body.admin-dashboard h3,
+body.admin-dashboard h4,
+body.admin-dashboard h5,
+body.admin-dashboard h6,
+body.admin-dashboard .table,
+body.admin-dashboard .offcanvas-title,
+body.admin-dashboard .form-label {
+    color: #f2f7f3 !important;
+}
+
+body.admin-dashboard .text-muted,
+body.admin-dashboard .form-text,
+body.admin-dashboard small {
+    color: rgba(206, 216, 208, 0.72) !important;
+}
+
+body.admin-dashboard .table > :not(caption) > * > * {
+    color: #edf5ef;
+    background: transparent;
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+
+body.admin-dashboard .table thead.bg-light,
+body.admin-dashboard .table thead {
+    background: rgba(255,255,255,0.04) !important;
+}
+
+body.admin-dashboard .table-hover > tbody > tr:hover > * {
+    background: rgba(122, 183, 48, 0.08) !important;
+}
+
+body.admin-dashboard .form-control,
+body.admin-dashboard .form-select {
+    background: rgba(255,255,255,0.04) !important;
+    color: #f4f8f4 !important;
+    border-color: rgba(255,255,255,0.12) !important;
+}
+
+body.admin-dashboard .form-control::placeholder,
+body.admin-dashboard textarea::placeholder {
+    color: rgba(216, 224, 217, 0.4) !important;
+}
+
+body.admin-dashboard .btn-light {
+    background: rgba(255,255,255,0.06) !important;
+    color: #edf5ef !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+body.admin-dashboard .btn-outline-primary {
+    color: #8cc7ff;
+    border-color: rgba(140, 199, 255, 0.4);
+}
+
+body.admin-dashboard .btn-outline-danger {
+    color: #ff9d9d;
+    border-color: rgba(255, 120, 120, 0.34);
+}
+
+body.admin-dashboard .badge.bg-light,
+body.admin-dashboard .bg-light.border,
+body.admin-dashboard .badge.bg-warning-subtle {
+    background: rgba(255,255,255,0.08) !important;
+    color: #f2f7f3 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* =========================================================================
+   16. STOREFRONT PREMIUM POLISH
+   ========================================================================= */
+body {
+    background:
+        radial-gradient(circle at top left, rgba(122, 183, 48, 0.06), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbfcf8 52%, #f6f8f2 100%);
+}
+
+.page-header {
+    position: relative;
+    background: linear-gradient(135deg, #f5f9ef 0%, #eef7ec 52%, #fff7ef 100%) !important;
+    border-bottom-color: rgba(122, 183, 48, 0.18) !important;
+}
+
+.page-header::before,
+.page-header::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(10px);
+    opacity: 0.55;
+}
+
+.page-header::before {
+    width: 240px;
+    height: 240px;
+    top: -120px;
+    right: 8%;
+    background: radial-gradient(circle, rgba(122, 183, 48, 0.18) 0%, transparent 72%);
+}
+
+.page-header::after {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    left: 4%;
+    background: radial-gradient(circle, rgba(232, 58, 89, 0.12) 0%, transparent 74%);
+}
+
+.page-header > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.page-header img {
+    box-shadow: 0 28px 60px rgba(25, 48, 22, 0.14) !important;
+}
+
+.category-card {
+    padding: 18px 14px;
+    border-radius: 24px;
+    border: 1px solid rgba(122, 183, 48, 0.12);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245, 249, 241, 0.9));
+    box-shadow: 0 18px 38px rgba(27, 43, 28, 0.06);
+}
+
+.product-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.75);
+    box-shadow: 0 18px 40px rgba(24, 45, 28, 0.08);
+}
+
+.product-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255,255,255,0.26), transparent 35%, transparent 70%, rgba(255,255,255,0.12));
+    pointer-events: none;
+}
+
+.product-card:hover {
+    box-shadow: 0 24px 52px rgba(18, 36, 24, 0.18) !important;
+    transform: translateY(-8px) scale(1.01);
+}
+
+.product-image-wrapper img {
+    transition: transform 0.45s ease, filter 0.45s ease;
+}
+
+.product-card:hover .product-image-wrapper img {
+    transform: scale(1.06);
+    filter: saturate(1.08);
+}
+
+body.dark-mode .page-header {
+    background: linear-gradient(135deg, rgba(28, 34, 28, 0.96), rgba(21, 26, 22, 0.96)) !important;
+}
+
+body.dark-mode .category-card,
+body.dark-mode .product-card {
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: 0 20px 42px rgba(0,0,0,0.26);
+}

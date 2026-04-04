@@ -35,12 +35,12 @@
         </style>
     </head>
 
-<body class="bg-light" style="opacity: 0; transition: opacity 0.5s ease;">
+<body class="bg-light admin-dashboard dark-mode" style="opacity: 0; transition: opacity 0.5s ease;">
 
     <div class="d-flex flex-column flex-md-row min-vh-100">
         <!-- Mobile Sidebar Toggler -->
         <div
-            class="d-md-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm z-index-2 sticky-top">
+            class="admin-mobile-bar d-md-none bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm z-index-2 sticky-top">
             <a href="index.html" class="text-decoration-none fs-5 fw-bold text-white">Yadav <span
                     class="text-success">Admin</span></a>
             <button class="btn btn-dark border-secondary" type="button" data-bs-toggle="offcanvas"
@@ -86,14 +86,19 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-grow-1 p-3 p-md-5 w-100 overflow-hidden">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold text-dark mb-0" id="adminPageTitle">Dashboard</h3>
-                <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="admin-main-shell flex-grow-1 p-3 p-md-5 w-100 overflow-hidden">
+            <div class="admin-topbar d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <p class="admin-eyebrow mb-2">Premium Control Center</p>
+                    <h3 class="fw-bold text-dark mb-1" id="adminPageTitle">Dashboard</h3>
+                    <p class="text-muted mb-0 small">Products, orders aur weekend analytics ko yahin se live manage karo.</p>
+                </div>
+                <div class="d-flex align-items-center gap-3 ms-auto flex-wrap">
+                    <span class="admin-status-badge badge rounded-pill px-3 py-2">Live Admin Panel</span>
                     <span class="text-muted d-none d-sm-inline"><i class="bi bi-calendar3 me-2"></i> <span
                             id="adminCurrentDate">Today</span></span>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle shadow-sm"
-                        style="width: 40px;">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=random" class="rounded-circle shadow-sm admin-avatar"
+                        style="width: 40px;" alt="Admin profile">
                 </div>
             </div>
 
@@ -726,6 +731,43 @@
             return uploadTask.ref.getDownloadURL();
         };
 
+        window.showAdminModal = function (modalEl) {
+            if (!modalEl) return;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                return;
+            }
+
+            let backdrop = document.querySelector('.modal-backdrop.admin-manual-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show admin-manual-backdrop';
+                document.body.appendChild(backdrop);
+            }
+
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+            modalEl.removeAttribute('aria-hidden');
+            modalEl.setAttribute('aria-modal', 'true');
+            modalEl.scrollTop = 0;
+            document.body.classList.add('modal-open');
+        };
+
+        window.hideAdminModal = function (modalEl) {
+            if (!modalEl) return;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                return;
+            }
+
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.removeAttribute('aria-modal');
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop.admin-manual-backdrop').forEach(backdrop => backdrop.remove());
+        };
+
         window.getAdminCatalogSnapshot = async function () {
             const mergedCatalog = new Map();
             const staticCatalog = Array.isArray(window.CATALOG) && window.CATALOG.length
@@ -812,8 +854,7 @@
                 document.getElementById('editImageFile').value = '';
 
                 const modalEl = document.getElementById('editProductModal');
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.show();
+                window.showAdminModal(modalEl);
             } catch (error) {
                 console.error('Edit product open failed:', error);
                 if (window.showToast) window.showToast('Error', 'Could not open product editor.', true);
@@ -865,7 +906,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                bootstrap.Modal.getOrCreateInstance(document.getElementById('editProductModal')).hide();
+                window.hideAdminModal(document.getElementById('editProductModal'));
                 if (window.showToast) window.showToast('Updated', 'Product updated successfully.');
                 await window.loadAdminCatalog();
                 if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
@@ -908,6 +949,41 @@
                 }
             });
         }
+
+        document.addEventListener('click', (event) => {
+            const dismissBtn = event.target.closest('[data-bs-dismiss="modal"]');
+            if (dismissBtn && dismissBtn.closest('#editProductModal')) {
+                event.preventDefault();
+                window.hideAdminModal(document.getElementById('editProductModal'));
+                return;
+            }
+
+            if (event.target.id === 'editProductModal') {
+                window.hideAdminModal(document.getElementById('editProductModal'));
+                return;
+            }
+
+            const editBtn = event.target.closest('.admin-edit-product-btn');
+            if (editBtn) {
+                event.preventDefault();
+                window.openAdminProductEditor(editBtn.dataset.productId);
+                return;
+            }
+
+            const deleteBtn = event.target.closest('.admin-delete-product-btn');
+            if (deleteBtn) {
+                event.preventDefault();
+                window.deleteAdminProduct(deleteBtn.dataset.productId);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            const modalEl = document.getElementById('editProductModal');
+            if (modalEl && modalEl.classList.contains('show')) {
+                window.hideAdminModal(modalEl);
+            }
+        });
 
         // Admin Product Add Logic (Supports Storage Uploads)
         async function submitNewProduct() {
@@ -1009,13 +1085,28 @@
                         </td>
                         <td class="text-success fw-bold">₹${data.price}</td>
                         <td class="px-4 text-end">
-                            <button class="btn btn-sm btn-outline-primary shadow-sm me-2" title="Edit Product" onclick="openAdminProductEditor('${data.id}')"><i class="bi bi-pencil-square"></i></button>
-                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Delete Product" onclick="deleteAdminProduct('${data.id}')"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-primary shadow-sm me-2 admin-edit-product-btn" type="button" title="Edit Product" data-product-id="${data.id}"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-outline-danger shadow-sm admin-delete-product-btn" type="button" title="Delete Product" data-product-id="${data.id}"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                     `;
                 });
                 tbody.innerHTML = html;
+                Array.from(tbody.querySelectorAll('tr')).forEach((row, index) => {
+                    const item = catalogItems[index];
+                    const priceCell = row.children[3];
+                    if (!item || !priceCell) return;
+
+                    const originalPriceHtml = item.originalPrice
+                        ? `<div class="small text-muted text-decoration-line-through">${formatCurrency(item.originalPrice)}</div>`
+                        : '<div class="small text-muted">No original price</div>';
+
+                    priceCell.innerHTML = `
+                        <div class="text-success fw-bold">${formatCurrency(item.price)}</div>
+                        ${originalPriceHtml}
+                        <div class="small text-muted mt-1">Rating ${Number(item.rating || 5).toFixed(1)}/5</div>
+                    `;
+                });
             } catch (e) {
                 console.error("Failed to fetch CMS catalog: ", e);
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Database Error. Could not load products.</td></tr>';
@@ -1552,6 +1643,9 @@
 
             let weekendChartInstance = null;
             let categorySalesChartInstance = null;
+            const adminChartLabelColor = document.body.classList.contains('admin-dashboard') ? '#d6dfd7' : '#6c757d';
+            const adminChartGridColor = document.body.classList.contains('admin-dashboard') ? 'rgba(255,255,255,0.08)' : '#f0f0f0';
+            const adminChartLineColor = document.body.classList.contains('admin-dashboard') ? '#f8f9fa' : '#212529';
 
             renderGrowthChart = function (labels, data) {
                 const ctx = document.getElementById('growthChart');
@@ -1582,8 +1676,8 @@
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                            x: { grid: { display: false } }
+                            y: { beginAtZero: true, grid: { color: adminChartGridColor }, ticks: { color: adminChartLabelColor } },
+                            x: { grid: { display: false }, ticks: { color: adminChartLabelColor } }
                         }
                     }
                 });
@@ -1611,8 +1705,8 @@
                                 type: 'line',
                                 label: 'Orders',
                                 data: orderCounts,
-                                borderColor: '#212529',
-                                backgroundColor: '#212529',
+                                borderColor: adminChartLineColor,
+                                backgroundColor: adminChartLineColor,
                                 tension: 0.35,
                                 pointRadius: 4,
                                 yAxisID: 'y1'
@@ -1623,9 +1717,9 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            y: { beginAtZero: true, position: 'left', grid: { color: '#f3f4f6' } },
-                            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } },
-                            x: { grid: { display: false } }
+                            y: { beginAtZero: true, position: 'left', grid: { color: adminChartGridColor }, ticks: { color: adminChartLabelColor } },
+                            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: adminChartLabelColor } },
+                            x: { grid: { display: false }, ticks: { color: adminChartLabelColor } }
                         }
                     }
                 });
@@ -1650,7 +1744,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } }
+                        plugins: { legend: { position: 'bottom', labels: { color: adminChartLabelColor } } }
                     }
                 });
             }
