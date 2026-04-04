@@ -84,22 +84,22 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // PWA: Function to trigger the actual app installation
-window.installApp = async function() {
+window.installApp = async function () {
     if (window.deferredPrompt) {
         // Show the native install prompt
         window.deferredPrompt.prompt();
         // Wait for the user to respond to the prompt
         const { outcome } = await window.deferredPrompt.userChoice;
         if (outcome === 'accepted') {
-            if(window.showToast) window.showToast("Success", "App is installing to your device! 🎉");
+            if (window.showToast) window.showToast("Success", "App is installing to your device! 🎉");
         }
         // We've used the prompt, and can't use it again, throw it away
         window.deferredPrompt = null;
     } else {
         // If the PWA is already installed or browser prevents it
-        if(window.showToast) window.showToast("Information", "App is already installed or your browser requires you to use 'Add to Home screen' manually from options.");
+        if (window.showToast) window.showToast("Information", "App is already installed or your browser requires you to use 'Add to Home screen' manually from options.");
     }
-    
+
     // Close the sidebar if it's open
     const sidebar = document.getElementById('mainNav');
     if (sidebar) {
@@ -111,18 +111,18 @@ window.installApp = async function() {
 // ==========================================
 // GLOBAL SETTINGS LISTENER (SEO & MAINTENANCE)
 // ==========================================
-if(window.db) {
+if (window.db) {
     window.db.collection('settings').doc('global').onSnapshot(doc => {
-        if(doc.exists) {
+        if (doc.exists) {
             const data = doc.data();
-            
+
             // Apply Dynamic SEO
-            if(data.seoTitle && document.title.indexOf('Admin') === -1) {
+            if (data.seoTitle && document.title.indexOf('Admin') === -1) {
                 document.title = data.seoTitle;
             }
-            if(data.seoDesc) {
+            if (data.seoDesc) {
                 let meta = document.querySelector('meta[name="description"]');
-                if(!meta) {
+                if (!meta) {
                     meta = document.createElement('meta');
                     meta.name = "description";
                     document.head.appendChild(meta);
@@ -133,20 +133,20 @@ if(window.db) {
             // Apply Maintenance Mode
             // if maintenanceMode == true and not on admin.html
             const isAdminPage = window.location.pathname.includes('admin.html');
-            if(data.maintenanceMode && !isAdminPage) {
+            if (data.maintenanceMode && !isAdminPage) {
                 // Must be Superadmin or Staff to bypass
                 const checkBypass = async () => {
-                   const currentUser = window.auth.currentUser;
-                   
-                   if (currentUser) {
-                       try {
-                           const staffDoc = await window.db.collection('roles').doc(currentUser.email).get();
-                           if(staffDoc.exists) return; // Staff bypasses maintenance
-                       } catch(e){}
-                   }
-                   
-                   // Not authorized => Show strict maintenance screen
-                   document.body.innerHTML = `
+                    const currentUser = window.auth.currentUser;
+
+                    if (currentUser) {
+                        try {
+                            const staffDoc = await window.db.collection('roles').doc(currentUser.email).get();
+                            if (staffDoc.exists) return; // Staff bypasses maintenance
+                        } catch (e) { }
+                    }
+
+                    // Not authorized => Show strict maintenance screen
+                    document.body.innerHTML = `
                     <div style="height:100vh;display:flex;align-items:center;justify-content:center;background:#f8f9fa;text-align:center;font-family:sans-serif;padding:2rem;">
                         <div>
                             <h1 style="color:#198754;font-size:3rem;margin-bottom:1rem;">🚧 We'll be back soon!</h1>
@@ -319,7 +319,7 @@ function attachGlobalSettingsListener() {
                     try {
                         const roleData = await window.fetchAccessRole(currentUser);
                         if (roleData) return;
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 document.body.innerHTML = `
@@ -338,15 +338,15 @@ function attachGlobalSettingsListener() {
 attachGlobalSettingsListener();
 
 // Wishlist Function
-window.toggleWishlist = async function(prodId) {
+window.toggleWishlist = async function (prodId) {
     const activeUser = window.auth?.currentUser;
-    if(!activeUser) {
+    if (!activeUser) {
         window.showToast("Wait!", "Please login to save to favorites", true);
         window.location.href = "login.html";
         return;
     }
     const r = window.db.collection('users').doc(activeUser.uid).collection('wishlist').doc(prodId);
-    if(window.userWishlist.includes(prodId)) {
+    if (window.userWishlist.includes(prodId)) {
         await r.delete();
         window.showToast("Removed", "Removed from favorites!");
     } else {
@@ -363,12 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(Number(amount) || 0);
     window.formatCurrency = formatCurrency;
 
-    
+
     // Preloader fadeout logic
     window.addEventListener('load', () => {
         setTimeout(() => {
             const preloader = document.getElementById('premiumPreloader');
-            if(preloader) {
+            if (preloader) {
                 preloader.style.opacity = '0';
                 setTimeout(() => preloader.style.display = 'none', 500);
             }
@@ -380,14 +380,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const names = ["Rahul", "Priya", "Amit", "Sneha", "Vikram", "Anjali"];
         const products = ["Organic Broccoli", "Vanilla Strawberry Sundae", "Fresh Red Tomatoes", "Dark Choco Cone", "Farm Fresh Apples", "Pure Dairy Milk"];
         const cities = ["Jaipur", "Malviya Nagar", "Vaishali Nagar", "Mansarovar", "C-Scheme"];
-        const name = names[Math.floor(Math.random()*names.length)];
-        const product = products[Math.floor(Math.random()*products.length)];
-        const city = cities[Math.floor(Math.random()*cities.length)];
-        if(window.showToast && !document.hidden && document.visibilityState === 'visible') {
+        const name = names[Math.floor(Math.random() * names.length)];
+        const product = products[Math.floor(Math.random() * products.length)];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        if (window.showToast && !document.hidden && document.visibilityState === 'visible') {
             window.showToast("🛒 Live Purchase", `${name} from ${city} just bought ${product}!`);
         }
     }, 45000);
-// ==========================================
+    // ==========================================
     // HYBRID CATALOG FETCH
     // ==========================================
     if (window.db) {
@@ -413,9 +413,9 @@ document.addEventListener('DOMContentLoaded', () => {
             CATALOG = Array.from(mergedCatalog.values());
             window.CATALOG = CATALOG;
 
-            if(document.getElementById('productGrid') && typeof window.renderDynamicGrid === 'function') {
+            if (document.getElementById('productGrid') && typeof window.renderDynamicGrid === 'function') {
                 const q = localStorage.getItem('yadavSearchQuery');
-                if(new URLSearchParams(window.location.search).get('search') === 'true' && q) {
+                if (new URLSearchParams(window.location.search).get('search') === 'true' && q) {
                     window.renderDynamicGrid(1, q, localStorage.getItem('yadavSearchCat'));
                 } else {
                     window.renderDynamicGrid();
@@ -466,9 +466,9 @@ document.addEventListener('DOMContentLoaded', () => {
     uiWrapper.innerHTML = dynamicUIHTML;
     document.body.appendChild(uiWrapper);
 
-    window.showToast = function(title, msg, isError = false) {
+    window.showToast = function (title, msg, isError = false) {
         const container = document.getElementById('globalToastContainer');
-        if(!container) return;
+        if (!container) return;
         const toastIcon = isError ? 'bi-x-circle-fill' : (String(title).toLowerCase().includes('cart') ? 'bi-bag-check-fill' : 'bi-stars');
         const toast = document.createElement('div');
         toast.className = `styled-toast ${isError ? 'toast-error' : ''}`;
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             currentUser = user;
-            
+
             // Sync Wishlist collection
             window.favoriteUnsubscribe = window.db.collection('users').doc(user.uid).collection('wishlist').onSnapshot(snap => {
                 window.userWishlist = snap.docs.map(d => d.id);
@@ -565,12 +565,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (headerIconsContainer && document.getElementById('adminPortalLink') === null) {
                 // Check if admin or staff
                 const checkAdmin = async () => {
-                   try {
-                       const roleData = await window.fetchAccessRole(user);
-                       return !!roleData;
-                   } catch(e){ return false; }
+                    try {
+                        const roleData = await window.fetchAccessRole(user);
+                        return !!roleData;
+                    } catch (e) { return false; }
                 };
-                
+
                 checkAdmin().then(isAdmin => {
                     if (isAdmin) {
                         const adminLink = document.createElement('a');
@@ -656,12 +656,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCartBadges();
             if (typeof renderCartPage === 'function') renderCartPage();
             if (typeof renderSideCart === 'function') renderSideCart();
-            
+
             // Replaced default alert/silence with Toast
             window.showToast('Success', `${product.title} added to cart!`);
         } catch (e) {
             console.error("Error adding to cart", e);
-            if(window.showToast) window.showToast('Error', 'Could not add to cart.', true);
+            if (window.showToast) window.showToast('Error', 'Could not add to cart.', true);
         }
     }
 
@@ -673,9 +673,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideOverlay = document.getElementById('sideCartOverlay');
     const sideDrawer = document.getElementById('sideCartDrawer');
     const sideClose = document.getElementById('sideCartCloseBtn');
-    
+
     function toggleSideCart(show) {
-        if(show) {
+        if (show) {
             sideOverlay.classList.add('show');
             sideDrawer.classList.add('open');
             renderSideCart();
@@ -684,27 +684,27 @@ document.addEventListener('DOMContentLoaded', () => {
             sideDrawer.classList.remove('open');
         }
     }
-    if(sideOverlay && sideClose) {
+    if (sideOverlay && sideClose) {
         sideOverlay.addEventListener('click', () => toggleSideCart(false));
         sideClose.addEventListener('click', () => toggleSideCart(false));
     }
 
     // Intercept cart icon clicks to open Drawer instead of navigating (except on cart/checkout pages)
     document.querySelectorAll('a[href="cart.html"]').forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             const loc = window.location.pathname;
-            if(!loc.includes('cart.html') && !loc.includes('payment.html')) {
+            if (!loc.includes('cart.html') && !loc.includes('payment.html')) {
                 e.preventDefault();
                 toggleSideCart(true);
             }
         });
     });
 
-    window.renderSideCart = function() {
+    window.renderSideCart = function () {
         const bodyEl = document.getElementById('sideCartBody');
         const countEl = document.getElementById('sideCartCount');
         const totalEl = document.getElementById('sideCartTotal');
-        if(!bodyEl) return;
+        if (!bodyEl) return;
 
         let totalItems = cart.reduce((s, i) => s + i.quantity, 0);
         countEl.innerText = totalItems;
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tax = subtotal * 0.05;
         totalEl.innerText = formatCurrency(Math.ceil(subtotal + tax));
 
-        bodyEl.querySelectorAll('.side-qty-btn').forEach(btn => btn.addEventListener('click', function() {
+        bodyEl.querySelectorAll('.side-qty-btn').forEach(btn => btn.addEventListener('click', function () {
             const idx = parseInt(this.dataset.idx);
             const chg = parseInt(this.dataset.change);
             if (cart[idx].quantity + chg <= 0) cart.splice(idx, 1);
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
             saveCart(); updateCartBadges(); renderSideCart();
             if (typeof renderCartPage === 'function') renderCartPage();
         }));
-        bodyEl.querySelectorAll('.side-rem-btn').forEach(btn => btn.addEventListener('click', function() {
+        bodyEl.querySelectorAll('.side-rem-btn').forEach(btn => btn.addEventListener('click', function () {
             cart.splice(parseInt(this.dataset.idx), 1);
             saveCart(); updateCartBadges(); renderSideCart();
             if (typeof renderCartPage === 'function') renderCartPage();
@@ -783,13 +783,13 @@ document.addEventListener('DOMContentLoaded', () => {
     searchBtns.forEach((btn, idx) => {
         btn.addEventListener('click', () => {
             const currentInput = searchInputs[idx];
-            if(currentInput) performSearch(currentInput.value.trim().toLowerCase());
+            if (currentInput) performSearch(currentInput.value.trim().toLowerCase());
         });
     });
 
     searchInputs.forEach(input => {
-        input.addEventListener('keyup', (e) => { 
-            if (e.key === 'Enter') performSearch(e.target.value.trim().toLowerCase()); 
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') performSearch(e.target.value.trim().toLowerCase());
         });
 
         // Live Search Suggestion Feature
@@ -797,16 +797,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const query = e.target.value.trim().toLowerCase();
             const searchBarContainer = e.target.closest('.search-bar') || e.target.closest('.input-group');
             const dropdown = document.getElementById('liveSearchDropdown');
-            
-            if(!dropdown || !searchBarContainer) return;
-            
+
+            if (!dropdown || !searchBarContainer) return;
+
             // Move dropdown physically inside search bar container if needed for absolute positioning
-            if(dropdown.parentNode !== searchBarContainer) {
+            if (dropdown.parentNode !== searchBarContainer) {
                 searchBarContainer.style.position = 'relative';
                 searchBarContainer.appendChild(dropdown);
             }
 
-            if(query.length < 1) {
+            if (query.length < 1) {
                 dropdown.classList.remove('show');
                 return;
             }
@@ -814,14 +814,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const cat = searchCategory ? searchCategory.value : 'All';
             const results = window.CATALOG ? window.CATALOG.filter(p => {
                 const searchStr = query.toLowerCase();
-                const matchQ = p.title.toLowerCase().includes(searchStr) || 
-                               p.category.toLowerCase().includes(searchStr) ||
-                               (p.desc && p.desc.toLowerCase().includes(searchStr));
+                const matchQ = p.title.toLowerCase().includes(searchStr) ||
+                    p.category.toLowerCase().includes(searchStr) ||
+                    (p.desc && p.desc.toLowerCase().includes(searchStr));
                 const matchC = cat === 'All' || p.category === cat;
                 return matchQ && matchC;
             }).slice(0, 5) : []; // Max 5 suggestions
 
-            if(results.length > 0) {
+            if (results.length > 0) {
                 let html = '';
                 results.forEach(r => {
                     const encodedProd = encodeURIComponent(JSON.stringify(r));
@@ -847,7 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close dropdown when clicked outside
     document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('liveSearchDropdown');
-        if(dropdown && !e.target.closest('.search-bar') && !e.target.closest('.input-group')) {
+        if (dropdown && !e.target.closest('.search-bar') && !e.target.closest('.input-group')) {
             dropdown.classList.remove('show');
         }
     });
@@ -948,9 +948,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (searchQuery) {
                 const searchStr = searchQuery.toLowerCase();
                 filteredList = filteredList.filter(p => {
-                    const matchQ = p.title.toLowerCase().includes(searchStr) || 
-                                   window.normalizeCatalogCategory(p.category).toLowerCase().includes(searchStr) ||
-                                   (p.desc && p.desc.toLowerCase().includes(searchStr));
+                    const matchQ = p.title.toLowerCase().includes(searchStr) ||
+                        window.normalizeCatalogCategory(p.category).toLowerCase().includes(searchStr) ||
+                        (p.desc && p.desc.toLowerCase().includes(searchStr));
                     const matchC = normalizedSearchCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedSearchCategory;
                     return matchQ && matchC;
                 });
@@ -1151,14 +1151,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // REVIEWS INJECTION
                 let reviewsContainer = document.getElementById('modalReviewsBox');
-                if (!reviewsContainer) { 
+                if (!reviewsContainer) {
                     const descParent = document.getElementById('modalProductDesc').parentNode;
                     reviewsContainer = document.createElement('div');
                     reviewsContainer.id = 'modalReviewsBox';
                     reviewsContainer.className = 'mt-3 border-top pt-3 text-start';
                     descParent.appendChild(reviewsContainer);
                 }
-                
+
                 reviewsContainer.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="fw-bold mb-0 text-success"><i class="bi bi-star-half me-1"></i> Reviews</h6>
@@ -1182,8 +1182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="text-center text-muted py-2"><div class="spinner-border spinner-border-sm text-success"></div></div>
                     </div>
                 `;
-                
-                if(window.fetchReviews) window.fetchReviews(data.id);
+
+                if (window.fetchReviews) window.fetchReviews(data.id);
 
                 const btn = document.getElementById('modalAddToCartBtn');
                 btn.className = `btn btn-${data.category === 'Ice-Creams' ? 'pink' : 'success'} px-5 rounded-pill fw-bold hover-lift`;
@@ -1199,32 +1199,32 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { console.error(e); }
         }
 
-        window.submitReview = async function(pid) {
-            if(!window.db) return;
+        window.submitReview = async function (pid) {
+            if (!window.db) return;
             const name = document.getElementById('revName').value.trim();
             const rating = parseInt(document.getElementById('revRating').value);
             const text = document.getElementById('revText').value.trim();
-            if(!name || !text) { if(window.showToast) window.showToast('Validation Failed', 'Name and review text required', true); return; }
-            
+            if (!name || !text) { if (window.showToast) window.showToast('Validation Failed', 'Name and review text required', true); return; }
+
             try {
                 await window.db.collection('reviews').add({ productId: pid, name: name, rating: rating, text: text, date: new Date().toISOString() });
                 document.getElementById('revText').value = '';
                 document.getElementById('reviewFormWrap').classList.add('d-none');
-                if(window.showToast) window.showToast('Success', 'Review added for everyone to see!');
-            } catch(e) { if(window.showToast) window.showToast('Error', e.message, true); }
+                if (window.showToast) window.showToast('Success', 'Review added for everyone to see!');
+            } catch (e) { if (window.showToast) window.showToast('Error', e.message, true); }
         };
 
-        window.fetchReviews = function(pid) {
-            if(!window.db) return;
+        window.fetchReviews = function (pid) {
+            if (!window.db) return;
             window.db.collection('reviews').where('productId', '==', pid).onSnapshot(snap => {
                 const listEl = document.getElementById('reviewsList');
-                if(!listEl) return;
-                if(snap.empty) { listEl.innerHTML = '<span class="text-muted d-block text-center mt-3">No reviews yet. Be the first!</span>'; return; }
+                if (!listEl) return;
+                if (snap.empty) { listEl.innerHTML = '<span class="text-muted d-block text-center mt-3">No reviews yet. Be the first!</span>'; return; }
                 let html = '';
                 // Since firestore requires an index for orderBy combined with where(), we sort client side
-                let sortedDocs = snap.docs.map(d=>d.data()).sort((a,b)=> new Date(b.date) - new Date(a.date));
+                let sortedDocs = snap.docs.map(d => d.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
                 sortedDocs.forEach(r => {
-                    let stars = ''; for(let i=0;i<r.rating;i++) stars+='⭐';
+                    let stars = ''; for (let i = 0; i < r.rating; i++) stars += '⭐';
                     html += `<div class="review-item p-3 mb-2 rounded-3 border-0 shadow-sm bg-white">
                         <div class="d-flex justify-content-between align-items-center mb-1"><span class="fw-bold text-dark">${r.name}</span><span style="font-size:0.6rem">${stars}</span></div>
                         <p class="text-muted mb-0" style="font-size:0.85rem">${r.text}</p>
@@ -1244,8 +1244,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 6.5 CUSTOM ORDER REVIEW MODAL
     // ==========================================
-    window.openOrderReviewModal = function(productId, productNameEnc) {
-        if(!currentUser) {
+    window.openOrderReviewModal = function (productId, productNameEnc) {
+        if (!currentUser) {
             window.showToast("Wait", "Please log in to leave a review.", true);
             return;
         }
@@ -1282,11 +1282,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Star interaction
         const stars = document.querySelectorAll('#orderRevStars i');
         stars.forEach(s => {
-            s.addEventListener('click', function() {
+            s.addEventListener('click', function () {
                 const val = parseInt(this.dataset.val);
                 document.getElementById('orderRevRating').value = val;
                 stars.forEach(st => {
-                    if(parseInt(st.dataset.val) <= val) {
+                    if (parseInt(st.dataset.val) <= val) {
                         st.classList.remove('bi-star', 'text-muted');
                         st.classList.add('bi-star-fill', 'text-warning', 'active');
                     } else {
@@ -1298,30 +1298,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    window.submitOrderReview = async function(pid) {
-        if(!window.db) return;
+    window.submitOrderReview = async function (pid) {
+        if (!window.db) return;
         const rating = parseInt(document.getElementById('orderRevRating').value);
         const text = document.getElementById('orderRevText').value.trim();
         const btn = document.getElementById('orderRevSubmitBtn');
-        
-        if(!text) { window.showToast('Validation', 'Please write a review message.', true); return; }
-        
+
+        if (!text) { window.showToast('Validation', 'Please write a review message.', true); return; }
+
         btn.disabled = true;
         btn.innerText = 'Submitting...';
-        
+
         try {
-            await window.db.collection('reviews').add({ 
-                productId: pid, 
-                name: currentUser.displayName || 'Customer', 
+            await window.db.collection('reviews').add({
+                productId: pid,
+                name: currentUser.displayName || 'Customer',
                 uid: currentUser.uid,
-                rating: rating, 
-                text: text, 
-                date: new Date().toISOString() 
+                rating: rating,
+                text: text,
+                date: new Date().toISOString()
             });
             document.getElementById('customReviewModal').remove();
             window.showToast('Success!', 'Thank you! Your review has been submitted. 🎉');
-        } catch(e) { 
-            window.showToast('Error', e.message, true); 
+        } catch (e) {
+            window.showToast('Error', e.message, true);
             btn.disabled = false;
             btn.innerText = 'Submit Review';
         }
@@ -1571,7 +1571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await batch.commit();
 
                 window.showToast('Success!', `Payment Success! Your order ${orderId} has been placed.`);
-                
+
                 cart = [];
                 saveCart();
                 setTimeout(() => window.location.href = 'orders.html', 2000);
@@ -1637,10 +1637,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 let itemsHtml = o.items.map(i => `<div class="d-flex align-items-center justify-content-between mb-2 w-100 pe-3"><div class="d-flex align-items-center"><img src="${i.image}" class="rounded-circle object-fit-cover shadow-sm border me-2" style="width:40px;height:40px;"><span class="small fw-medium">${i.quantity}x ${i.title}</span></div><button class="btn btn-sm btn-outline-warning rounded-pill px-3 py-0 fw-bold hover-lift" onclick="window.openOrderReviewModal('${i.id}', '${escape(i.title)}')"><i class="bi bi-star-fill text-warning me-1"></i>Review</button></div>`).join('');
                                 let progWidth = "25%";
                                 let sStr = o.status.toLowerCase();
-                                if(sStr.includes("pack")) progWidth = "50%";
-                                if(sStr.includes("ship") || sStr.includes("out")) progWidth = "75%";
-                                if(sStr.includes("deliver")) progWidth = "100%";
-                                let s1 = true, s2 = parseInt(progWidth)>=50, s3 = parseInt(progWidth)>=75, s4 = parseInt(progWidth)===100;
+                                if (sStr.includes("pack")) progWidth = "50%";
+                                if (sStr.includes("ship") || sStr.includes("out")) progWidth = "75%";
+                                if (sStr.includes("deliver")) progWidth = "100%";
+                                let s1 = true, s2 = parseInt(progWidth) >= 50, s3 = parseInt(progWidth) >= 75, s4 = parseInt(progWidth) === 100;
 
                                 let trackerHtml = `
                                 <div class="order-tracker mt-4">
@@ -1696,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminGrid) {
         const ADMIN_ORDER_STATUSES = ['Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
-        window.updateAdminOrderStatus = async function(orderId, uid, nextStatus) {
+        window.updateAdminOrderStatus = async function (orderId, uid, nextStatus) {
             try {
                 const batch = window.db.batch();
                 const globalOrderRef = window.db.collection('orders').doc(orderId);
@@ -1778,7 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 10. GLOBAL EVENT DELEGATION (Static Elements)
     // ==========================================
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const favoriteHeaderLink = e.target.closest('a[title="Favorites"], a[title="Saved Favorites"], a[title="Login to save favorites"]');
         if (favoriteHeaderLink) {
             e.preventDefault();
@@ -1802,9 +1802,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle static Add to Cart buttons
         const addBtn = e.target.closest('.dynamic-add-cart');
-        if(addBtn && !addBtn.dataset.bound) { // Prevent double-firing if already bound in dynamic grid
+        if (addBtn && !addBtn.dataset.bound) { // Prevent double-firing if already bound in dynamic grid
             e.preventDefault();
-            if(addBtn.dataset.prod) {
+            if (addBtn.dataset.prod) {
                 window.addToCartGlobal(addBtn.dataset.prod);
                 const origHtml = addBtn.innerHTML;
                 const origClasses = addBtn.className;
@@ -1816,9 +1816,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle static Quick View buttons
         const viewBtn = e.target.closest('.quick-view-btn');
-        if(viewBtn && !viewBtn.dataset.bound) {
+        if (viewBtn && !viewBtn.dataset.bound) {
             e.preventDefault();
-            if(viewBtn.dataset.prod && window.openModalFromData) {
+            if (viewBtn.dataset.prod && window.openModalFromData) {
                 window.openModalFromData(viewBtn.dataset.prod);
             }
         }
@@ -1879,16 +1879,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach listener to any theme toggle buttons on page
     document.addEventListener('click', (e) => {
         const themeToggleBtn = e.target.closest('.theme-toggle-btn');
-        if(themeToggleBtn) {
+        if (themeToggleBtn) {
             e.preventDefault();
             if (document.body.classList.contains('admin-dashboard')) return;
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('yadavTheme', isDark ? 'dark' : 'light');
-            
+
             // Sync all toggle icons on the page
             document.querySelectorAll('.theme-toggle-btn i').forEach(icon => {
-                if(isDark) {
+                if (isDark) {
                     icon.classList.remove('bi-moon', 'text-dark');
                     icon.classList.add('bi-sun', 'text-warning');
                 } else {
@@ -1996,6 +1996,189 @@ document.addEventListener('DOMContentLoaded', () => {
 
         carousel.addEventListener('slid.bs.carousel', (e) => {
             if (e.relatedTarget) typeHeroTitle(e.relatedTarget);
+        });
+    })();
+
+    // ==========================================
+    // 12. AI SALES ASSISTANT CHATBOT
+    // ==========================================
+    (function initAIChatbot() {
+        if (document.getElementById('aiChatbotContainer')) return;
+        if (document.body.classList.contains('admin-dashboard')) return;
+
+        const botHtml = `
+        <div id="aiChatbotContainer">
+            <div id="aiChatbotWindow">
+                <div class="chatbot-header">
+                    <div class="chatbot-header-title">
+                        <span class="fs-4">🥦</span>
+                        <div>
+                            <div style="font-size:1rem; line-height:1.2;">Yadav Sales AI</div>
+                            <div style="font-size:0.75rem; font-weight:normal; opacity:0.9;">Online & Ready to Help</div>
+                        </div>
+                    </div>
+                    <button class="chatbot-header-btn" id="closeChatBtn" aria-label="Close Chat"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="chatbot-messages" id="chatMsgs">
+                    <!-- Messages go here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." autocomplete="off">
+                    <button id="chatSendBtn" class="chat-send-btn" aria-label="Send Message"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </div>
+            <button id="aiChatbotToggleBtn" title="Chat with Us"><i class="bi bi-chat-dots-fill"></i></button>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', botHtml);
+
+        const toggleBtn = document.getElementById('aiChatbotToggleBtn');
+        const closeBtn = document.getElementById('closeChatBtn');
+        const chatWindow = document.getElementById('aiChatbotWindow');
+        const chatMsgs = document.getElementById('chatMsgs');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+
+        let chatState = 'START';
+        let orderDetails = { name: '', address: '', phone: '', items: '' };
+
+        function scrollToBottom() {
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+
+        function addMessage(text, sender, chips = []) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${sender}`;
+            msgDiv.innerHTML = text;
+
+            if (chips.length > 0 && sender === 'bot') {
+                const chipsDiv = document.createElement('div');
+                chipsDiv.className = 'chat-quick-replies';
+                chips.forEach(chipText => {
+                    const c = document.createElement('div');
+                    c.className = 'chat-chip';
+                    c.innerText = chipText;
+                    c.onclick = () => {
+                        handleUserInput(chipText);
+                    };
+                    chipsDiv.appendChild(c);
+                });
+                msgDiv.appendChild(chipsDiv);
+            }
+
+            chatMsgs.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        const GEMINI_API_KEY = "AIzaSyC4Ba9yHYSwkQlZzXtkYOCxjMxwfgrwUTo"; // Put your Real Google Gemini API Key here!!!
+
+        // Generate dynamic context from catalog.js if available
+        function getStoreContext() {
+            let context = "You are a smart AI sales assistant for 'Yadav Veggies & Fruits' (Location: Gandhipath Jaipur, Rajasthan). Tone: Friendly, polite, short responses, mix of Hindi+English (Hinglish). Add emojis like 🥦🍎. Your goal is to convert users to customers. You can accept orders by asking for Name, Address, Phone, and Items.";
+            if (window.catalogProducts && window.catalogProducts.length > 0) {
+                context += "\\nHere is our current live inventory & prices:\\n";
+                window.catalogProducts.slice(0, 25).forEach(p => {
+                    context += `- ${p.title} (${p.category}): ₹${p.price}\\n`;
+                });
+            } else {
+                context += "\\nWe sell fresh vegetables like tomato, potato, broccoli and fruits like apples, bananas, mangoes, and premium Ice creams.";
+            }
+            context += "\\nRules: Keep answers under 3-4 sentences. Only quote exactly from inventory. Encourage them to buy it immediately. Format text with standard HTML if needed.";
+            return context;
+        }
+
+        async function processAiLogic(input) {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+                // Fallback to old simple logic if API key isn't set yet!
+                const lowerInput = input.toLowerCase();
+                if (lowerInput.includes('order')) {
+                    addMessage("Order karne ke liye please apna Name, Address aur order list yaha likh dein. Hum jald deliver karenge! 🚚 (Note: Real AI feature is active but needs an API Key inside script.js to work!)", 'bot');
+                } else {
+                    addMessage("Namaste 🙏 Main Yadav Veggies ka naya Smart AI Assistant hu. Par mera asli dimaag tab chalega jab aap `script.js` me meri `GEMINI_API_KEY` daal denge! 😅 Ek bar daal dijiye, phir dekhiye mera jaadu!", 'bot');
+                }
+                return;
+            }
+
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'aiTyping';
+            typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            chatMsgs.appendChild(typingDiv);
+            scrollToBottom();
+
+            try {
+                const sysPrompt = getStoreContext();
+                const payload = {
+                    contents: [{ parts: [{ text: "Context: " + sysPrompt + "\\n\\nUser Says: " + input }] }]
+                };
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                const typEl = document.getElementById('aiTyping');
+                if (typEl) typEl.remove();
+
+                if (data.error) {
+                    addMessage("Maaf karna, mera API connection abhi work nahi kar raha. " + data.error.message, 'bot');
+                    return;
+                }
+
+                if (data.candidates && data.candidates.length > 0) {
+                    let aiText = data.candidates[0].content.parts[0].text;
+                    aiText = aiText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    aiText = aiText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    addMessage(aiText, 'bot');
+                }
+
+            } catch (e) {
+                const typEl = document.getElementById('aiTyping');
+                if (typEl) typEl.remove();
+                addMessage("Oops! Thoda network/connection issue ho gaya. Humari sabzi ekdum fresh hai, aur website smooth! (" + e.message + ")", 'bot');
+            }
+        }
+
+        function handleUserInput(text = null) {
+            const val = text || chatInput.value.trim();
+            if (!val) return;
+
+            if (!text) {
+                chatInput.value = '';
+            }
+
+            addMessage(val, 'user');
+
+            const existingChips = chatMsgs.querySelectorAll('.chat-quick-replies');
+            existingChips.forEach(c => c.remove());
+
+            setTimeout(() => {
+                processAiLogic(val);
+            }, 500); // 500ms delay to feel AI natural
+        }
+
+        chatSendBtn.addEventListener('click', () => handleUserInput());
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserInput();
+        });
+
+        let botInit = false;
+        toggleBtn.addEventListener('click', () => {
+            chatWindow.classList.toggle('show');
+            if (chatWindow.classList.contains('show')) {
+                if (!botInit) {
+                    botInit = true;
+                    addMessage("Namaste 🙏 Welcome to Yadav Veggies & Fruits! Aapko kya chahiye — fresh sabzi ya fruits? 😊", 'bot', ["Sabzi chahiye", "Fruits chahiye", "Order karna hai"]);
+                }
+                setTimeout(() => chatInput.focus(), 300);
+            }
+        });
+
+        closeBtn.addEventListener('click', () => {
+            chatWindow.classList.remove('show');
         });
     })();
 });
