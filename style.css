@@ -1117,6 +1117,11 @@ body.admin-dashboard select.admin-order-status-select option {
     color: #212529;
 }
 
+body.admin-dashboard .admin-qr-preview-wrap {
+    min-height: 140px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
 body.admin-dashboard .admin-order-status-cell {
     white-space: nowrap;
     vertical-align: middle;
@@ -1527,4 +1532,85 @@ body.dark-mode .auth-toggle {
 
 body.dark-mode .auth-toggle-btn:not(.active) {
     color: #c8cec9 !important;
+}
+
+/* Homepage / index: fix text that disappears in dark mode */
+body.dark-mode .category-card {
+    background: linear-gradient(180deg, rgba(34, 40, 34, 0.98), rgba(24, 30, 26, 0.96)) !important;
+    border-color: rgba(122, 183, 48, 0.22) !important;
+}
+
+body.dark-mode a.category-card,
+body.dark-mode .category-card h5 {
+    color: #f0f4f1 !important;
+}
+
+body.dark-mode .features-section h4 {
+    color: #f2f2f2 !important;
+}
+
+body.dark-mode .btn-outline-dark {
+    color: #ececec !important;
+    border-color: rgba(255, 255, 255, 0.42) !important;
+}
+
+body.dark-mode .btn-outline-dark:hover {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+body.dark-mode .btn-outline-success {
+    color: #b8e86e !important;
+    border-color: rgba(122, 183, 48, 0.75) !important;
+}
+
+body.dark-mode .btn-outline-success:hover {
+    color: #fff !important;
+    background-color: var(--theme-green-dark) !important;
+    border-color: var(--theme-green) !important;
+}
+
+body.dark-mode .btn-outline-pink {
+    color: #ff9aad !important;
+    border-color: rgba(232, 58, 89, 0.65) !important;
+}
+
+body.dark-mode .btn-outline-pink:hover {
+    color: #fff !important;
+    background-color: var(--theme-pink-dark) !important;
+    border-color: var(--theme-pink) !important;
+}
+
+body.dark-mode .product-card::before {
+    opacity: 0.08;
+}
+
+body.dark-mode .product-card .rating .bi-star {
+    color: #8a9094 !important;
+}
+
+body.dark-mode .cta-section .cta-newsletter-input {
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    color: #1a1d1f !important;
+}
+
+body.dark-mode .cta-section .cta-newsletter-input::placeholder {
+    color: #5c6368 !important;
+}
+
+body.dark-mode .topbar-right > span:not(.text-dark):not(.fw-bold) {
+    color: #cfd6d1 !important;
+}
+
+body.dark-mode .topbar .text-dark {
+    color: #f5f5f5 !important;
+}
+
+body.dark-mode .hero-section .carousel-indicators button {
+    background-color: rgba(255, 255, 255, 0.45);
+}
+
+body.dark-mode .hero-section .carousel-indicators .active {
+    background-color: #fff;
 }

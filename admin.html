@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Yadav Vegetable Ice-Cream Parlour</title>
+    <link rel="icon" type="image/png" href="assets/fav-icon.png">
+    <link rel="apple-touch-icon" href="assets/fav-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -546,6 +548,31 @@
                                 <textarea id="seoDesc" class="form-control shadow-none" rows="2"
                                     placeholder="Fresh veggies delivered..."></textarea>
                             </div>
+                            <hr>
+                            <h6 class="fw-bold mt-4 mb-3"><i class="bi bi-qr-code-scan me-2 text-success"></i> Store QR
+                                Code</h6>
+                            <p class="text-muted small mb-3">Payment, UPI ya WhatsApp QR yahan upload karo — footer aur
+                                contact page par automatically dikhega. Naya image se kabhi bhi replace kar sakte ho.</p>
+                            <div class="row g-3 align-items-start mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small">QR image (PNG / JPG / WebP)</label>
+                                    <input type="file" id="adminQrCodeFile" class="form-control shadow-none"
+                                        accept="image/png,image/jpeg,image/webp">
+                                    <button type="button" class="btn btn-outline-danger btn-sm mt-2"
+                                        id="adminQrCodeRemoveBtn">QR hata do</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small">Preview</label>
+                                    <div
+                                        class="border rounded-4 p-3 text-center d-flex align-items-center justify-content-center flex-column admin-qr-preview-wrap">
+                                        <img id="adminQrCodePreview" src="" alt="QR preview"
+                                            class="img-fluid rounded shadow-sm d-none" style="max-height: 180px;">
+                                        <span id="adminQrCodePreviewEmpty" class="text-muted small">Abhi koi QR set
+                                            nahi hai</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="adminQrCodeUrlField" value="">
                             <div class="text-end mt-4">
                                 <button type="submit" class="btn btn-success px-4">Save Settings</button>
                             </div>
@@ -1249,17 +1276,70 @@
                 if (window.CURRENT_ROLE !== 'superadmin') return;
                 try {
                     const doc = await window.db.collection('settings').doc('global').get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const mt = document.getElementById('maintenanceToggle');
-                        if (mt) mt.checked = !!data.maintenanceMode;
-                        const t = document.getElementById('seoTitle');
-                        if (t) t.value = data.seoTitle || '';
-                        const d = document.getElementById('seoDesc');
-                        if (d) d.value = data.seoDesc || '';
+                    const data = doc.exists ? doc.data() : {};
+                    const mt = document.getElementById('maintenanceToggle');
+                    if (mt) mt.checked = !!data.maintenanceMode;
+                    const t = document.getElementById('seoTitle');
+                    if (t) t.value = data.seoTitle || '';
+                    const d = document.getElementById('seoDesc');
+                    if (d) d.value = data.seoDesc || '';
+                    const qrUrl = (data.qrCodeUrl || '').trim();
+                    const qrField = document.getElementById('adminQrCodeUrlField');
+                    const qrPrev = document.getElementById('adminQrCodePreview');
+                    const qrEmpty = document.getElementById('adminQrCodePreviewEmpty');
+                    const qrFile = document.getElementById('adminQrCodeFile');
+                    if (qrField) qrField.value = qrUrl;
+                    if (qrFile) qrFile.value = '';
+                    if (qrPrev && qrEmpty) {
+                        if (qrUrl) {
+                            qrPrev.src = qrUrl;
+                            qrPrev.classList.remove('d-none');
+                            qrEmpty.classList.add('d-none');
+                        } else {
+                            qrPrev.removeAttribute('src');
+                            qrPrev.classList.add('d-none');
+                            qrEmpty.classList.remove('d-none');
+                        }
                     }
                 } catch (e) { console.error("Error loading settings:", e); }
             };
+
+            window.uploadSiteQrCode = async function (file) {
+                const storageRef = firebase.storage().ref();
+                const safe = String(file.name || 'qr').replace(/[^a-zA-Z0-9._-]/g, '-');
+                const path = `site/qr_${Date.now()}_${safe}`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                return fileRef.getDownloadURL();
+            };
+
+            const adminQrFile = document.getElementById('adminQrCodeFile');
+            if (adminQrFile) {
+                adminQrFile.addEventListener('change', () => {
+                    const f = adminQrFile.files && adminQrFile.files[0];
+                    const qrPrev = document.getElementById('adminQrCodePreview');
+                    const qrEmpty = document.getElementById('adminQrCodePreviewEmpty');
+                    if (!f || !qrPrev || !qrEmpty) return;
+                    qrPrev.src = URL.createObjectURL(f);
+                    qrPrev.classList.remove('d-none');
+                    qrEmpty.classList.add('d-none');
+                });
+            }
+            const adminQrRemove = document.getElementById('adminQrCodeRemoveBtn');
+            if (adminQrRemove) {
+                adminQrRemove.addEventListener('click', () => {
+                    const qrField = document.getElementById('adminQrCodeUrlField');
+                    const qrPrev = document.getElementById('adminQrCodePreview');
+                    const qrEmpty = document.getElementById('adminQrCodePreviewEmpty');
+                    if (qrField) qrField.value = '';
+                    if (adminQrFile) adminQrFile.value = '';
+                    if (qrPrev) {
+                        qrPrev.removeAttribute('src');
+                        qrPrev.classList.add('d-none');
+                    }
+                    if (qrEmpty) qrEmpty.classList.remove('d-none');
+                });
+            }
 
             const gsf = document.getElementById('globalSettingsForm');
             if (gsf) {
@@ -1267,7 +1347,7 @@
                     e.preventDefault();
                     if (window.CURRENT_ROLE !== 'superadmin') return;
 
-                    const btn = gsf.querySelector('button');
+                    const btn = gsf.querySelector('button[type="submit"]');
                     btn.disabled = true;
                     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
 
@@ -1276,12 +1356,42 @@
                         const t = document.getElementById('seoTitle').value.trim();
                         const d = document.getElementById('seoDesc').value.trim();
 
-                        await window.db.collection('settings').doc('global').set({
+                        let qrCodeUrl = (document.getElementById('adminQrCodeUrlField') || {}).value.trim() || '';
+                        const qrPick = document.getElementById('adminQrCodeFile')?.files?.[0];
+                        if (qrPick) {
+                            qrCodeUrl = await window.uploadSiteQrCode(qrPick);
+                        }
+
+                        const updatePayload = {
                             maintenanceMode: mt,
                             seoTitle: t,
                             seoDesc: d,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        }, { merge: true });
+                        };
+                        if (qrCodeUrl) {
+                            updatePayload.qrCodeUrl = qrCodeUrl;
+                        } else {
+                            updatePayload.qrCodeUrl = firebase.firestore.FieldValue.delete();
+                        }
+
+                        await window.db.collection('settings').doc('global').set(updatePayload, { merge: true });
+
+                        const qrField = document.getElementById('adminQrCodeUrlField');
+                        const qrPrev = document.getElementById('adminQrCodePreview');
+                        const qrEmpty = document.getElementById('adminQrCodePreviewEmpty');
+                        if (qrField) qrField.value = qrCodeUrl;
+                        if (adminQrFile) adminQrFile.value = '';
+                        if (qrPrev && qrEmpty) {
+                            if (qrCodeUrl) {
+                                qrPrev.src = qrCodeUrl;
+                                qrPrev.classList.remove('d-none');
+                                qrEmpty.classList.add('d-none');
+                            } else {
+                                qrPrev.removeAttribute('src');
+                                qrPrev.classList.add('d-none');
+                                qrEmpty.classList.remove('d-none');
+                            }
+                        }
 
                         if (window.showToast) window.showToast('Success', 'Global Site Settings updated.');
                     } catch (err) {

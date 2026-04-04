@@ -265,6 +265,22 @@ window.getPostLoginRedirect = async function (user) {
     return roleData ? 'admin.html' : 'profile.html';
 };
 
+window.applySiteQrCode = function (url) {
+    const u = String(url || '').trim();
+    document.querySelectorAll('[data-site-qr="img"]').forEach((img) => {
+        if (u) {
+            img.src = u;
+            img.classList.remove('d-none');
+        } else {
+            img.removeAttribute('src');
+            img.classList.add('d-none');
+        }
+    });
+    document.querySelectorAll('[data-site-qr="block"]').forEach((block) => {
+        block.classList.toggle('d-none', !u);
+    });
+};
+
 function attachGlobalSettingsListener() {
     if (!window.db || window.globalSettingsUnsubscribe) return;
 
@@ -285,6 +301,10 @@ function attachGlobalSettingsListener() {
                 document.head.appendChild(meta);
             }
             meta.content = data.seoDesc;
+        }
+
+        if (typeof window.applySiteQrCode === 'function') {
+            window.applySiteQrCode(data.qrCodeUrl);
         }
 
         const isAdminPage = window.location.pathname.includes('admin.html');
