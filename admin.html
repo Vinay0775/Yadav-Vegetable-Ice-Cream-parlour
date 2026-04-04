@@ -682,7 +682,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -800,35 +800,58 @@
                     const img = new Image();
                     img.onerror = () => reject(new Error('Image decode failed'));
                     img.onload = () => {
-                        const maxWidth = Number(options.maxWidth) || 1200;
-                        const maxHeight = Number(options.maxHeight) || 1200;
-                        const quality = Number(options.quality) || 0.82;
-                        const outputType = options.outputType || (String(file.type || '').startsWith('image/png') ? 'image/png' : 'image/jpeg');
+                        const maxWidth = Number(options.maxWidth) || 960;
+                        const maxHeight = Number(options.maxHeight) || 960;
+                        const targetMaxLength = Number(options.targetMaxLength) || 260000;
+                        const preferredType = options.outputType || (String(file.type || '').startsWith('image/png') ? 'image/png' : 'image/jpeg');
+                        const minQuality = Number(options.minQuality) || 0.46;
 
                         let width = img.width || maxWidth;
                         let height = img.height || maxHeight;
-                        const scale = Math.min(maxWidth / width, maxHeight / height, 1);
-                        width = Math.max(1, Math.round(width * scale));
-                        height = Math.max(1, Math.round(height * scale));
+                        const initialScale = Math.min(maxWidth / width, maxHeight / height, 1);
+                        width = Math.max(1, Math.round(width * initialScale));
+                        height = Math.max(1, Math.round(height * initialScale));
 
                         const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         if (!ctx) {
                             reject(new Error('Canvas not supported'));
                             return;
                         }
 
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, width, height);
-                        ctx.drawImage(img, 0, 0, width, height);
+                        const renderAt = (w, h) => {
+                            canvas.width = w;
+                            canvas.height = h;
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(img, 0, 0, w, h);
+                        };
 
-                        let dataUrl = canvas.toDataURL(outputType, quality);
-                        if (dataUrl.length > 900000 && outputType !== 'image/jpeg') {
-                            dataUrl = canvas.toDataURL('image/jpeg', 0.76);
-                        } else if (dataUrl.length > 900000) {
-                            dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+                        let currentType = preferredType;
+                        let quality = Number(options.quality) || (currentType === 'image/png' ? 0.92 : 0.74);
+                        let currentWidth = width;
+                        let currentHeight = height;
+                        let dataUrl = '';
+
+                        for (let attempt = 0; attempt < 8; attempt += 1) {
+                            renderAt(currentWidth, currentHeight);
+                            dataUrl = canvas.toDataURL(currentType, quality);
+                            if (dataUrl.length <= targetMaxLength) break;
+
+                            if (currentType !== 'image/jpeg') {
+                                currentType = 'image/jpeg';
+                                quality = 0.72;
+                                continue;
+                            }
+
+                            if (quality > minQuality) {
+                                quality = Math.max(minQuality, quality - 0.08);
+                                continue;
+                            }
+
+                            currentWidth = Math.max(280, Math.round(currentWidth * 0.82));
+                            currentHeight = Math.max(280, Math.round(currentHeight * 0.82));
+                            quality = Math.max(minQuality, quality - 0.04);
                         }
 
                         resolve(dataUrl);
@@ -837,6 +860,10 @@
                 };
                 reader.readAsDataURL(file);
             });
+        };
+
+        window.isInlineImageUrl = function (value) {
+            return /^data:image\//i.test(String(value || '').trim());
         };
 
         window.uploadAssetWithFallback = async function (file, config = {}) {
@@ -1041,7 +1068,7 @@
 
             try {
                 let finalImageUrl = imageUrl;
-                if (imageFile) {
+                if (imageFile && !window.isInlineImageUrl(imageUrl)) {
                     finalImageUrl = await window.uploadAdminProductImage(imageFile, productId);
                 }
 
@@ -1098,11 +1125,42 @@
         }
 
         if (document.getElementById('editImageFile')) {
-            document.getElementById('editImageFile').addEventListener('change', function () {
+            document.getElementById('editImageFile').addEventListener('change', async function () {
                 if (this.files.length) {
                     window.handleAdminImageInput(this, 'editProductPreview', 'editProductPreviewPlaceholder');
+                    try {
+                        const inlineImage = await window.optimizeImageToDataUrl(this.files[0], {
+                            maxWidth: 900,
+                            maxHeight: 900,
+                            quality: 0.72,
+                            outputType: 'image/jpeg',
+                            targetMaxLength: 240000
+                        });
+                        document.getElementById('editImageUrl').value = inlineImage;
+                        window.updateAdminImagePreview('editProductPreview', 'editProductPreviewPlaceholder', inlineImage);
+                    } catch (error) {
+                        console.error('Edit image inline prep failed:', error);
+                    }
                 } else {
                     window.updateAdminImagePreview('editProductPreview', 'editProductPreviewPlaceholder', document.getElementById('editImageUrl').value.trim());
+                }
+            });
+        }
+
+        if (document.getElementById('addImageFile')) {
+            document.getElementById('addImageFile').addEventListener('change', async function () {
+                if (!this.files.length) return;
+                try {
+                    const inlineImage = await window.optimizeImageToDataUrl(this.files[0], {
+                        maxWidth: 900,
+                        maxHeight: 900,
+                        quality: 0.72,
+                        outputType: 'image/jpeg',
+                        targetMaxLength: 240000
+                    });
+                    document.getElementById('addImageUrl').value = inlineImage;
+                } catch (error) {
+                    console.error('Add image inline prep failed:', error);
                 }
             });
         }
@@ -1182,7 +1240,7 @@
                 const docRef = window.db.collection('products').doc();
 
                 // If file is selected, push to Firebase Storage
-                if (imageFile) {
+                if (imageFile && !window.isInlineImageUrl(imageUrlFallback)) {
                     finalImageUrl = await window.uploadAdminProductImage(imageFile, docRef.id);
                 }
 
@@ -1508,14 +1566,29 @@
 
             const adminQrFile = document.getElementById('adminQrCodeFile');
             if (adminQrFile) {
-                adminQrFile.addEventListener('change', () => {
+                adminQrFile.addEventListener('change', async () => {
                     const f = adminQrFile.files && adminQrFile.files[0];
+                    const qrField = document.getElementById('adminQrCodeUrlField');
                     const qrPrev = document.getElementById('adminQrCodePreview');
                     const qrEmpty = document.getElementById('adminQrCodePreviewEmpty');
                     if (!f || !qrPrev || !qrEmpty) return;
                     qrPrev.src = URL.createObjectURL(f);
                     qrPrev.classList.remove('d-none');
                     qrEmpty.classList.add('d-none');
+                    try {
+                        const inlineQr = await window.optimizeImageToDataUrl(f, {
+                            maxWidth: 720,
+                            maxHeight: 720,
+                            quality: 0.9,
+                            outputType: 'image/png',
+                            targetMaxLength: 150000,
+                            minQuality: 0.62
+                        });
+                        if (qrField) qrField.value = inlineQr;
+                        qrPrev.src = inlineQr;
+                    } catch (error) {
+                        console.error('QR inline prep failed:', error);
+                    }
                 });
             }
             const adminQrRemove = document.getElementById('adminQrCodeRemoveBtn');
@@ -1551,7 +1624,7 @@
 
                         let qrCodeUrl = (document.getElementById('adminQrCodeUrlField') || {}).value.trim() || '';
                         const qrPick = document.getElementById('adminQrCodeFile')?.files?.[0];
-                        if (qrPick) {
+                        if (qrPick && !window.isInlineImageUrl(qrCodeUrl)) {
                             qrCodeUrl = await window.uploadSiteQrCode(qrPick);
                         }
 
