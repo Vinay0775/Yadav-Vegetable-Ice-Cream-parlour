@@ -335,6 +335,9 @@ function attachGlobalSettingsListener() {
             if (upiIdSection) {
                 upiIdSection.style.display = (data.showUpiId === false) ? 'none' : 'block';
             }
+            
+            console.log('Payment settings updated:', { upiId: data.upiId, showQrCode: data.showQrCode, showQuickPay: data.showQuickPayButtons, showUpiId: data.showUpiId });
+        }
         }
 
         const isAdminPage = window.location.pathname.includes('admin.html');
@@ -1572,16 +1575,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function showCopySuccess(copyMessage, copyIcon, copyText) {
         // Show success message
         if (copyMessage) {
-            copyMessage.style.display = 'block';
+            copyMessage.classList.add('show');
             setTimeout(() => {
-                copyMessage.style.display = 'none';
+                copyMessage.classList.remove('show');
             }, 3000);
         }
         
         // Update button icon temporarily
         if (copyIcon) {
             copyIcon.classList.remove('bi-clipboard');
-            copyIcon.classList.add('bi-check');
+            copyIcon.classList.add('bi-check-lg');
         }
         if (copyText) {
             copyText.textContent = 'Copied!';
@@ -1590,7 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset after 2 seconds
         setTimeout(() => {
             if (copyIcon) {
-                copyIcon.classList.remove('bi-check');
+                copyIcon.classList.remove('bi-check-lg');
                 copyIcon.classList.add('bi-clipboard');
             }
             if (copyText) {
@@ -1655,9 +1658,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Use generic UPI intent (Android) or universal link (iOS)
             window.location.href = upiURL;
         } else if (app === 'phonepe') {
-            // PhonePe specific intent
-            const phonepeURL = `phonepe://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            // PhonePe specific intent - use generic UPI with mode parameter
+            // PhonePe responds to upi:// scheme with proper parameters
+            const phonepeURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}&mode=01`;
             window.location.href = phonepeURL;
+            
+            // Fallback: Try to open PhonePe directly using Android intent
+            setTimeout(() => {
+                if (document.hasFocus()) {
+                    // Android intent to open PhonePe specifically
+                    window.location.href = `intent://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}#Intent;scheme=upi;package=com.phonepe.app;end`;
+                }
+            }, 1500);
         } else if (app === 'paytm') {
             // Paytm specific intent
             const paytmURL = `paytmmp://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
@@ -1688,15 +1700,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = '';
         cart.forEach(item => {
-            html += `<div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
-                <div class="d-flex align-items-center"><img src="${item.image}" class="img-fluid rounded object-fit-cover shadow-sm me-3" style="width:50px; height:50px;">
-                    <div><h6 class="fw-bold mb-0">${item.title}</h6><span class="text-muted small">Qty: ${item.quantity}</span></div></div>
-                <span class="fw-bold">${formatCurrency(item.price * item.quantity)}</span></div>`;
+            html += `<div class="order-item">
+                <img src="${item.image}" class="order-item-img" alt="${item.title}">
+                <div class="order-item-details">
+                    <h6 class="order-item-title">${item.title}</h6>
+                    <span class="order-item-qty">Qty: ${item.quantity}</span>
+                </div>
+                <span class="order-item-price">${formatCurrency(item.price * item.quantity)}</span>
+            </div>`;
         });
         if (document.getElementById('paymentCartItems')) document.getElementById('paymentCartItems').innerHTML = html;
         if (document.getElementById('paymentSubtotal')) document.getElementById('paymentSubtotal').innerText = formatCurrency(subtotal);
         if (document.getElementById('paymentTotal')) document.getElementById('paymentTotal').innerText = formatCurrency(total);
-        payBtn.innerText = `Pay Now ${formatCurrency(total)}`;
+        if (document.getElementById('paymentTotalMobile')) document.getElementById('paymentTotalMobile').innerText = formatCurrency(total);
+        
+        // Update button text for mobile
+        payBtn.innerHTML = `<i class="bi bi-lock-fill"></i><span>Pay ${formatCurrency(total)}</span>`;
 
         payBtn.addEventListener('click', async () => {
             if (cart.length === 0) {
