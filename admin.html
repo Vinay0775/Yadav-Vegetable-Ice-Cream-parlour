@@ -35,7 +35,7 @@
         </style>
     </head>
 
-<body class="bg-light admin-dashboard dark-mode" style="opacity: 0; transition: opacity 0.5s ease;">
+<body class="bg-light admin-dashboard dark-mode" style="opacity: 1; transition: opacity 0.5s ease;">
 
     <div class="d-flex flex-column flex-md-row min-vh-100">
         <!-- Mobile Sidebar Toggler -->
@@ -735,6 +735,10 @@
             if (!modalEl) return;
             if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                 bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                setTimeout(() => {
+                    const firstField = modalEl.querySelector('input, textarea, select');
+                    if (firstField) firstField.focus();
+                }, 150);
                 return;
             }
 
@@ -751,6 +755,8 @@
             modalEl.setAttribute('aria-modal', 'true');
             modalEl.scrollTop = 0;
             document.body.classList.add('modal-open');
+            const firstField = modalEl.querySelector('input, textarea, select');
+            if (firstField) firstField.focus();
         };
 
         window.hideAdminModal = function (modalEl) {
@@ -950,6 +956,13 @@
             });
         }
 
+        if (document.getElementById('editProductForm')) {
+            document.getElementById('editProductForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+                window.saveAdminProductChanges();
+            });
+        }
+
         document.addEventListener('click', (event) => {
             const dismissBtn = event.target.closest('[data-bs-dismiss="modal"]');
             if (dismissBtn && dismissBtn.closest('#editProductModal')) {
@@ -1132,6 +1145,25 @@
         // ADMIN SECURITY & SPA NAVIGATION LOGIC
         // ==========================================
         window.onload = () => {
+            window.activateAdminSection = function (targetId, triggerLink = null) {
+                const navLinks = Array.from(document.querySelectorAll('.admin-nav-link[data-tab]'));
+                const resolvedLink = triggerLink || navLinks.find(link => link.dataset.tab === targetId && !link.classList.contains('d-none'));
+
+                navLinks.forEach(link => link.classList.remove('active'));
+                if (resolvedLink) resolvedLink.classList.add('active');
+
+                document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) targetEl.classList.remove('d-none');
+
+                const adminPageTitle = document.getElementById('adminPageTitle');
+                if (adminPageTitle) {
+                    adminPageTitle.innerText = resolvedLink
+                        ? resolvedLink.textContent.replace(/\s+/g, ' ').trim()
+                        : 'Admin Panel';
+                }
+            };
+
             // Role Based Security Lock
             window.auth.onAuthStateChanged(async (user) => {
                 if (!user) {
@@ -1147,14 +1179,20 @@
                         window.CURRENT_ROLE = roleData.role; // 'editor' or 'superadmin'
                         window.CURRENT_ADMIN_EMAIL = window.getUserEmail ? window.getUserEmail(user) : (user.email || '').trim().toLowerCase();
                         grantAdminAccess();
-                        window.loadAdminData();
 
                         // Mask UI for basic Editors
                         if (window.CURRENT_ROLE === 'editor') {
                             document.querySelectorAll('.superadmin-only').forEach(el => el.classList.add('d-none'));
-                            // Click Products tab by default as they can't see Dashboard
-                            document.querySelector('[data-tab="sec-products"]').click();
+                            window.activateAdminSection('sec-products');
+                        } else {
+                            window.activateAdminSection('sec-dashboard');
                         }
+
+                        setTimeout(() => {
+                            if (window.loadAdminData) {
+                                window.loadAdminData();
+                            }
+                        }, 0);
                     } else {
                         // Logged in, but unauthorized customer
                         document.body.innerHTML = '<div class="text-center mt-5"><h3>Unauthorized Access. Restricted to Staff.</h3></div>';
@@ -1185,20 +1223,7 @@
                         if (bsOffcanvas) bsOffcanvas.hide();
                     }
 
-                    // Update link active states
-                    document.querySelectorAll('.admin-nav-link').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // Toggle section visibility
-                    const targetId = this.dataset.tab;
-                    document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
-                    const targetEl = document.getElementById(targetId);
-                    if (targetEl) targetEl.classList.remove('d-none');
-
-                    // Update Top Title
-                    if (document.getElementById('adminPageTitle')) {
-                        document.getElementById('adminPageTitle').innerHTML = this.innerHTML.replace('<i', '<i class="text-primary"').replace('me-2', 'me-2');
-                    }
+                    window.activateAdminSection(this.dataset.tab, this);
                 });
             });
 

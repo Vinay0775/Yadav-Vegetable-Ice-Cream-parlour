@@ -2,6 +2,63 @@
 let CATALOG = (typeof YADAV_CATALOG !== 'undefined') ? [...YADAV_CATALOG] : [];
 window.CATALOG = CATALOG;
 window.userWishlist = []; // Global Wishlist cache
+window.favoriteUnsubscribe = null;
+
+window.getFavoritePageHref = function () {
+    return window.auth?.currentUser ? 'favorites.html' : 'login.html';
+};
+
+window.updateFavoriteBadges = function (count = 0) {
+    document.querySelectorAll('[data-favorites-badge="true"], a[title="Favorites"] .badge-count, a[title="Saved Favorites"] .badge-count, a[title="Login to save favorites"] .badge-count').forEach((badge) => {
+        badge.innerText = String(count);
+        badge.classList.toggle('d-none', count <= 0);
+    });
+};
+
+window.ensureFavoriteNavigation = function () {
+    document.querySelectorAll('.navbar-nav').forEach((nav) => {
+        if (nav.closest('#adminSidebar') || nav.querySelector('[data-favorites-nav="true"]')) return;
+
+        const navItem = document.createElement('li');
+        navItem.className = 'nav-item d-lg-none';
+        navItem.innerHTML = `
+            <a class="nav-link text-dark d-flex align-items-center justify-content-between" href="${window.getFavoritePageHref()}" title="Favorites" data-favorites-link="true" data-favorites-nav="true">
+                <span><i class="bi bi-heart me-2 text-success"></i>Favorites</span>
+                <span class="badge rounded-pill bg-success favorites-total-badge d-none" data-favorites-badge="true">0</span>
+            </a>
+        `;
+
+        const downloadItem = nav.querySelector('.nav-item.d-lg-none.mt-4');
+        if (downloadItem) nav.insertBefore(navItem, downloadItem);
+        else nav.appendChild(navItem);
+    });
+
+    document.querySelectorAll('.main-header .d-flex.d-lg-none.align-items-center.gap-3.ms-auto').forEach((bar) => {
+        if (bar.querySelector('[data-favorites-mobile="true"]')) return;
+
+        const favoriteLink = document.createElement('a');
+        favoriteLink.href = window.getFavoritePageHref();
+        favoriteLink.title = 'Favorites';
+        favoriteLink.dataset.favoritesLink = 'true';
+        favoriteLink.dataset.favoritesMobile = 'true';
+        favoriteLink.className = 'text-dark text-decoration-none fs-5 position-relative icon-link mobile-favorites-link';
+        favoriteLink.innerHTML = `
+            <i class="bi bi-heart"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count favorites-total-badge d-none" data-favorites-badge="true">0</span>
+        `;
+
+        const cartLink = bar.querySelector('a[title="Cart"]');
+        const toggleBtn = bar.querySelector('.navbar-toggler');
+        if (cartLink) bar.insertBefore(favoriteLink, cartLink);
+        else if (toggleBtn) bar.insertBefore(favoriteLink, toggleBtn);
+        else bar.appendChild(favoriteLink);
+    });
+
+    document.querySelectorAll('a[data-favorites-link="true"]').forEach((link) => {
+        link.href = window.getFavoritePageHref();
+        link.title = window.auth?.currentUser ? 'Saved Favorites' : 'Login to save favorites';
+    });
+};
 
 // ==========================================
 // INJECT PWA MANIFEST & SERVICE WORKER
@@ -341,6 +398,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.renderDynamicGrid();
                 }
             }
+
+            if (typeof window.renderFavoritesPage === 'function') {
+                window.renderFavoritesPage();
+            }
         });
     }
 
@@ -428,6 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else navbar.classList.remove('scrolled');
         });
     }
+    window.ensureFavoriteNavigation();
 
     // ==========================================
     // 2. FIREBASE AUTH STATE (Global Header Updates)
@@ -435,18 +497,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUser = null;
 
     window.auth.onAuthStateChanged((user) => {
-        const loginIconLinks = document.querySelectorAll('a[href="login.html"]');
-        const favoriteIconLinks = document.querySelectorAll('a[title="Favorites"]');
+        window.ensureFavoriteNavigation();
+        const loginIconLinks = document.querySelectorAll('a[title="Login/Profile"], a[title="My Profile"], a[data-auth-link="true"]');
+        const favoriteIconLinks = document.querySelectorAll('a[title="Favorites"], a[title="Saved Favorites"], a[title="Login to save favorites"], a[data-favorites-link="true"]');
+
+        if (typeof window.favoriteUnsubscribe === 'function') {
+            window.favoriteUnsubscribe();
+            window.favoriteUnsubscribe = null;
+        }
+
         if (user) {
             currentUser = user;
             
             // Sync Wishlist collection
-            window.db.collection('users').doc(user.uid).collection('wishlist').onSnapshot(snap => {
+            window.favoriteUnsubscribe = window.db.collection('users').doc(user.uid).collection('wishlist').onSnapshot(snap => {
                 window.userWishlist = snap.docs.map(d => d.id);
+                window.updateFavoriteBadges(window.userWishlist.length);
                 document.querySelectorAll('.wishlist-btn').forEach(b => {
                     if (window.userWishlist.includes(b.dataset.id)) b.classList.add('active');
                     else b.classList.remove('active');
                 });
+                if (typeof window.renderFavoritesPage === 'function') {
+                    window.renderFavoritesPage();
+                }
             });
 
             // The user is fully logged in, survive page reloads!
@@ -460,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ordersIcon = document.querySelector('a[href="orders.html"]');
             if (ordersIcon) ordersIcon.classList.remove('d-none');
             favoriteIconLinks.forEach(link => {
-                link.href = 'profile.html';
+                link.href = 'favorites.html';
                 link.title = 'Saved Favorites';
             });
 
@@ -498,6 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             currentUser = null;
+            window.userWishlist = [];
+            window.updateFavoriteBadges(0);
             localStorage.removeItem('yadavSession');
             // Revert headers
             loginIconLinks.forEach(link => {
@@ -511,9 +586,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.href = 'login.html';
                 link.title = 'Login to save favorites';
             });
+            document.querySelectorAll('.wishlist-btn').forEach(b => b.classList.remove('active'));
             // Remove Admin link if present
             const adminLink = document.getElementById('adminPortalLink');
             if (adminLink) adminLink.remove();
+            if (typeof window.renderFavoritesPage === 'function') {
+                window.renderFavoritesPage();
+            }
         }
     });
 
@@ -754,6 +833,76 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // 5. DYNAMIC CATALOG RENDERING 
     // ==========================================
+    window.buildStorefrontProductCard = function (prod, options = {}) {
+        const prodId = prod.id || prod.title;
+        const normalizedCategory = window.normalizeCatalogCategory(prod.category);
+        const isPink = normalizedCategory === 'Ice-Creams';
+        const colorClass = isPink ? 'pink' : 'success';
+        const bgClass = isPink ? 'bg-light-pink' : 'bg-light-green';
+        const columnClass = options.columnClass || 'col-6 col-md-4 col-xl-3';
+        const badgeHtml = prod.badge ? `<div class="badge bg-${colorClass === 'pink' ? 'danger' : 'success'} position-absolute top-0 start-0 m-3 z-index-2">${prod.badge}</div>` : '';
+        const originalStr = prod.originalPrice ? `<span class="text-muted text-decoration-line-through small me-2">${formatCurrency(prod.originalPrice)}</span>` : '';
+
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(prod.rating)) starsHtml += '<i class="bi bi-star-fill"></i>';
+            else if (i - 0.5 === prod.rating) starsHtml += '<i class="bi bi-star-half"></i>';
+            else starsHtml += '<i class="bi bi-star"></i>';
+        }
+
+        const prodJson = encodeURIComponent(JSON.stringify(prod));
+
+        return `
+            <div class="${columnClass}">
+                <div class="card product-card fade-up-custom border-0 ${bgClass} h-100 shadow-sm rounded-4">
+                    ${badgeHtml}
+                    <div class="px-4 py-4 text-center position-relative overflow-hidden product-image-wrapper">
+                        <img src="${prod.image}" alt="${prod.title}" class="img-fluid object-fit-cover shadow-sm product-card-image" style="width:140px; height:140px;">
+                        <div class="product-action-overlay">
+                            <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift wishlist-btn ${window.userWishlist && window.userWishlist.includes(prodId) ? 'active' : ''}" data-id="${prodId}" aria-label="Save ${prod.title}"><i class="bi bi-heart"></i></button>
+                            <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift quick-view-btn" data-prod="${prodJson}" aria-label="Quick view ${prod.title}"><i class="bi bi-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body bg-white rounded-bottom-4 p-4 product-card-body">
+                        <p class="text-muted small mb-1 product-card-meta">${normalizedCategory}</p>
+                        <h6 class="card-title fw-bold text-dark mb-2 product-card-title" title="${prod.title}">${prod.title}</h6>
+                        <div class="rating text-warning mb-2 small product-card-rating">${starsHtml}</div>
+                        <div class="d-flex justify-content-center align-items-center mb-3 product-price-row">
+                            ${originalStr}
+                            <span class="fs-5 fw-bold text-${colorClass}">${formatCurrency(prod.price)}</span>
+                        </div>
+                        <button class="btn btn-outline-${colorClass} w-100 rounded-pill fw-medium dynamic-add-cart" data-prod="${prodJson}"><i class="bi bi-cart-plus me-2"></i><span>Add to Cart</span></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    window.bindStoreProductCardActions = function (containerEl) {
+        if (!containerEl) return;
+
+        containerEl.querySelectorAll('.dynamic-add-cart').forEach(btn => {
+            btn.dataset.bound = "true";
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                window.addToCartGlobal(this.dataset.prod);
+                const origHtml = this.innerHTML;
+                const origClasses = this.className;
+                this.innerHTML = '<i class="bi bi-check2-circle"></i><span>Added</span>';
+                this.className = origClasses.replace('btn-outline-success', 'btn-success').replace('btn-outline-pink', 'btn-pink');
+                setTimeout(() => { this.innerHTML = origHtml; this.className = origClasses; }, 1000);
+            });
+        });
+
+        containerEl.querySelectorAll('.quick-view-btn').forEach(btn => {
+            btn.dataset.bound = "true";
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                window.openModalFromData(this.dataset.prod);
+            });
+        });
+    };
+
     const gridEl = document.getElementById('productGrid');
     if (gridEl) {
         const ITEMS_PER_PAGE = 8;
@@ -808,42 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 gridEl.innerHTML = '<div class="col-12 py-5 text-center text-muted"><h4>No products found!</h4><button class="btn btn-outline-success mt-3" onclick="window.clearCatalogFilters && window.clearCatalogFilters()">Clear Filters</button></div>';
             } else {
                 pageItems.forEach(prod => {
-                    const isPink = prod.category === 'Ice-Creams';
-                    const colorClass = isPink ? 'pink' : 'success';
-                    const bgClass = isPink ? 'bg-light-pink' : 'bg-light-green';
-                    let badgeHtml = prod.badge ? `<div class="badge bg-${colorClass === 'pink' ? 'danger' : 'success'} position-absolute top-0 start-0 m-3 z-index-2">${prod.badge}</div>` : '';
-                    let originalStr = prod.originalPrice ? `<span class="text-muted text-decoration-line-through small me-2">${formatCurrency(prod.originalPrice)}</span>` : '';
-                    let starsHtml = '';
-                    for (let i = 1; i <= 5; i++) {
-                        if (i <= Math.floor(prod.rating)) starsHtml += '<i class="bi bi-star-fill"></i>';
-                        else if (i - 0.5 === prod.rating) starsHtml += '<i class="bi bi-star-half"></i>';
-                        else starsHtml += '<i class="bi bi-star"></i>';
-                    }
-                    const prodJson = encodeURIComponent(JSON.stringify(prod));
-
-                    gridEl.innerHTML += `
-                    <div class="col-sm-6 col-md-4 col-xl-3">
-                        <div class="card product-card fade-up-custom border-0 ${bgClass} h-100 shadow-sm rounded-4">
-                            ${badgeHtml}
-                            <div class="px-4 py-4 text-center position-relative overflow-hidden product-image-wrapper">
-                                <img src="${prod.image}" alt="${prod.title}" class="img-fluid object-fit-cover rounded-circle shadow-sm" style="width:140px; height:140px;">
-                                <div class="product-action-overlay">
-                                    <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift wishlist-btn ${window.userWishlist && window.userWishlist.includes(prod.id) ? 'active' : ''}" data-id="${prod.id}"><i class="bi bi-heart"></i></button>
-                                    <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift quick-view-btn" data-prod="${prodJson}"><i class="bi bi-eye"></i></button>
-                                </div>
-                            </div>
-                            <div class="card-body bg-white rounded-bottom-4 p-4 text-center">
-                                <p class="text-muted small mb-1">${window.normalizeCatalogCategory(prod.category)}</p>
-                                <h6 class="card-title fw-bold text-dark mb-2 text-truncate" title="${prod.title}">${prod.title}</h6>
-                                <div class="rating text-warning mb-2 small">${starsHtml}</div>
-                                <div class="d-flex justify-content-center align-items-center mb-3">
-                                    ${originalStr}
-                                    <span class="fs-5 fw-bold text-${colorClass}">${formatCurrency(prod.price)}</span>
-                                </div>
-                                <button class="btn btn-outline-${colorClass} w-100 rounded-pill fw-medium dynamic-add-cart" data-prod="${prodJson}"><i class="bi bi-cart-plus me-2"></i> Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>`;
+                    gridEl.innerHTML += window.buildStorefrontProductCard(prod);
                 });
             }
 
@@ -867,26 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            gridEl.querySelectorAll('.dynamic-add-cart').forEach(btn => {
-                btn.dataset.bound = "true";
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.addToCartGlobal(this.dataset.prod);
-                    const origHtml = this.innerHTML;
-                    const origClasses = this.className;
-                    this.innerHTML = '<i class="bi bi-check2-circle"></i> Added';
-                    this.className = origClasses.replace('btn-outline-success', 'btn-success').replace('btn-outline-pink', 'btn-pink');
-                    setTimeout(() => { this.innerHTML = origHtml; this.className = origClasses; }, 1000);
-                });
-            });
-
-            gridEl.querySelectorAll('.quick-view-btn').forEach(btn => {
-                btn.dataset.bound = "true";
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.openModalFromData(this.dataset.prod);
-                });
-            });
+            window.bindStoreProductCardActions(gridEl);
         };
 
         const sortSelect = document.getElementById('sortSelect');
@@ -931,6 +1026,90 @@ document.addEventListener('DOMContentLoaded', () => {
             renderDynamicGrid();
         }
     }
+
+    window.renderFavoritesPage = async function () {
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        if (!favoritesGrid) return;
+
+        const summaryEl = document.getElementById('favoritesSummary');
+        const user = window.auth?.currentUser;
+
+        if (!user) {
+            if (summaryEl) summaryEl.innerText = 'Log in to see your saved favorites.';
+            favoritesGrid.innerHTML = `
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 text-center product-grid-state">
+                        <i class="bi bi-heart display-4 text-success mb-3"></i>
+                        <h4 class="fw-bold mb-2">Your favorites will appear here</h4>
+                        <p class="text-muted mb-4">Login karke jo products save karoge, woh yahan instantly dikh jayenge.</p>
+                        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                            <a href="login.html" class="btn btn-success rounded-pill px-4">Login</a>
+                            <a href="fresh-veggies.html" class="btn btn-outline-success rounded-pill px-4">Browse Products</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const wishlistIds = Array.isArray(window.userWishlist) ? [...window.userWishlist] : [];
+        if (!wishlistIds.length) {
+            if (summaryEl) summaryEl.innerText = 'You have not saved any products yet.';
+            favoritesGrid.innerHTML = `
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 text-center product-grid-state">
+                        <i class="bi bi-heart display-4 text-success mb-3"></i>
+                        <h4 class="fw-bold mb-2">No favorites yet</h4>
+                        <p class="text-muted mb-4">Product cards par heart icon dabao, aur aapke saved items yahan aa jayenge.</p>
+                        <a href="fresh-veggies.html" class="btn btn-success rounded-pill px-4">Start Shopping</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const catalogMap = new Map((window.CATALOG || []).map(item => {
+            const key = item.id || item.title;
+            return [key, {
+                ...item,
+                id: key,
+                category: window.normalizeCatalogCategory(item.category)
+            }];
+        }));
+
+        const missingIds = wishlistIds.filter(id => !catalogMap.has(id));
+        if (missingIds.length && window.db) {
+            const missingDocs = await Promise.all(missingIds.map(id => window.db.collection('products').doc(id).get()));
+            missingDocs.forEach((doc) => {
+                if (!doc.exists) return;
+                const liveData = doc.data();
+                if (liveData.archived) return;
+                catalogMap.set(doc.id, {
+                    ...liveData,
+                    id: doc.id,
+                    category: window.normalizeCatalogCategory(liveData.category)
+                });
+            });
+        }
+
+        const favoriteItems = wishlistIds.map(id => catalogMap.get(id)).filter(Boolean);
+        if (summaryEl) {
+            summaryEl.innerText = `${favoriteItems.length} product${favoriteItems.length === 1 ? '' : 's'} saved in your favorites.`;
+        }
+
+        favoritesGrid.innerHTML = favoriteItems.length
+            ? favoriteItems.map(item => window.buildStorefrontProductCard(item)).join('')
+            : `
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 text-center product-grid-state">
+                        <h4 class="fw-bold mb-2">Some saved products are no longer available</h4>
+                        <p class="text-muted mb-0">Aapke purane saved items live catalog se remove ho chuke hain.</p>
+                    </div>
+                </div>
+            `;
+
+        window.bindStoreProductCardActions(favoritesGrid);
+    };
 
 
     // ==========================================
@@ -993,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 modal.classList.remove('d-none');
-                setTimeout(() => { modal.classList.add('show'); document.body.classList.add('modal-open'); }, 10);
+                setTimeout(() => { modal.classList.add('show'); document.body.classList.add('product-modal-open'); }, 10);
             } catch (e) { console.error(e); }
         }
 
@@ -1032,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
         function closeModal() {
-            modal.classList.remove('show'); document.body.classList.remove('modal-open');
+            modal.classList.remove('show'); document.body.classList.remove('product-modal-open');
             setTimeout(() => { modal.classList.add('d-none'); }, 300);
         }
         modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
@@ -1581,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (favoriteHeaderLink) {
             e.preventDefault();
             if (window.auth?.currentUser) {
-                window.location.href = 'profile.html';
+                window.location.href = 'favorites.html';
             } else {
                 window.showToast('Login Required', 'Please log in to view your saved favorites.', true);
                 setTimeout(() => window.location.href = 'login.html', 800);
