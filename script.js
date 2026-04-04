@@ -1695,15 +1695,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     };
 
-    const payBtn = document.getElementById('payNowBtn');
-    if (payBtn) {
+    // Payment Page Logic - wrapped in DOMContentLoaded to ensure elements exist
+    function initPaymentPage() {
+        const payBtn = document.getElementById('payNowBtn');
+        if (!payBtn) {
+            console.log('Payment page not detected (payNowBtn not found)');
+            return;
+        }
+        
+        console.log('Payment page detected - initializing...');
+        
         // Reload cart from localStorage to ensure fresh data
         cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
+        
+        console.log('Cart data:', cart);
+        console.log('Cart items count:', cart.length);
         
         let subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
         const total = Math.ceil(subtotal + (subtotal * 0.05));
         
-        console.log('Payment page - Cart loaded:', cart.length, 'items, Total:', total);
+        console.log('Payment page - Cart loaded:', cart.length, 'items, Subtotal:', subtotal, 'Total:', total);
 
         let html = '';
         if (cart.length > 0) {
@@ -1721,13 +1732,28 @@ document.addEventListener('DOMContentLoaded', () => {
             html = '<p class="text-muted text-center py-4">Your cart is empty</p>';
         }
         
-        if (document.getElementById('paymentCartItems')) document.getElementById('paymentCartItems').innerHTML = html;
-        if (document.getElementById('paymentSubtotal')) document.getElementById('paymentSubtotal').innerText = formatCurrency(subtotal);
-        if (document.getElementById('paymentTotal')) document.getElementById('paymentTotal').innerText = formatCurrency(total);
-        if (document.getElementById('paymentTotalMobile')) document.getElementById('paymentTotalMobile').innerText = formatCurrency(total);
+        // Update all payment elements
+        const cartItemsEl = document.getElementById('paymentCartItems');
+        const subtotalEl = document.getElementById('paymentSubtotal');
+        const totalEl = document.getElementById('paymentTotal');
+        const totalMobileEl = document.getElementById('paymentTotalMobile');
+        
+        console.log('DOM Elements found:', {
+            cartItems: !!cartItemsEl,
+            subtotal: !!subtotalEl,
+            total: !!totalEl,
+            totalMobile: !!totalMobileEl
+        });
+        
+        if (cartItemsEl) cartItemsEl.innerHTML = html;
+        if (subtotalEl) subtotalEl.innerText = formatCurrency(subtotal);
+        if (totalEl) totalEl.innerText = formatCurrency(total);
+        if (totalMobileEl) totalMobileEl.innerText = formatCurrency(total);
         
         // Update button text for mobile
         payBtn.innerHTML = `<i class="bi bi-lock-fill"></i><span>Pay ${formatCurrency(total)}</span>`;
+        
+        console.log('Payment page initialized successfully with total:', formatCurrency(total));
 
         payBtn.addEventListener('click', async () => {
             if (cart.length === 0) {
@@ -1773,11 +1799,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.error("Order save sync error:", e);
                 window.showToast('Error', 'Error placing order! Check your internet connection or DB Rules.', true);
-                payBtn.innerText = `Pay Now ${formatCurrency(total)}`;
+                payBtn.innerHTML = `<i class="bi bi-lock-fill"></i><span>Pay ${formatCurrency(total)}</span>`;
                 payBtn.disabled = false;
             }
         });
     }
+    
+    // Initialize payment page
+    initPaymentPage();
 
     // ==========================================
     // 8. CUSTOMER ORDERS PAGE
@@ -2376,4 +2405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             chatWindow.classList.remove('show');
         });
     })();
+    
+    // Initialize payment page (must be inside DOMContentLoaded)
+    initPaymentPage();
 });
