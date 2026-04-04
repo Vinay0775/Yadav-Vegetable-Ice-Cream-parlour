@@ -1155,6 +1155,24 @@ body.admin-dashboard .badge.bg-warning-subtle {
     border-color: rgba(255,255,255,0.1) !important;
 }
 
+body.admin-dashboard .admin-product-search-bar {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+}
+
+body.admin-dashboard .admin-product-search-bar .input-group-text,
+body.admin-dashboard .admin-product-search-bar .form-control,
+body.admin-dashboard .admin-product-search-bar .btn {
+    background: transparent !important;
+    color: #edf5ef !important;
+}
+
+body.admin-dashboard .admin-product-search-bar .form-control::placeholder {
+    color: rgba(216, 224, 217, 0.5) !important;
+}
+
 /* =========================================================================
    16. STOREFRONT PREMIUM POLISH
    ========================================================================= */

@@ -268,8 +268,10 @@ window.getPostLoginRedirect = async function (user) {
 window.applySiteQrCode = function (url) {
     const u = String(url || '').trim();
     document.querySelectorAll('[data-site-qr="img"]').forEach((img) => {
-        if (u) {
-            img.src = u;
+        const fallbackSrc = img.getAttribute('data-default-src') || '';
+        const finalSrc = u || fallbackSrc;
+        if (finalSrc) {
+            img.src = finalSrc;
             img.classList.remove('d-none');
         } else {
             img.removeAttribute('src');
@@ -277,7 +279,8 @@ window.applySiteQrCode = function (url) {
         }
     });
     document.querySelectorAll('[data-site-qr="block"]').forEach((block) => {
-        block.classList.toggle('d-none', !u);
+        const hasVisibleQr = !!(u || block.querySelector('[data-site-qr="img"][data-default-src]'));
+        block.classList.toggle('d-none', !hasVisibleQr);
     });
 };
 

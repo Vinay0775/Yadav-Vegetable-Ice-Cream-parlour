@@ -325,6 +325,17 @@
                             onclick="document.getElementById('adminAddProductForm').scrollIntoView({behavior:'smooth'})"><i
                                 class="bi bi-plus-lg me-1"></i> Add New</button>
                     </div>
+                    <div class="px-4 pt-4">
+                        <div class="input-group search-bar admin-product-search-bar">
+                            <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
+                            <input type="search" id="adminProductSearchInput" class="form-control border-0 bg-light shadow-none"
+                                placeholder="Search by product name, category, sub category, badge or product ID">
+                            <button class="btn btn-light border-0 px-3 d-none" type="button" id="adminProductSearchClearBtn">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0" id="adminProductSearchMeta">Search works across default catalog and future products.</p>
+                    </div>
                     <div class="card-body p-0">
                         <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
                             <table class="table table-hover align-middle mb-0">
@@ -776,16 +787,97 @@
             });
         };
 
+        window.optimizeImageToDataUrl = function (file, options = {}) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    reject(new Error('No file provided'));
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Image read failed'));
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('Image decode failed'));
+                    img.onload = () => {
+                        const maxWidth = Number(options.maxWidth) || 1200;
+                        const maxHeight = Number(options.maxHeight) || 1200;
+                        const quality = Number(options.quality) || 0.82;
+                        const outputType = options.outputType || (String(file.type || '').startsWith('image/png') ? 'image/png' : 'image/jpeg');
+
+                        let width = img.width || maxWidth;
+                        let height = img.height || maxHeight;
+                        const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+                        width = Math.max(1, Math.round(width * scale));
+                        height = Math.max(1, Math.round(height * scale));
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) {
+                            reject(new Error('Canvas not supported'));
+                            return;
+                        }
+
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        let dataUrl = canvas.toDataURL(outputType, quality);
+                        if (dataUrl.length > 900000 && outputType !== 'image/jpeg') {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.76);
+                        } else if (dataUrl.length > 900000) {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+                        }
+
+                        resolve(dataUrl);
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        window.uploadAssetWithFallback = async function (file, config = {}) {
+            if (!file) return '';
+
+            const fallbackLabel = config.fallbackLabel || 'image';
+            const fallbackOptions = config.fallbackOptions || {};
+
+            try {
+                if (typeof firebase === 'undefined' || !firebase.storage || !config.path) {
+                    throw new Error('storage-unavailable');
+                }
+                const fileRef = firebase.storage().ref().child(config.path);
+                const snapshot = await window.completeStorageUpload(fileRef, file);
+                return await snapshot.ref.getDownloadURL();
+            } catch (error) {
+                console.warn(`Storage upload failed for ${fallbackLabel}, falling back to inline image.`, error);
+                const inlineImage = await window.optimizeImageToDataUrl(file, fallbackOptions);
+                if (window.showToast) {
+                    window.showToast('Fallback Used', `${fallbackLabel} storage par upload nahi ho paya, isliye optimized inline image save ki gayi.`);
+                }
+                return inlineImage;
+            }
+        };
+
         window.uploadAdminProductImage = async function (file, productKey) {
             if (!file) return '';
-            if (typeof firebase === 'undefined' || !firebase.storage) {
-                throw new Error('Firebase Storage load nahi hua. Page par firebase-storage-compat.js check karo.');
-            }
             const safeName = String(file.name || 'product-image').replace(/[^a-zA-Z0-9._-]/g, '-');
-            const fileRef = firebase.storage().ref().child(`products/${productKey}_${Date.now()}_${safeName}`);
-            const snapshot = await window.completeStorageUpload(fileRef, file);
-            return await snapshot.ref.getDownloadURL();
+            return await window.uploadAssetWithFallback(file, {
+                path: `products/${productKey}_${Date.now()}_${safeName}`,
+                fallbackLabel: 'Product image',
+                fallbackOptions: {
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    quality: 0.8,
+                    outputType: 'image/jpeg'
+                }
+            });
         };
+
+        window.ADMIN_PRODUCT_FILTER_QUERY = '';
 
         window.showAdminModal = function (modalEl) {
             if (!modalEl) return;
@@ -1133,16 +1225,53 @@
         window.loadAdminCatalog = async () => {
             const tbody = document.getElementById('cmsProductsTableBody');
             if (!tbody) return;
+            const searchInput = document.getElementById('adminProductSearchInput');
+            const searchMeta = document.getElementById('adminProductSearchMeta');
+            const clearBtn = document.getElementById('adminProductSearchClearBtn');
 
             try {
                 const catalogItems = await window.getAdminCatalogSnapshot();
+                const query = String(window.ADMIN_PRODUCT_FILTER_QUERY || '').trim().toLowerCase();
+                if (searchInput && searchInput.value !== window.ADMIN_PRODUCT_FILTER_QUERY) {
+                    searchInput.value = window.ADMIN_PRODUCT_FILTER_QUERY;
+                }
+                if (clearBtn) {
+                    clearBtn.classList.toggle('d-none', !query);
+                }
+
+                const visibleItems = !query
+                    ? catalogItems
+                    : catalogItems.filter((item) => {
+                        const haystack = [
+                            item.id,
+                            item.title,
+                            item.category,
+                            item.subCategory,
+                            item.badge,
+                            item.desc,
+                            item.sourceLabel
+                        ].map(value => String(value || '').toLowerCase()).join(' ');
+                        return haystack.includes(query);
+                    });
+
+                if (searchMeta) {
+                    searchMeta.innerText = query
+                        ? `${visibleItems.length} product${visibleItems.length === 1 ? '' : 's'} matched "${window.ADMIN_PRODUCT_FILTER_QUERY}".`
+                        : `Showing ${catalogItems.length} product${catalogItems.length === 1 ? '' : 's'} from default catalog + future admin additions.`;
+                }
+
                 if (!catalogItems.length) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No products found. Start adding!</td></tr>';
                     return;
                 }
 
+                if (!visibleItems.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No product matched your search.</td></tr>';
+                    return;
+                }
+
                 let html = '';
-                catalogItems.forEach(data => {
+                visibleItems.forEach(data => {
                     const shortDesc = (data.desc || 'No description available yet.').slice(0, 90);
                     const pricingMeta = data.originalPrice
                         ? `<div class="small text-muted text-decoration-line-through">${formatCurrency(data.originalPrice)}</div>`
@@ -1172,7 +1301,7 @@
                 });
                 tbody.innerHTML = html;
                 Array.from(tbody.querySelectorAll('tr')).forEach((row, index) => {
-                    const item = catalogItems[index];
+                    const item = visibleItems[index];
                     const priceCell = row.children[3];
                     if (!item || !priceCell) return;
 
@@ -1229,6 +1358,26 @@
                         : 'Admin Panel';
                 }
             };
+
+            const adminProductSearchInput = document.getElementById('adminProductSearchInput');
+            if (adminProductSearchInput) {
+                adminProductSearchInput.addEventListener('input', (event) => {
+                    window.ADMIN_PRODUCT_FILTER_QUERY = event.target.value.trim();
+                    window.loadAdminCatalog();
+                });
+            }
+
+            const adminProductSearchClearBtn = document.getElementById('adminProductSearchClearBtn');
+            if (adminProductSearchClearBtn) {
+                adminProductSearchClearBtn.addEventListener('click', () => {
+                    window.ADMIN_PRODUCT_FILTER_QUERY = '';
+                    if (adminProductSearchInput) {
+                        adminProductSearchInput.value = '';
+                        adminProductSearchInput.focus();
+                    }
+                    window.loadAdminCatalog();
+                });
+            }
 
             // Role Based Security Lock
             window.auth.onAuthStateChanged(async (user) => {
@@ -1344,12 +1493,17 @@
             };
 
             window.uploadSiteQrCode = async function (file) {
-                const storageRef = firebase.storage().ref();
                 const safe = String(file.name || 'qr').replace(/[^a-zA-Z0-9._-]/g, '-');
-                const path = `site/qr_${Date.now()}_${safe}`;
-                const fileRef = storageRef.child(path);
-                const snapshot = await window.completeStorageUpload(fileRef, file);
-                return await snapshot.ref.getDownloadURL();
+                return await window.uploadAssetWithFallback(file, {
+                    path: `site/qr_${Date.now()}_${safe}`,
+                    fallbackLabel: 'QR image',
+                    fallbackOptions: {
+                        maxWidth: 900,
+                        maxHeight: 900,
+                        quality: 0.92,
+                        outputType: 'image/png'
+                    }
+                });
             };
 
             const adminQrFile = document.getElementById('adminQrCodeFile');
