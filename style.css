@@ -433,14 +433,9 @@ body.product-modal-open > *:not(.product-modal) * {
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.whatsapp-icon {
-    bottom: 90px;
-    background: linear-gradient(135deg, #25D366, #128C7E);
-}
-.whatsapp-icon:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 25px rgba(37, 211, 102, 0.3); color: white;}
-
 .scroll-top-icon {
-    bottom: 20px;
+    bottom: 24px;
+    right: 100px;
     background-color: var(--theme-dark-green);
     border: none;
     opacity: 0;
@@ -458,8 +453,9 @@ body.product-modal-open > *:not(.product-modal) * {
     .sticky-icon {
         width: 45px; height: 45px; font-size: 22px; right: 15px;
     }
-    .whatsapp-icon { bottom: 70px; }
-    .scroll-top-icon { bottom: 15px; }
+    .scroll-top-icon { 
+        display: none !important; 
+    }
 }
 
 /* Premium Product Image Animations */

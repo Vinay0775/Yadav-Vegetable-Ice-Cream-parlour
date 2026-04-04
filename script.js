@@ -1769,7 +1769,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Sticky Floats
-    const floatHtml = `<a href="https://wa.me/917232825204" target="_blank" class="sticky-icon whatsapp-icon" title="Chat on WhatsApp"><i class="bi bi-whatsapp"></i></a><button id="scrollToTopBtn" class="sticky-icon scroll-top-icon" title="Go to top"><i class="bi bi-arrow-up"></i></button>`;
+    const floatHtml = `<button id="scrollToTopBtn" class="sticky-icon scroll-top-icon" title="Go to top"><i class="bi bi-arrow-up"></i></button>`;
     const floatDiv = document.createElement('div'); floatDiv.innerHTML = floatHtml; document.body.appendChild(floatDiv);
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     window.addEventListener('scroll', () => { if (window.scrollY > 300) scrollToTopBtn.classList.add('show'); else scrollToTopBtn.classList.remove('show'); });
