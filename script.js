@@ -338,7 +338,6 @@ function attachGlobalSettingsListener() {
             
             console.log('Payment settings updated:', { upiId: data.upiId, showQrCode: data.showQrCode, showQuickPay: data.showQuickPayButtons, showUpiId: data.showUpiId });
         }
-        }
 
         const isAdminPage = window.location.pathname.includes('admin.html');
         if (data.maintenanceMode && !isAdminPage) {
@@ -1624,6 +1623,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // UPI Payment - Direct App Redirect
     window.payWithUPI = function(app) {
+        // Reload cart to get latest data
+        cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
+        
         // Get payment amount from cart
         const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
         const total = Math.ceil(subtotal + (subtotal * 0.05));
@@ -1635,7 +1637,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = total.toFixed(2);
         const note = `Order Payment`;
         
-        console.log('Initiating UPI payment to:', upiID, 'Amount:', amount);
+        console.log('Initiating UPI payment to:', upiID, 'Amount:', amount, 'Cart items:', cart.length);
         
         // Create UPI Intent URL
         const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
@@ -1695,20 +1697,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const payBtn = document.getElementById('payNowBtn');
     if (payBtn) {
+        // Reload cart from localStorage to ensure fresh data
+        cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
+        
         let subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
         const total = Math.ceil(subtotal + (subtotal * 0.05));
+        
+        console.log('Payment page - Cart loaded:', cart.length, 'items, Total:', total);
 
         let html = '';
-        cart.forEach(item => {
-            html += `<div class="order-item">
-                <img src="${item.image}" class="order-item-img" alt="${item.title}">
-                <div class="order-item-details">
-                    <h6 class="order-item-title">${item.title}</h6>
-                    <span class="order-item-qty">Qty: ${item.quantity}</span>
-                </div>
-                <span class="order-item-price">${formatCurrency(item.price * item.quantity)}</span>
-            </div>`;
-        });
+        if (cart.length > 0) {
+            cart.forEach(item => {
+                html += `<div class="order-item">
+                    <img src="${item.image}" class="order-item-img" alt="${item.title}">
+                    <div class="order-item-details">
+                        <h6 class="order-item-title">${item.title}</h6>
+                        <span class="order-item-qty">Qty: ${item.quantity}</span>
+                    </div>
+                    <span class="order-item-price">${formatCurrency(item.price * item.quantity)}</span>
+                </div>`;
+            });
+        } else {
+            html = '<p class="text-muted text-center py-4">Your cart is empty</p>';
+        }
+        
         if (document.getElementById('paymentCartItems')) document.getElementById('paymentCartItems').innerHTML = html;
         if (document.getElementById('paymentSubtotal')) document.getElementById('paymentSubtotal').innerText = formatCurrency(subtotal);
         if (document.getElementById('paymentTotal')) document.getElementById('paymentTotal').innerText = formatCurrency(total);

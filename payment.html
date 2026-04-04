@@ -891,72 +891,19 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase Data SDKs (Compat Version for local file:// access) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="catalog.js"></script>
     
-    <!-- Load Payment Settings from Firebase -->
+    <!-- Payment method toggle function -->
     <script>
-    // Payment method toggle function
     function togglePaymentMethod(methodId) {
         document.querySelectorAll('.payment-method').forEach(method => {
             method.classList.remove('active');
         });
         document.getElementById(methodId).classList.add('active');
     }
-    
-    // Load UPI settings from Firebase
-    (function loadPaymentSettings() {
-        try {
-            if (!firebase.apps.length && window.firebaseConfig) {
-                firebase.initializeApp(window.firebaseConfig);
-            }
-            
-            const db = firebase.firestore();
-            
-            db.collection('settings').doc('global').onSnapshot(doc => {
-                if (!doc.exists) return;
-                
-                const data = doc.data();
-                
-                // Update UPI ID display
-                const upiId = data.upiId || 'yadav.store@okicici';
-                const upiIdElement = document.getElementById('upiId');
-                if (upiIdElement) {
-                    upiIdElement.textContent = upiId;
-                }
-                
-                // Toggle QR Code visibility
-                const qrSection = document.getElementById('paymentQrSection');
-                if (qrSection && data.showQrCode === false) {
-                    qrSection.style.display = 'none';
-                }
-                
-                // Toggle Quick Pay buttons visibility
-                const quickPaySection = document.getElementById('paymentQuickPaySection');
-                if (quickPaySection && data.showQuickPayButtons === false) {
-                    quickPaySection.style.display = 'none';
-                }
-                
-                // Toggle UPI ID visibility
-                const upiIdSection = document.getElementById('paymentUpiIdSection');
-                if (upiIdSection && data.showUpiId === false) {
-                    upiIdSection.style.display = 'none';
-                }
-            });
-        } catch (error) {
-            console.error('Error loading payment settings:', error);
-            const upiIdElement = document.getElementById('upiId');
-            if (upiIdElement) {
-                upiIdElement.textContent = 'yadav.store@okicici';
-            }
-        }
-    })();
     </script>
     
-    <script src="script.js?v=5"></script>
+    <script src="script.js?v=6"></script>
     <!-- AOS Animation JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
