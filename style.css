@@ -1614,3 +1614,326 @@ body.dark-mode .hero-section .carousel-indicators button {
 body.dark-mode .hero-section .carousel-indicators .active {
     background-color: #fff;
 }
+
+/* =========================================================================
+   18. STOREFRONT PREMIUM MOTION & DEPTH (admin-dashboard excluded)
+   ========================================================================= */
+body:not(.admin-dashboard) {
+    position: relative;
+}
+
+body:not(.admin-dashboard)::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(122, 183, 48, 0.09), transparent 50%),
+        radial-gradient(ellipse 90% 60% at 100% 50%, rgba(232, 58, 89, 0.05), transparent 45%),
+        radial-gradient(ellipse 70% 50% at 0% 80%, rgba(122, 183, 48, 0.04), transparent 40%);
+    animation: storefrontAmbient 16s ease-in-out infinite alternate;
+}
+
+@keyframes storefrontAmbient {
+    0% { opacity: 0.75; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.03); }
+}
+
+body.dark-mode:not(.admin-dashboard)::before {
+    opacity: 0.35;
+    animation-duration: 22s;
+}
+
+/* Hero: floating color mesh over grid */
+body:not(.admin-dashboard) .hero-section {
+    isolation: isolate;
+}
+
+body:not(.admin-dashboard) .hero-section::after {
+    content: "";
+    position: absolute;
+    inset: -15%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 55% 45% at 15% 35%, rgba(122, 183, 48, 0.22), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 85% 65%, rgba(232, 58, 89, 0.14), transparent 50%),
+        radial-gradient(ellipse 40% 35% at 50% 90%, rgba(255, 255, 255, 0.2), transparent 55%);
+    animation: heroBlobDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes heroBlobDrift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(2%, -1.5%) rotate(2deg); }
+}
+
+body.dark-mode:not(.admin-dashboard) .hero-section::after {
+    opacity: 0.45;
+}
+
+/* Hero titles: animated gradient accents */
+body:not(.admin-dashboard) .hero-title .text-success {
+    background: linear-gradient(100deg, #4d8a1c 0%, var(--theme-green) 35%, #c4ef7a 70%, var(--theme-green-dark) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    animation: premiumTextFlow 7s ease-in-out infinite;
+}
+
+/* Hero typewriter cursor */
+body:not(.admin-dashboard) .hero-type-cursor {
+    display: inline-block;
+    margin-left: 1px;
+    font-weight: 300;
+    opacity: 0.9;
+    animation: heroCursorBlink 0.85s step-end infinite;
+}
+
+body:not(.admin-dashboard) .hero-type-cursor.hero-type-cursor-done {
+    animation: none;
+    opacity: 0;
+}
+
+@keyframes heroCursorBlink {
+    50% { opacity: 0; }
+}
+
+body:not(.admin-dashboard) .hero-title .text-pink {
+    background: linear-gradient(100deg, #c92e48 0%, var(--theme-pink) 40%, #ffb3c8 75%, var(--theme-pink-dark) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    animation: premiumTextFlow 8s ease-in-out infinite;
+}
+
+@keyframes premiumTextFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+body.dark-mode:not(.admin-dashboard) .hero-title .text-success {
+    background: linear-gradient(100deg, #8fd050 0%, #b8f076 50%, var(--theme-green) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+}
+
+body.dark-mode:not(.admin-dashboard) .hero-title .text-pink {
+    background: linear-gradient(100deg, #ff8a9b 0%, #ffd0d8 45%, var(--theme-pink) 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+}
+
+/* Hero product image: depth shadow (works with float animation) */
+body:not(.admin-dashboard) .drop-shadow-img {
+    box-shadow:
+        0 28px 56px rgba(12, 32, 18, 0.2),
+        0 12px 28px rgba(122, 183, 48, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.08));
+}
+
+/* Section titles: eyebrow underline reveal */
+body:not(.admin-dashboard) .section-title > p.text-success,
+body:not(.admin-dashboard) .section-title > p.text-pink,
+body:not(.admin-dashboard) .section-title > p.text-warning {
+    position: relative;
+    display: inline-block;
+}
+
+body:not(.admin-dashboard) .section-title > p.text-success::after,
+body:not(.admin-dashboard) .section-title > p.text-pink::after,
+body:not(.admin-dashboard) .section-title > p.text-warning::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 100%;
+    height: 3px;
+    border-radius: 3px;
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: sectionUnderline 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s forwards;
+}
+
+body:not(.admin-dashboard) .section-title > p.text-success::after {
+    background: linear-gradient(90deg, var(--theme-green), rgba(122, 183, 48, 0.15));
+}
+
+body:not(.admin-dashboard) .section-title > p.text-pink::after {
+    background: linear-gradient(90deg, var(--theme-pink), rgba(232, 58, 89, 0.15));
+}
+
+body:not(.admin-dashboard) .section-title > p.text-warning::after {
+    background: linear-gradient(90deg, #ffc107, rgba(255, 193, 7, 0.15));
+}
+
+@keyframes sectionUnderline {
+    to { transform: scaleX(1); }
+}
+
+/* Page headers (inner pages): soft motion on orbs */
+body:not(.admin-dashboard) .page-header::before,
+body:not(.admin-dashboard) .page-header::after {
+    animation: pageHeaderOrb 12s ease-in-out infinite alternate;
+}
+
+body:not(.admin-dashboard) .page-header::after {
+    animation-delay: -4s;
+}
+
+@keyframes pageHeaderOrb {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    100% { transform: translate(12px, -8px) scale(1.06); opacity: 0.65; }
+}
+
+/* Category cards: 3D tilt + premium shadow */
+body:not(.admin-dashboard) .category-card {
+    transition:
+        transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.45s ease,
+        border-color 0.35s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+body:not(.admin-dashboard) .category-card:hover {
+    transform: translateY(-8px) perspective(900px) rotateX(5deg) rotateY(-4deg);
+    box-shadow:
+        0 28px 56px rgba(22, 42, 28, 0.12),
+        0 10px 24px rgba(122, 183, 48, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    border-color: rgba(122, 183, 48, 0.28);
+}
+
+body.dark-mode:not(.admin-dashboard) .category-card:hover {
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.35),
+        0 8px 20px rgba(122, 183, 48, 0.08);
+}
+
+/* Product cards: layered shadow + sheen on hover */
+body:not(.admin-dashboard) .product-card {
+    transition:
+        transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.45s ease;
+}
+
+body:not(.admin-dashboard) .product-card:hover {
+    box-shadow:
+        0 32px 64px rgba(14, 32, 20, 0.18),
+        0 14px 28px rgba(122, 183, 48, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+body.dark-mode:not(.admin-dashboard) .product-card:hover {
+    box-shadow:
+        0 28px 56px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Feature boxes: icon lift on hover */
+body:not(.admin-dashboard) .features-section .feature-box {
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+
+body:not(.admin-dashboard) .features-section .feature-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 44px rgba(25, 48, 30, 0.1);
+}
+
+body:not(.admin-dashboard) .features-section .feature-box:hover .icon-circle {
+    transform: scale(1.08);
+    box-shadow: 0 12px 28px rgba(122, 183, 48, 0.18);
+}
+
+body:not(.admin-dashboard) .features-section .icon-circle {
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+
+/* CTA banner: living sheen */
+body:not(.admin-dashboard) .cta-section .bg-success.pattern-bg {
+    position: relative;
+    overflow: hidden;
+    animation: ctaLiving 10s ease-in-out infinite;
+}
+
+@keyframes ctaLiving {
+    0%, 100% {
+        filter: brightness(1) saturate(1);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 24px 48px rgba(25, 135, 84, 0.25);
+    }
+    50% {
+        filter: brightness(1.05) saturate(1.06);
+        box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.06), 0 28px 56px rgba(25, 135, 84, 0.32);
+    }
+}
+
+body:not(.admin-dashboard) .cta-section .bg-success.pattern-bg::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: linear-gradient(
+        105deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.12) 48%,
+        rgba(255, 255, 255, 0.22) 50%,
+        rgba(255, 255, 255, 0.12) 52%,
+        transparent 65%
+    );
+    transform: translateX(-60%) rotate(12deg);
+    animation: ctaSheen 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes ctaSheen {
+    0% { transform: translateX(-70%) rotate(12deg); }
+    40%, 60% { transform: translateX(45%) rotate(12deg); }
+    100% { transform: translateX(120%) rotate(12deg); }
+}
+
+/* Login card polish */
+body:not(.admin-dashboard) .login-card {
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+}
+
+body:not(.admin-dashboard) .login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 24px 56px rgba(37, 61, 44, 0.12);
+}
+
+/* Main header: subtle depth */
+body:not(.admin-dashboard) .main-header {
+    transition: box-shadow 0.35s ease;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    body:not(.admin-dashboard)::before,
+    body:not(.admin-dashboard) .hero-section::after,
+    body:not(.admin-dashboard) .hero-type-cursor,
+    body:not(.admin-dashboard) .hero-title .text-success,
+    body:not(.admin-dashboard) .hero-title .text-pink,
+    body:not(.admin-dashboard) .section-title > p.text-success::after,
+    body:not(.admin-dashboard) .section-title > p.text-pink::after,
+    body:not(.admin-dashboard) .section-title > p.text-warning::after,
+    body:not(.admin-dashboard) .page-header::before,
+    body:not(.admin-dashboard) .page-header::after,
+    body:not(.admin-dashboard) .cta-section .bg-success.pattern-bg,
+    body:not(.admin-dashboard) .cta-section .bg-success.pattern-bg::after {
+        animation: none !important;
+    }
+
+    body:not(.admin-dashboard) .section-title > p.text-success::after,
+    body:not(.admin-dashboard) .section-title > p.text-pink::after,
+    body:not(.admin-dashboard) .section-title > p.text-warning::after {
+        transform: scaleX(1);
+    }
+
+}

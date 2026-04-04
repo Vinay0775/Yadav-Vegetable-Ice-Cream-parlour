@@ -1904,8 +1904,95 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize animations if AOS exists
-    if(typeof window.AOS !== 'undefined') {
-        window.AOS.init({ once: true, duration: 800 });
+    // Initialize animations if AOS exists (storefront only — admin stays calm)
+    if (typeof window.AOS !== 'undefined' && !document.body.classList.contains('admin-dashboard')) {
+        window.AOS.init({
+            once: true,
+            duration: 780,
+            easing: 'ease-out',
+            offset: 48,
+            delay: 0
+        });
     }
+
+    // Hero typewriter (index.html carousel headlines)
+    (function initHeroTypewriter() {
+        if (document.body.classList.contains('admin-dashboard')) return;
+        const carousel = document.getElementById('heroCarousel');
+        if (!carousel) return;
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let typewriterGen = 0;
+
+        function typeHeroTitle(slideEl) {
+            const h1 = slideEl && slideEl.querySelector('.hero-typewriter');
+            if (!h1) return;
+
+            const myGen = ++typewriterGen;
+            const l1 = h1.querySelector('.hero-type-line1');
+            const l2 = h1.querySelector('.hero-type-line2');
+            const cur = h1.querySelector('.hero-type-cursor');
+            const line1 = (h1.dataset.typeLine1 || '').trim();
+            const line2 = (h1.dataset.typeLine2 || '').trim();
+            const accentPink = h1.dataset.typeAccent === 'pink';
+
+            l2.className = 'hero-type-line2 ' + (accentPink ? 'text-pink' : 'text-success');
+
+            if (!l1 || !l2) return;
+
+            if (reduceMotion) {
+                l1.textContent = line1;
+                l2.textContent = line2;
+                if (cur) cur.style.display = 'none';
+                return;
+            }
+
+            l1.textContent = '';
+            l2.textContent = '';
+            if (cur) {
+                cur.style.display = 'inline';
+                cur.classList.remove('hero-type-cursor-done');
+            }
+
+            const speed = 52;
+            let idx = 0;
+
+            function typeLine1() {
+                if (myGen !== typewriterGen) return;
+                if (idx < line1.length) {
+                    l1.textContent += line1[idx];
+                    idx += 1;
+                    setTimeout(typeLine1, speed);
+                } else {
+                    idx = 0;
+                    setTimeout(typeLine2, 380);
+                }
+            }
+
+            function typeLine2() {
+                if (myGen !== typewriterGen) return;
+                if (idx < line2.length) {
+                    l2.textContent += line2[idx];
+                    idx += 1;
+                    setTimeout(typeLine2, speed);
+                } else if (cur) {
+                    cur.classList.add('hero-type-cursor-done');
+                    setTimeout(() => {
+                        if (myGen === typewriterGen) cur.style.display = 'none';
+                    }, 900);
+                }
+            }
+
+            typeLine1();
+        }
+
+        const firstActive = carousel.querySelector('.carousel-item.active');
+        if (firstActive) {
+            typeHeroTitle(firstActive);
+        }
+
+        carousel.addEventListener('slid.bs.carousel', (e) => {
+            if (e.relatedTarget) typeHeroTitle(e.relatedTarget);
+        });
+    })();
 });
