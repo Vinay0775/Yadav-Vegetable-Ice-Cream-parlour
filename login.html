@@ -294,6 +294,21 @@
 
         let isSignup = false;
 
+        async function applySelectedPersistence() {
+            const rememberMe = document.getElementById('rememberMe');
+            const persistence = rememberMe && rememberMe.checked
+                ? firebase.auth.Auth.Persistence.LOCAL
+                : firebase.auth.Auth.Persistence.SESSION;
+            await window.auth.setPersistence(persistence);
+        }
+
+        async function getRedirectForUser(user) {
+            if (typeof window.getPostLoginRedirect === 'function') {
+                return window.getPostLoginRedirect(user);
+            }
+            return 'profile.html';
+        }
+
         window.setAuthMode = function (mode) {
             const submitBtn = document.getElementById('authSubmitBtn');
             const subtitle = document.getElementById('authSubtitle');
@@ -339,7 +354,7 @@
         document.getElementById('authForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const email = document.getElementById('authEmail').value.trim();
+            const email = (window.normalizeEmail ? window.normalizeEmail(document.getElementById('authEmail').value) : document.getElementById('authEmail').value.trim().toLowerCase());
             const password = document.getElementById('authPassword').value;
             const submitBtn = document.getElementById('authSubmitBtn');
 
@@ -351,6 +366,7 @@
                     // Create User in Firebase Authentication
                     const name = document.getElementById('authName').value.trim();
                     const phone = document.getElementById('authPhone').value.trim();
+                    await window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
                     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
                     const user = userCredential.user;
@@ -358,24 +374,26 @@
                     // Update display name natively in Firebase
                     await user.updateProfile({ displayName: name });
 
-                    // Save custom metadata payload (including requested plain text password) immediately to Firestore
                     await window.db.collection("users").doc(user.uid).set({
                         uid: user.uid,
                         name: name,
                         email: email,
                         phone: phone,
-                        password: password,
-                        joinedAt: new Date().toISOString()
-                    });
+                        joinedAt: new Date().toISOString(),
+                        lastLoginAt: new Date().toISOString()
+                    }, { merge: true });
 
-                    showSuccessCelebration("Account Created!", `Welcome ${name || 'User'}, your account is ready.`, 'profile.html');
+                    const redirectUrl = await getRedirectForUser(user);
+                    showSuccessCelebration("Account Created!", `Welcome ${name || 'User'}, your account is ready.`, redirectUrl);
 
                 } else {
                     // Standard Login Validation
+                    await applySelectedPersistence();
                     const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
                     const user = userCredential.user;
+                    const redirectUrl = await getRedirectForUser(user);
 
-                    showSuccessCelebration("Login Successful!", `Welcome back, ${user.displayName || 'User'}.`, 'index.html');
+                    showSuccessCelebration("Login Successful!", `Welcome back, ${user.displayName || 'User'}.`, redirectUrl);
                 }
             } catch (error) {
                 console.error("Auth Error", error);
@@ -396,7 +414,7 @@
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
-        window.socialLogin = async function (providerName) {
+        window.socialLoginLegacy = async function (providerName) {
             try {
                 let provider = null;
 
@@ -440,6 +458,60 @@
                 }
             }
         }
+
+        window.socialLogin = async function (providerName) {
+            try {
+                let provider = null;
+
+                if (providerName === 'Google') provider = googleProvider;
+                else if (providerName === 'Facebook') provider = facebookProvider;
+                else {
+                    window.showToast("Unsupported", `${providerName} login is not fully supported yet.`, true);
+                    return;
+                }
+
+                if (window.location.protocol === 'file:') {
+                    window.showToast("Local URL Error", `Social Login (${providerName}) does not work with 'file://' URLs. Open via live server or deployed site.`, true);
+                    return;
+                }
+
+                await applySelectedPersistence();
+                const result = await window.auth.signInWithPopup(provider);
+                const user = result.user;
+                const normalizedEmail = window.normalizeEmail ? window.normalizeEmail(user.email || '') : (user.email || '').trim().toLowerCase();
+
+                const userDocRef = window.db.collection("users").doc(user.uid);
+                const userDocSnap = await userDocRef.get();
+                if (!userDocSnap.exists) {
+                    await userDocRef.set({
+                        uid: user.uid,
+                        name: user.displayName || 'User',
+                        email: normalizedEmail,
+                        phone: user.phoneNumber || 'Not provided',
+                        joinedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+
+                await userDocRef.set({
+                    email: normalizedEmail,
+                    name: user.displayName || 'User',
+                    phone: user.phoneNumber || 'Not provided',
+                    lastLoginAt: new Date().toISOString()
+                }, { merge: true });
+
+                const redirectUrl = await getRedirectForUser(user);
+                showSuccessCelebration("Awesome!", `Welcome ${user.displayName || 'back'}! Successfully authenticated with ${providerName}.`, redirectUrl);
+            } catch (error) {
+                console.error("Popup Error:", error);
+                if (error.code === 'auth/account-exists-with-different-credential') {
+                    window.showToast("Auth Error", "You already have an account with the same email using a different provider.", true);
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    window.showToast("Domain Error", `Domain not authorized. Add '${window.location.hostname}' to Authorized Domains.`, true);
+                } else {
+                    window.showToast("Login Failed", `${providerName} login failed: ` + error.message, true);
+                }
+            }
+        };
 
         // Active Forgot Password Reset Logic
         window.resetPassword = function () {

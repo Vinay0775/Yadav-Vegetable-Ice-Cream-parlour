@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Yadav Vegetabel Ice-Cream Parlour</title>
+    <title>Admin Dashboard - Yadav Vegetable Ice-Cream Parlour</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -134,6 +134,39 @@
                                     class="bi bi-chat-dots-fill"></i></div>
                         </div>
                     </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Weekend Revenue</p>
+                                <h3 class="fw-bold text-info mb-0" id="weekendRevenueVal">Rs. 0</h3>
+                            </div>
+                            <div class="bg-info bg-opacity-10 text-info rounded-circle p-3 fs-3"><i
+                                    class="bi bi-bar-chart-line-fill"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Weekend Orders</p>
+                                <h3 class="fw-bold text-dark mb-0" id="weekendOrdersCount">0</h3>
+                            </div>
+                            <div class="bg-dark bg-opacity-10 text-dark rounded-circle p-3 fs-3"><i
+                                    class="bi bi-calendar-week-fill"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div
+                            class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4 d-flex flex-row align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted small mb-1">Live Products</p>
+                                <h3 class="fw-bold text-primary mb-0" id="liveCatalogCount">0</h3>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 fs-3"><i
+                                    class="bi bi-basket2-fill"></i></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Chart & Recent Activity -->
@@ -166,6 +199,80 @@
 
             <!-- ANALYTICS TAB -->
             <div id="sec-analytics" class="admin-section d-none">
+                <div class="row g-4 mb-5">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100 p-4">
+                            <p class="text-muted small mb-2">Average Order Value</p>
+                            <h4 class="fw-bold text-success mb-0" id="averageOrderValueVal">Rs. 0</h4>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100 p-4">
+                            <p class="text-muted small mb-2">Pending Enquiries</p>
+                            <h4 class="fw-bold text-danger mb-0" id="pendingEnquiriesVal">0</h4>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100 p-4">
+                            <p class="text-muted small mb-2">Weekend Revenue</p>
+                            <h4 class="fw-bold text-info mb-0" id="weekendRevenueMini">Rs. 0</h4>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100 p-4">
+                            <p class="text-muted small mb-2">Live Catalog Items</p>
+                            <h4 class="fw-bold text-primary mb-0" id="analyticsLiveCatalogCount">0</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-calendar-week me-2 text-info"></i> Weekend Analysis</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="weekendChart" height="180"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill me-2 text-warning"></i> Sales By Category</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="categorySalesChart" height="180"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-lightbulb-fill me-2 text-success"></i> Business Insights</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="businessInsightsList">
+                                    <div class="p-4 text-muted small">Loading insights...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                            <div class="card-header bg-white border-bottom p-4">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-shield-check me-2 text-primary"></i> Important Admin Controls</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="adminEssentialsList">
+                                    <div class="p-4 text-muted small">Preparing admin controls list...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="card border-0 shadow-sm rounded-4 bg-white mb-5">
                     <div class="card-header bg-white border-bottom p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-calculator me-2 text-primary"></i> Smart Price
@@ -218,7 +325,7 @@
                                 <thead class="bg-light text-muted small position-sticky top-0 z-index-2">
                                     <tr>
                                         <th class="py-3 px-4 border-0">Image</th>
-                                        <th class="py-3 border-0">Product Name</th>
+                                        <th class="py-3 border-0">Product</th>
                                         <th class="py-3 border-0">Category</th>
                                         <th class="py-3 border-0">Price (₹)</th>
                                         <th class="py-3 px-4 text-end border-0">Actions</th>
@@ -253,7 +360,7 @@
                                     <label class="form-label text-muted small">Category *</label>
                                     <select id="addCat" class="form-select shadow-none" required>
                                         <option value="Vegetables">Vegetables</option>
-                                        <option value="Fresh Fruits">Fresh Fruits</option>
+                                        <option value="Fruits">Fruits</option>
                                         <option value="Ice-Creams">Ice-Creams</option>
                                         <option value="Dairy">Dairy</option>
                                     </select>
@@ -264,8 +371,22 @@
                                         min="1">
                                 </div>
                                 <div class="col-md-4">
+                                    <label class="form-label text-muted small">Sub Category</label>
+                                    <select id="addSubCat" class="form-select shadow-none"></select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label text-muted small">Original Price (₹)</label>
                                     <input type="number" id="addOrigPrice" class="form-control shadow-none">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Rating</label>
+                                    <input type="number" id="addRating" class="form-control shadow-none" min="1"
+                                        max="5" step="0.1" value="5">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Badge / Tag</label>
+                                    <input type="text" id="addBadge" class="form-control shadow-none"
+                                        placeholder="Fresh, Bestseller, Premium">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small">Upload Image File (Recommended) *</label>
@@ -429,6 +550,81 @@
                 </div>
             </div>
 
+            <div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow rounded-4">
+                        <div class="modal-header border-bottom-0 pb-0">
+                            <div>
+                                <h5 class="modal-title fw-bold">Edit Product</h5>
+                                <p class="text-muted small mb-0">Name, price, image, description aur category sab yahin se update karo.</p>
+                            </div>
+                            <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body pt-3">
+                            <form id="editProductForm" class="row g-3">
+                                <input type="hidden" id="editProductId">
+                                <div class="col-md-8">
+                                    <label class="form-label text-muted small">Product Title *</label>
+                                    <input type="text" id="editTitle" class="form-control shadow-none" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Rating</label>
+                                    <input type="number" id="editRating" class="form-control shadow-none" min="1" max="5" step="0.1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Category *</label>
+                                    <select id="editCat" class="form-select shadow-none" required>
+                                        <option value="Vegetables">Vegetables</option>
+                                        <option value="Fruits">Fruits</option>
+                                        <option value="Ice-Creams">Ice-Creams</option>
+                                        <option value="Dairy">Dairy</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Sub Category</label>
+                                    <select id="editSubCat" class="form-select shadow-none"></select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Badge / Tag</label>
+                                    <input type="text" id="editBadge" class="form-control shadow-none" placeholder="Fresh, Bestseller, Premium">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Selling Price *</label>
+                                    <input type="number" id="editPrice" class="form-control shadow-none" min="1" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Original Price</label>
+                                    <input type="number" id="editOrigPrice" class="form-control shadow-none" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Image URL</label>
+                                    <input type="url" id="editImageUrl" class="form-control shadow-none" placeholder="https://...">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Replace Image</label>
+                                    <input type="file" id="editImageFile" class="form-control shadow-none" accept="image/*">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small">Preview</label>
+                                    <div class="border rounded-4 bg-light d-flex align-items-center justify-content-center overflow-hidden" style="height: 120px;">
+                                        <img id="editProductPreview" src="" alt="Product preview" class="img-fluid h-100 w-100 object-fit-cover d-none">
+                                        <span id="editProductPreviewPlaceholder" class="text-muted small">No image selected</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-muted small">Description</label>
+                                    <textarea id="editDesc" class="form-control shadow-none" rows="4" placeholder="Fresh product description..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-0">
+                            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success px-4" id="saveProductChangesBtn" onclick="saveAdminProductChanges()">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -460,12 +656,269 @@
         document.getElementById('calcDisc').addEventListener('input', performCalc);
         document.getElementById('calcTax').addEventListener('input', performCalc);
 
+        const ADMIN_CATEGORY_OPTIONS = {
+            Vegetables: ['Root Vegetables', 'Leafy Greens', 'Gourds & Squashes', 'Onions & Potatoes'],
+            Fruits: ['Everyday Fruits', 'Citrus', 'Tropical', 'Berries'],
+            'Ice-Creams': ['Scooperstar Cups', 'Choco Bar', 'Ice-Cream Cakes', 'Chillo Cone'],
+            Dairy: ['Milk', 'Paneer', 'Curd', 'Butter']
+        };
+
+        window.getAdminDateFromValue = function (value) {
+            if (!value) return null;
+            if (typeof value.toDate === 'function') return value.toDate();
+            if (typeof value === 'number') return new Date(value);
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+
+        window.getAdminOrderDate = function (order) {
+            return window.getAdminDateFromValue(order?.createdAt) || window.getAdminDateFromValue(order?.date) || new Date();
+        };
+
+        window.getAdminOrderAmount = function (order) {
+            return Number(order?.totalAmount ?? order?.totalPrice ?? 0) || 0;
+        };
+
+        window.populateAdminSubCategoryOptions = function (selectId, category, selectedValue = '') {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            const normalizedCategory = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(category) : category;
+            const options = ADMIN_CATEGORY_OPTIONS[normalizedCategory] || [];
+            select.innerHTML = '<option value="">Select Sub Category</option>' + options.map(option => `<option value="${option}">${option}</option>`).join('');
+
+            if (selectedValue && !options.includes(selectedValue)) {
+                select.innerHTML += `<option value="${selectedValue}">${selectedValue}</option>`;
+            }
+
+            select.value = selectedValue || '';
+        };
+
+        window.updateAdminImagePreview = function (imageId, placeholderId, url) {
+            const img = document.getElementById(imageId);
+            const placeholder = document.getElementById(placeholderId);
+            if (!img || !placeholder) return;
+
+            if (url) {
+                img.src = url;
+                img.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+            } else {
+                img.src = '';
+                img.classList.add('d-none');
+                placeholder.classList.remove('d-none');
+            }
+        };
+
+        window.handleAdminImageInput = function (input, imageId, placeholderId) {
+            const file = input?.files?.[0];
+            if (!file) return;
+            const tempUrl = URL.createObjectURL(file);
+            window.updateAdminImagePreview(imageId, placeholderId, tempUrl);
+        };
+
+        window.uploadAdminProductImage = async function (file, productKey) {
+            if (!file) return '';
+            const storageRef = firebase.storage().ref();
+            const safeName = String(file.name || 'product-image').replace(/[^a-zA-Z0-9._-]/g, '-');
+            const fileRef = storageRef.child(`products/${productKey}_${Date.now()}_${safeName}`);
+            const uploadTask = await fileRef.put(file);
+            return uploadTask.ref.getDownloadURL();
+        };
+
+        window.getAdminCatalogSnapshot = async function () {
+            const mergedCatalog = new Map();
+            const staticCatalog = Array.isArray(window.CATALOG) && window.CATALOG.length
+                ? window.CATALOG
+                : (typeof YADAV_CATALOG !== 'undefined' ? YADAV_CATALOG : []);
+
+            staticCatalog.forEach(item => {
+                const key = item.id || item.title;
+                mergedCatalog.set(key, {
+                    ...item,
+                    id: key,
+                    category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category,
+                    subCategory: item.subCategory || '',
+                    rating: Number(item.rating) || 5,
+                    badge: item.badge || '',
+                    desc: item.desc || '',
+                    sourceType: 'catalog',
+                    sourceLabel: 'Catalog Default',
+                    archived: false
+                });
+            });
+
+            const liveSnap = await window.db.collection('products').get();
+            liveSnap.forEach(doc => {
+                const liveData = doc.data();
+                const key = doc.id || liveData.id || liveData.title;
+                const existing = mergedCatalog.get(key);
+
+                if (liveData.archived) {
+                    mergedCatalog.delete(key);
+                    return;
+                }
+
+                mergedCatalog.set(key, {
+                    ...existing,
+                    ...liveData,
+                    id: key,
+                    firestoreId: doc.id,
+                    category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || existing?.category) : (liveData.category || existing?.category),
+                    subCategory: liveData.subCategory || existing?.subCategory || '',
+                    rating: Number(liveData.rating ?? existing?.rating ?? 5) || 5,
+                    badge: liveData.badge || existing?.badge || '',
+                    desc: liveData.desc || existing?.desc || '',
+                    sourceType: existing ? 'synced' : 'custom',
+                    sourceLabel: existing ? 'Catalog Sync' : 'Custom Firestore',
+                    archived: false
+                });
+            });
+
+            const items = Array.from(mergedCatalog.values()).sort((a, b) => {
+                const dateA = window.getAdminDateFromValue(a.updatedAt) || window.getAdminDateFromValue(a.createdAt);
+                const dateB = window.getAdminDateFromValue(b.updatedAt) || window.getAdminDateFromValue(b.createdAt);
+                const timeA = dateA ? dateA.getTime() : 0;
+                const timeB = dateB ? dateB.getTime() : 0;
+                if (timeA !== timeB) return timeB - timeA;
+                return String(a.title || '').localeCompare(String(b.title || ''));
+            });
+
+            window.ADMIN_PRODUCT_CACHE = items;
+            return items;
+        };
+
+        window.openAdminProductEditor = async function (productId) {
+            try {
+                const products = window.ADMIN_PRODUCT_CACHE?.length ? window.ADMIN_PRODUCT_CACHE : await window.getAdminCatalogSnapshot();
+                const product = products.find(item => item.id === productId);
+                if (!product) {
+                    if (window.showToast) window.showToast('Not Found', 'Product could not be loaded for editing.', true);
+                    return;
+                }
+
+                document.getElementById('editProductId').value = product.id;
+                document.getElementById('editTitle').value = product.title || '';
+                document.getElementById('editCat').value = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(product.category) : (product.category || 'Vegetables');
+                document.getElementById('editPrice').value = Number(product.price) || 0;
+                document.getElementById('editOrigPrice').value = Number(product.originalPrice) || '';
+                document.getElementById('editRating').value = Number(product.rating) || 5;
+                document.getElementById('editBadge').value = product.badge || '';
+                document.getElementById('editImageUrl').value = product.image || '';
+                document.getElementById('editDesc').value = product.desc || '';
+
+                window.populateAdminSubCategoryOptions('editSubCat', product.category || 'Vegetables', product.subCategory || '');
+                window.updateAdminImagePreview('editProductPreview', 'editProductPreviewPlaceholder', product.image || '');
+                document.getElementById('editImageFile').value = '';
+
+                const modalEl = document.getElementById('editProductModal');
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            } catch (error) {
+                console.error('Edit product open failed:', error);
+                if (window.showToast) window.showToast('Error', 'Could not open product editor.', true);
+            }
+        };
+
+        window.saveAdminProductChanges = async function () {
+            const productId = document.getElementById('editProductId').value.trim();
+            const title = document.getElementById('editTitle').value.trim();
+            const category = document.getElementById('editCat').value;
+            const normalizedCategory = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(category) : category;
+            const subCategory = document.getElementById('editSubCat').value.trim();
+            const price = parseFloat(document.getElementById('editPrice').value);
+            const originalPrice = parseFloat(document.getElementById('editOrigPrice').value);
+            const rating = parseFloat(document.getElementById('editRating').value) || 5;
+            const badge = document.getElementById('editBadge').value.trim();
+            const imageUrl = document.getElementById('editImageUrl').value.trim();
+            const imageFile = document.getElementById('editImageFile').files[0];
+            const desc = document.getElementById('editDesc').value.trim();
+            const saveBtn = document.getElementById('saveProductChangesBtn');
+
+            if (!productId || !title || !price || (!imageUrl && !imageFile)) {
+                if (window.showToast) window.showToast('Validation Error', 'Name, price and image are required.', true);
+                return;
+            }
+
+            saveBtn.disabled = true;
+            const originalLabel = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving';
+
+            try {
+                let finalImageUrl = imageUrl;
+                if (imageFile) {
+                    finalImageUrl = await window.uploadAdminProductImage(imageFile, productId);
+                }
+
+                await window.db.collection('products').doc(productId).set({
+                    id: productId,
+                    title,
+                    category: normalizedCategory,
+                    subCategory,
+                    price,
+                    originalPrice: Number.isFinite(originalPrice) ? originalPrice : null,
+                    rating,
+                    badge,
+                    image: finalImageUrl,
+                    desc,
+                    archived: false,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('editProductModal')).hide();
+                if (window.showToast) window.showToast('Updated', 'Product updated successfully.');
+                await window.loadAdminCatalog();
+                if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
+            } catch (error) {
+                console.error('Product update failed:', error);
+                if (window.showToast) window.showToast('Error', error.message, true);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalLabel;
+            }
+        };
+
+        if (document.getElementById('addCat')) {
+            window.populateAdminSubCategoryOptions('addSubCat', document.getElementById('addCat').value);
+            document.getElementById('addCat').addEventListener('change', (event) => {
+                window.populateAdminSubCategoryOptions('addSubCat', event.target.value);
+            });
+        }
+
+        if (document.getElementById('editCat')) {
+            document.getElementById('editCat').addEventListener('change', (event) => {
+                window.populateAdminSubCategoryOptions('editSubCat', event.target.value);
+            });
+        }
+
+        if (document.getElementById('editImageUrl')) {
+            document.getElementById('editImageUrl').addEventListener('input', (event) => {
+                if (!document.getElementById('editImageFile').files.length) {
+                    window.updateAdminImagePreview('editProductPreview', 'editProductPreviewPlaceholder', event.target.value.trim());
+                }
+            });
+        }
+
+        if (document.getElementById('editImageFile')) {
+            document.getElementById('editImageFile').addEventListener('change', function () {
+                if (this.files.length) {
+                    window.handleAdminImageInput(this, 'editProductPreview', 'editProductPreviewPlaceholder');
+                } else {
+                    window.updateAdminImagePreview('editProductPreview', 'editProductPreviewPlaceholder', document.getElementById('editImageUrl').value.trim());
+                }
+            });
+        }
+
         // Admin Product Add Logic (Supports Storage Uploads)
         async function submitNewProduct() {
             const title = document.getElementById('addTitle').value.trim();
             const cat = document.getElementById('addCat').value;
+            const normalizedCat = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(cat) : cat;
+            const subCategory = document.getElementById('addSubCat').value.trim();
             const price = parseFloat(document.getElementById('addPrice').value);
             const origPrice = parseFloat(document.getElementById('addOrigPrice').value) || null;
+            const rating = parseFloat(document.getElementById('addRating').value) || 5;
+            const badge = document.getElementById('addBadge').value.trim();
             const desc = document.getElementById('addDesc').value.trim();
             const imageFile = document.getElementById('addImageFile').files[0];
             const imageUrlFallback = document.getElementById('addImageUrl').value.trim();
@@ -482,29 +935,35 @@
 
             try {
                 let finalImageUrl = imageUrlFallback;
+                const docRef = window.db.collection('products').doc();
 
                 // If file is selected, push to Firebase Storage
                 if (imageFile) {
-                    const storageRef = firebase.storage().ref();
-                    const fileRef = storageRef.child(`products/${Date.now()}_${imageFile.name}`);
-                    const uploadTask = await fileRef.put(imageFile);
-                    finalImageUrl = await uploadTask.ref.getDownloadURL();
+                    finalImageUrl = await window.uploadAdminProductImage(imageFile, docRef.id);
                 }
 
-                await window.db.collection('products').add({
+                await docRef.set({
+                    id: docRef.id,
                     title: title,
-                    category: cat,
+                    category: normalizedCat,
+                    subCategory: subCategory,
                     price: price,
                     originalPrice: origPrice,
                     image: finalImageUrl,
                     desc: desc,
-                    rating: 5,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    rating: rating,
+                    badge: badge,
+                    archived: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 if (window.showToast) window.showToast('Success', 'Product published globally!');
                 document.getElementById('adminAddProductForm').reset();
+                document.getElementById('addRating').value = 5;
+                window.populateAdminSubCategoryOptions('addSubCat', document.getElementById('addCat').value);
                 window.loadAdminCatalog(); // Refresh CMS Table
+                if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
 
             } catch (e) {
                 console.error("Product Creation Error: ", e);
@@ -521,23 +980,37 @@
             if (!tbody) return;
 
             try {
-                const snap = await window.db.collection('products').orderBy('createdAt', 'desc').limit(50).get();
-                if (snap.empty) {
+                const catalogItems = await window.getAdminCatalogSnapshot();
+                if (!catalogItems.length) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No products found. Start adding!</td></tr>';
                     return;
                 }
 
                 let html = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
+                catalogItems.forEach(data => {
+                    const shortDesc = (data.desc || 'No description available yet.').slice(0, 90);
+                    const pricingMeta = data.originalPrice
+                        ? `<div class="small text-muted text-decoration-line-through">${formatCurrency(data.originalPrice)}</div>`
+                        : '<div class="small text-muted">No original price</div>';
                     html += `
                     <tr>
-                        <td class="px-4"><img src="${data.image}" class="rounded shadow-sm border" style="width: 50px; height: 50px; object-fit: cover;"></td>
-                        <td class="fw-bold">${data.title}</td>
-                        <td><span class="badge bg-light text-dark border">${data.category}</span></td>
+                        <td class="px-4"><img src="${data.image}" class="rounded shadow-sm border" style="width: 56px; height: 56px; object-fit: cover;"></td>
+                        <td>
+                            <div class="fw-bold text-dark">${data.title}</div>
+                            <div class="small text-muted text-wrap" style="max-width: 280px;">${shortDesc}</div>
+                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark border">${data.sourceLabel}</span>
+                                ${data.badge ? `<span class="badge bg-warning-subtle text-dark border">${data.badge}</span>` : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">${window.normalizeCatalogCategory ? window.normalizeCatalogCategory(data.category) : data.category}</span>
+                            <div class="small text-muted mt-1">${data.subCategory || 'No sub category'}</div>
+                        </td>
                         <td class="text-success fw-bold">₹${data.price}</td>
                         <td class="px-4 text-end">
-                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Delete Product" onclick="deleteAdminProduct('${doc.id}')"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-primary shadow-sm me-2" title="Edit Product" onclick="openAdminProductEditor('${data.id}')"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Delete Product" onclick="deleteAdminProduct('${data.id}')"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                     `;
@@ -552,9 +1025,13 @@
         window.deleteAdminProduct = async (id) => {
             if (!confirm('Are you strictly sure you want to delete this product? This gets removed from live catalog instantly.')) return;
             try {
-                await window.db.collection('products').doc(id).delete();
-                if (window.showToast) window.showToast('Deleted', 'Product removed from database.');
-                window.loadAdminCatalog();
+                await window.db.collection('products').doc(id).set({
+                    archived: true,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                if (window.showToast) window.showToast('Deleted', 'Product removed from live catalog.');
+                await window.loadAdminCatalog();
+                if (window.loadDashboardAnalytics) window.loadDashboardAnalytics();
             } catch (e) {
                 console.error(e);
             }
@@ -574,18 +1051,18 @@
 
                 // Check Firestore for Staff Role
                 try {
-                    const docSnap = await window.db.collection('roles').doc(user.email).get();
-                    if (docSnap.exists) {
-                        window.CURRENT_ROLE = docSnap.data().role; // 'editor' or 'superadmin'
+                    const roleData = window.fetchAccessRole ? await window.fetchAccessRole(user) : null;
+                    if (roleData) {
+                        window.CURRENT_ROLE = roleData.role; // 'editor' or 'superadmin'
+                        window.CURRENT_ADMIN_EMAIL = window.getUserEmail ? window.getUserEmail(user) : (user.email || '').trim().toLowerCase();
                         grantAdminAccess();
+                        window.loadAdminData();
 
                         // Mask UI for basic Editors
                         if (window.CURRENT_ROLE === 'editor') {
                             document.querySelectorAll('.superadmin-only').forEach(el => el.classList.add('d-none'));
                             // Click Products tab by default as they can't see Dashboard
                             document.querySelector('[data-tab="sec-products"]').click();
-                        } else {
-                            loadAdminData();
                         }
                     } else {
                         // Logged in, but unauthorized customer
@@ -640,6 +1117,9 @@
             window.loadAdminData = () => {
                 if (window.CURRENT_ROLE === 'superadmin') {
                     loadStaffList();
+                }
+                if (window.refreshAdminOrdersTable) {
+                    window.refreshAdminOrdersTable();
                 }
                 window.loadAdminCatalog();
                 window.loadAdminEnquiries();
@@ -705,7 +1185,7 @@
                     e.preventDefault();
                     if (window.CURRENT_ROLE !== 'superadmin') return;
 
-                    const email = document.getElementById('staffEmail').value.trim();
+                    const email = window.normalizeEmail ? window.normalizeEmail(document.getElementById('staffEmail').value) : document.getElementById('staffEmail').value.trim().toLowerCase();
                     const role = document.getElementById('staffRole').value;
                     if (!email) return;
 
@@ -715,7 +1195,9 @@
 
                     try {
                         await window.db.collection('roles').doc(email).set({
+                            email: email,
                             role: role,
+                            owner: window.isOwnerEmail ? window.isOwnerEmail(email) : false,
                             addedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         addStaffForm.reset();
@@ -743,13 +1225,17 @@
                     let html = '';
                     snap.forEach(doc => {
                         const data = doc.data();
+                        const isOwner = window.isOwnerEmail ? window.isOwnerEmail(doc.id) : false;
+                        const roleLabel = isOwner ? 'OWNER' : data.role.toUpperCase();
                         html += `
                         <div class="list-group-item d-flex justify-content-between align-items-center px-0 border-start-0 border-end-0 border-top-0 border-bottom mx-3 py-3">
                             <div>
                                 <h6 class="mb-1 fw-bold text-dark">${doc.id}</h6>
-                                <span class="badge ${data.role === 'superadmin' ? 'bg-primary' : 'bg-secondary'} px-2 py-1">${data.role.toUpperCase()}</span>
+                                <span class="badge ${data.role === 'superadmin' ? 'bg-primary' : 'bg-secondary'} px-2 py-1">${roleLabel}</span>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger shadow-sm" title="Revoke Access" onclick="removeStaff('${doc.id}')"><i class="bi bi-trash"></i></button>
+                            ${isOwner
+                                ? '<button class="btn btn-sm btn-outline-secondary shadow-sm" title="Primary owner access is locked" disabled><i class="bi bi-lock-fill"></i></button>'
+                                : `<button class="btn btn-sm btn-outline-danger shadow-sm" title="Revoke Access" onclick="removeStaff('${doc.id}')"><i class="bi bi-trash"></i></button>`}
                         </div>`;
                     });
                     listEl.innerHTML = html;
@@ -759,9 +1245,18 @@
             };
 
             window.removeStaff = async (email) => {
-                if (!confirm(`Are you sure you want to revoke access for ${email}?`)) return;
+                const exactEmail = String(email || '').trim();
+                const normalizedEmail = window.normalizeEmail ? window.normalizeEmail(exactEmail) : exactEmail.toLowerCase();
+                if (window.isOwnerEmail && window.isOwnerEmail(normalizedEmail)) {
+                    if (window.showToast) window.showToast('Locked', 'Primary owner access cannot be removed.', true);
+                    return;
+                }
+                if (!confirm(`Are you sure you want to revoke access for ${normalizedEmail}?`)) return;
                 try {
-                    await window.db.collection('roles').doc(email).delete();
+                    await window.db.collection('roles').doc(exactEmail).delete();
+                    if (exactEmail !== normalizedEmail) {
+                        await window.db.collection('roles').doc(normalizedEmail).delete();
+                    }
                     window.loadStaffList();
                     if (window.showToast) window.showToast('Removed', 'Staff access revoked.');
                 } catch (e) {
@@ -842,7 +1337,7 @@
             };
 
             // DASHBOARD ANALYTICS (CHART & ACTIVITY)
-            window.loadDashboardAnalytics = async () => {
+            window.loadDashboardAnalyticsLegacy = async () => {
                 if (window.CURRENT_ROLE !== 'superadmin') return;
 
                 const db = window.db;
@@ -963,6 +1458,325 @@
                     }
                 });
             }
+
+            function setAdminMetric(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            }
+
+            function getRecentWeekendRange(referenceDate = new Date()) {
+                const ref = new Date(referenceDate);
+                ref.setHours(0, 0, 0, 0);
+                const day = ref.getDay();
+                const saturdayOffset = day === 6 ? 0 : day === 0 ? -1 : -(day + 1);
+                const saturday = new Date(ref);
+                saturday.setDate(ref.getDate() + saturdayOffset);
+                const monday = new Date(saturday);
+                monday.setDate(saturday.getDate() + 2);
+                return { saturday, monday };
+            }
+
+            function buildRecentDayBuckets(days = 7) {
+                const buckets = [];
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setHours(0, 0, 0, 0);
+                    date.setDate(date.getDate() - i);
+                    buckets.push({
+                        key: date.toLocaleDateString('en-CA'),
+                        label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                        total: 0
+                    });
+                }
+                return buckets;
+            }
+
+            function renderRecentActivity(activityItems) {
+                const activityList = document.getElementById('recentActivityList');
+                if (!activityList) return;
+
+                if (!activityItems.length) {
+                    activityList.innerHTML = '<li class="list-group-item p-4 text-center text-muted small border-0">No recent activity</li>';
+                    return;
+                }
+
+                activityList.innerHTML = activityItems.slice(0, 6).map(item => {
+                    if (item.type === 'enquiry') {
+                        return `<li class="list-group-item px-4 py-3 border-0 border-bottom">
+                            <div class="d-flex w-100 justify-content-between align-items-center gap-3">
+                                <div class="small fw-bold text-dark"><i class="bi bi-envelope text-warning me-2"></i>${item.title}</div>
+                                <small class="text-muted">${item.time.toLocaleDateString()}</small>
+                            </div>
+                        </li>`;
+                    }
+
+                    return `<li class="list-group-item px-4 py-3 border-0 border-bottom">
+                        <div class="d-flex w-100 justify-content-between align-items-center gap-3">
+                            <div class="small fw-bold text-dark"><i class="bi bi-box-seam text-success me-2"></i>${item.title}</div>
+                            <small class="text-success fw-bold">${formatCurrency(item.amount)}</small>
+                        </div>
+                    </li>`;
+                }).join('');
+            }
+
+            function renderInsightCards(insights) {
+                const list = document.getElementById('businessInsightsList');
+                if (!list) return;
+                list.innerHTML = insights.map(item => `
+                    <div class="list-group-item border-0 border-bottom px-4 py-3">
+                        <div class="small text-muted mb-1">${item.label}</div>
+                        <div class="fw-bold text-dark">${item.value}</div>
+                    </div>
+                `).join('');
+            }
+
+            function renderAdminEssentials() {
+                const list = document.getElementById('adminEssentialsList');
+                if (!list) return;
+                const items = [
+                    { label: 'Product Control', value: 'Name, price, image, description, tag, category aur rating edit karo.' },
+                    { label: 'Order Operations', value: 'Order status update, revenue tracking aur customer orders monitor karo.' },
+                    { label: 'Customer Support', value: 'Enquiries dekhna, pending messages resolve karna aur WhatsApp reply flow.' },
+                    { label: 'Business Analytics', value: 'Weekend sales, category performance, average order value aur trends dekho.' },
+                    { label: 'Staff Access', value: 'Owner, super admin, editor roles manage karo without customer mix-up.' },
+                    { label: 'Site Settings', value: 'Maintenance mode aur SEO title/description centrally control karo.' }
+                ];
+
+                list.innerHTML = items.map(item => `
+                    <div class="list-group-item border-0 border-bottom px-4 py-3">
+                        <div class="fw-bold text-dark mb-1">${item.label}</div>
+                        <div class="small text-muted">${item.value}</div>
+                    </div>
+                `).join('');
+            }
+
+            let weekendChartInstance = null;
+            let categorySalesChartInstance = null;
+
+            renderGrowthChart = function (labels, data) {
+                const ctx = document.getElementById('growthChart');
+                if (!ctx) return;
+
+                if (growthChartInstance) growthChartInstance.destroy();
+
+                growthChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Daily Revenue',
+                            data,
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.12)',
+                            borderWidth: 3,
+                            tension: 0.35,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#198754',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            };
+
+            function renderWeekendChart(labels, revenueData, orderCounts) {
+                const ctx = document.getElementById('weekendChart');
+                if (!ctx) return;
+
+                if (weekendChartInstance) weekendChartInstance.destroy();
+
+                weekendChartInstance = new Chart(ctx, {
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Revenue',
+                                data: revenueData,
+                                backgroundColor: ['rgba(13, 202, 240, 0.78)', 'rgba(25, 135, 84, 0.78)'],
+                                borderRadius: 12,
+                                yAxisID: 'y'
+                            },
+                            {
+                                type: 'line',
+                                label: 'Orders',
+                                data: orderCounts,
+                                borderColor: '#212529',
+                                backgroundColor: '#212529',
+                                tension: 0.35,
+                                pointRadius: 4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, position: 'left', grid: { color: '#f3f4f6' } },
+                            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            function renderCategorySalesChart(labels, data) {
+                const ctx = document.getElementById('categorySalesChart');
+                if (!ctx) return;
+
+                if (categorySalesChartInstance) categorySalesChartInstance.destroy();
+
+                categorySalesChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels,
+                        datasets: [{
+                            data,
+                            backgroundColor: ['#198754', '#ffc107', '#0d6efd', '#d63384', '#fd7e14'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            window.loadDashboardAnalytics = async () => {
+                if (window.CURRENT_ROLE !== 'superadmin') return;
+
+                try {
+                    const [enqSnap, orderSnap, catalogItems] = await Promise.all([
+                        window.db.collection('enquiries').get(),
+                        window.db.collection('orders').get(),
+                        window.getAdminCatalogSnapshot()
+                    ]);
+
+                    const enquiries = enqSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const orders = orderSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                    const recentDayBuckets = buildRecentDayBuckets(7);
+                    const bucketMap = new Map(recentDayBuckets.map(bucket => [bucket.key, bucket]));
+                    const weekendRange = getRecentWeekendRange();
+                    const weekendRevenue = { Saturday: 0, Sunday: 0 };
+                    const weekendOrders = { Saturday: 0, Sunday: 0 };
+                    const categoryTotals = {};
+                    const productTotals = {};
+                    const recentActivity = [];
+
+                    let totalRevenue = 0;
+
+                    enquiries.forEach(item => {
+                        const enquiryDate = window.getAdminDateFromValue(item.createdAt) || new Date();
+                        recentActivity.push({
+                            type: 'enquiry',
+                            time: enquiryDate,
+                            title: `${item.name || 'Customer'} sent a new enquiry`
+                        });
+                    });
+
+                    orders.forEach(order => {
+                        const orderDate = window.getAdminOrderDate(order);
+                        const amount = window.getAdminOrderAmount(order);
+                        totalRevenue += amount;
+
+                        const bucket = bucketMap.get(orderDate.toLocaleDateString('en-CA'));
+                        if (bucket) bucket.total += amount;
+
+                        if (orderDate >= weekendRange.saturday && orderDate < weekendRange.monday) {
+                            const dayLabel = orderDate.toLocaleDateString('en-US', { weekday: 'long' });
+                            if (weekendRevenue[dayLabel] !== undefined) {
+                                weekendRevenue[dayLabel] += amount;
+                                weekendOrders[dayLabel] += 1;
+                            }
+                        }
+
+                        recentActivity.push({
+                            type: 'order',
+                            time: orderDate,
+                            title: `Order ${String(order.id || '').slice(-6).toUpperCase()} is ${order.status || 'Processing'}`,
+                            amount
+                        });
+
+                        (order.items || []).forEach(item => {
+                            const qty = Number(item.quantity) || 1;
+                            const itemAmount = (Number(item.price) || 0) * qty;
+                            const category = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category || 'Other') : (item.category || 'Other');
+                            categoryTotals[category] = (categoryTotals[category] || 0) + itemAmount;
+
+                            const productKey = item.title || item.id || 'Unnamed Product';
+                            if (!productTotals[productKey]) {
+                                productTotals[productKey] = { quantity: 0, revenue: 0 };
+                            }
+                            productTotals[productKey].quantity += qty;
+                            productTotals[productKey].revenue += itemAmount;
+                        });
+                    });
+
+                    recentActivity.sort((a, b) => b.time - a.time);
+                    renderRecentActivity(recentActivity);
+
+                    const totalOrders = orders.length;
+                    const totalEnquiries = enquiries.length;
+                    const pendingEnquiries = enquiries.filter(item => item.status === 'pending').length;
+                    const weekendRevenueTotal = weekendRevenue.Saturday + weekendRevenue.Sunday;
+                    const weekendOrderTotal = weekendOrders.Saturday + weekendOrders.Sunday;
+                    const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
+
+                    const topCategoryEntry = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+                    const topProductEntry = Object.entries(productTotals).sort((a, b) => b[1].revenue - a[1].revenue)[0];
+                    const bestDayEntry = [...recentDayBuckets].sort((a, b) => b.total - a.total)[0];
+
+                    setAdminMetric('totalSalesVal', formatCurrency(totalRevenue));
+                    setAdminMetric('totalOrdersCount', String(totalOrders));
+                    setAdminMetric('activeUsersCount', String(totalEnquiries));
+                    setAdminMetric('weekendRevenueVal', formatCurrency(weekendRevenueTotal));
+                    setAdminMetric('weekendOrdersCount', String(weekendOrderTotal));
+                    setAdminMetric('liveCatalogCount', String(catalogItems.length));
+                    setAdminMetric('averageOrderValueVal', formatCurrency(averageOrderValue));
+                    setAdminMetric('pendingEnquiriesVal', String(pendingEnquiries));
+                    setAdminMetric('weekendRevenueMini', formatCurrency(weekendRevenueTotal));
+                    setAdminMetric('analyticsLiveCatalogCount', String(catalogItems.length));
+
+                    renderGrowthChart(recentDayBuckets.map(bucket => bucket.label), recentDayBuckets.map(bucket => bucket.total));
+                    renderWeekendChart(['Saturday', 'Sunday'], [weekendRevenue.Saturday, weekendRevenue.Sunday], [weekendOrders.Saturday, weekendOrders.Sunday]);
+
+                    const categoryChartEntries = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                    renderCategorySalesChart(
+                        categoryChartEntries.length ? categoryChartEntries.map(item => item[0]) : ['No Sales'],
+                        categoryChartEntries.length ? categoryChartEntries.map(item => item[1]) : [1]
+                    );
+
+                    renderInsightCards([
+                        { label: 'Best Selling Product', value: topProductEntry ? `${topProductEntry[0]} (${topProductEntry[1].quantity} units)` : 'No orders yet' },
+                        { label: 'Top Revenue Category', value: topCategoryEntry ? `${topCategoryEntry[0]} - ${formatCurrency(topCategoryEntry[1])}` : 'No category data yet' },
+                        { label: 'Best Sales Day (Last 7 Days)', value: bestDayEntry ? `${bestDayEntry.label} - ${formatCurrency(bestDayEntry.total)}` : 'No sales yet' },
+                        { label: 'Weekend Performance', value: `${weekendOrderTotal} orders worth ${formatCurrency(weekendRevenueTotal)}` },
+                        { label: 'Pending Customer Enquiries', value: `${pendingEnquiries} messages need reply` },
+                        { label: 'Catalog Health', value: `${catalogItems.length} active products available for editing` }
+                    ]);
+
+                    renderAdminEssentials();
+                } catch (e) {
+                    console.error("Dashboard Analytics Error:", e);
+                    renderRecentActivity([]);
+                    renderInsightCards([{ label: 'Analytics Status', value: 'Failed to load dashboard data.' }]);
+                    renderAdminEssentials();
+                }
+            };
 
         };
     </script>

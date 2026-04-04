@@ -122,6 +122,140 @@ if (!firebase.apps.length) {
 }
 window.auth = firebase.auth();
 window.db = firebase.firestore();
+window.YADAV_OWNER_EMAIL = 'hyadav1317@gmail.com';
+
+window.normalizeEmail = function (email) {
+    return String(email || '').trim().toLowerCase();
+};
+
+window.normalizeCatalogCategory = function (category) {
+    const normalizedCategory = String(category || '').trim();
+    if (normalizedCategory === 'Fresh Fruits') return 'Fruits';
+    if (normalizedCategory === 'Veggies') return 'Vegetables';
+    return normalizedCategory;
+};
+
+window.getUserEmail = function (userOrEmail) {
+    if (!userOrEmail) return '';
+    return window.normalizeEmail(typeof userOrEmail === 'string' ? userOrEmail : userOrEmail.email);
+};
+
+window.isOwnerEmail = function (userOrEmail) {
+    return window.getUserEmail(userOrEmail) === window.YADAV_OWNER_EMAIL;
+};
+
+window.getRoleDocumentRef = function (userOrEmail) {
+    const email = window.getUserEmail(userOrEmail);
+    if (!email || !window.db) return null;
+    return window.db.collection('roles').doc(email);
+};
+
+window.ensureOwnerAdminAccess = async function (userOrEmail) {
+    const email = window.getUserEmail(userOrEmail);
+    if (!email || email !== window.YADAV_OWNER_EMAIL || !window.db) return null;
+
+    const roleRef = window.getRoleDocumentRef(email);
+    const roleSnap = await roleRef.get();
+    const currentRole = roleSnap.exists ? roleSnap.data() : null;
+
+    if (!currentRole || currentRole.role !== 'superadmin' || currentRole.owner !== true) {
+        const ownerPayload = {
+            role: 'superadmin',
+            owner: true,
+            label: 'Primary Owner',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (!roleSnap.exists) {
+            ownerPayload.addedAt = firebase.firestore.FieldValue.serverTimestamp();
+        }
+        await roleRef.set(ownerPayload, { merge: true });
+    }
+
+    return {
+        email,
+        role: 'superadmin',
+        owner: true,
+        label: 'Primary Owner'
+    };
+};
+
+window.fetchAccessRole = async function (userOrEmail) {
+    const rawEmail = String(typeof userOrEmail === 'string' ? userOrEmail : (userOrEmail?.email || '')).trim();
+    const email = window.getUserEmail(userOrEmail);
+    if (!email || !window.db) return null;
+
+    if (window.isOwnerEmail(email)) {
+        return window.ensureOwnerAdminAccess(email);
+    }
+
+    const roleRef = window.getRoleDocumentRef(email);
+    let roleSnap = await roleRef.get();
+
+    if (!roleSnap.exists && rawEmail && rawEmail !== email) {
+        roleSnap = await window.db.collection('roles').doc(rawEmail).get();
+    }
+
+    if (!roleSnap.exists) return null;
+
+    return {
+        email,
+        ...roleSnap.data()
+    };
+};
+
+window.getPostLoginRedirect = async function (user) {
+    const roleData = await window.fetchAccessRole(user);
+    return roleData ? 'admin.html' : 'profile.html';
+};
+
+function attachGlobalSettingsListener() {
+    if (!window.db || window.globalSettingsUnsubscribe) return;
+
+    window.globalSettingsUnsubscribe = window.db.collection('settings').doc('global').onSnapshot(doc => {
+        if (!doc.exists) return;
+
+        const data = doc.data();
+
+        if (data.seoTitle && document.title.indexOf('Admin') === -1) {
+            document.title = data.seoTitle;
+        }
+
+        if (data.seoDesc) {
+            let meta = document.querySelector('meta[name="description"]');
+            if (!meta) {
+                meta = document.createElement('meta');
+                meta.name = "description";
+                document.head.appendChild(meta);
+            }
+            meta.content = data.seoDesc;
+        }
+
+        const isAdminPage = window.location.pathname.includes('admin.html');
+        if (data.maintenanceMode && !isAdminPage) {
+            const checkBypass = async () => {
+                const currentUser = window.auth.currentUser;
+
+                if (currentUser) {
+                    try {
+                        const roleData = await window.fetchAccessRole(currentUser);
+                        if (roleData) return;
+                    } catch (e) {}
+                }
+
+                document.body.innerHTML = `
+                    <div style="height:100vh;display:flex;align-items:center;justify-content:center;background:#f8f9fa;text-align:center;font-family:sans-serif;padding:2rem;">
+                        <div>
+                            <h1 style="color:#198754;font-size:3rem;margin-bottom:1rem;">We'll be back soon!</h1>
+                            <p style="color:#6c757d;font-size:1.2rem;">Yadav Vegetable & Ice-Cream Parlour is currently undergoing scheduled maintenance to improve your experience.</p>
+                        </div>
+                    </div>`;
+            };
+            checkBypass();
+        }
+    });
+}
+
+attachGlobalSettingsListener();
 
 // Wishlist Function
 window.toggleWishlist = async function(prodId) {
@@ -178,10 +312,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     if (window.db) {
         window.db.collection('products').get().then(snapshot => {
+            const mergedCatalog = new Map(window.CATALOG.map(item => [item.id || item.title, {
+                ...item,
+                category: window.normalizeCatalogCategory(item.category)
+            }]));
+
             snapshot.forEach(doc => {
-                const p = doc.data(); p.id = doc.id;
-                window.CATALOG.push(p);
+                const product = {
+                    ...doc.data(),
+                    id: doc.id
+                };
+                if (product.archived) {
+                    mergedCatalog.delete(product.id || product.title);
+                    return;
+                }
+                product.category = window.normalizeCatalogCategory(product.category);
+                mergedCatalog.set(product.id || product.title, product);
             });
+
+            CATALOG = Array.from(mergedCatalog.values());
+            window.CATALOG = CATALOG;
+
             if(document.getElementById('productGrid') && typeof window.renderDynamicGrid === 'function') {
                 const q = localStorage.getItem('yadavSearchQuery');
                 if(new URLSearchParams(window.location.search).get('search') === 'true' && q) {
@@ -319,8 +470,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Check if admin or staff
                 const checkAdmin = async () => {
                    try {
-                       const staffDoc = await window.db.collection('roles').doc(user.email).get();
-                       return staffDoc.exists;
+                       const roleData = await window.fetchAccessRole(user);
+                       return !!roleData;
                    } catch(e){ return false; }
                 };
                 
@@ -618,21 +769,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = page;
             gridEl.innerHTML = '';
 
-            let filteredList = CATALOG.filter(p => pageMainCategory === 'All' || p.category === pageMainCategory);
+            const normalizedPageCategory = window.normalizeCatalogCategory(pageMainCategory);
+            const normalizedSearchCategory = window.normalizeCatalogCategory(searchCat);
+            let filteredList = CATALOG.filter(p => normalizedPageCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedPageCategory);
 
             if (searchQuery) {
                 const searchStr = searchQuery.toLowerCase();
-                filteredList = CATALOG.filter(p => {
+                filteredList = filteredList.filter(p => {
                     const matchQ = p.title.toLowerCase().includes(searchStr) || 
-                                   p.category.toLowerCase().includes(searchStr) ||
+                                   window.normalizeCatalogCategory(p.category).toLowerCase().includes(searchStr) ||
                                    (p.desc && p.desc.toLowerCase().includes(searchStr));
-                    const matchC = searchCat === 'All' || p.category === searchCat;
+                    const matchC = normalizedSearchCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedSearchCategory;
                     return matchQ && matchC;
                 });
                 document.querySelectorAll('.filter-category-checkbox').forEach(cb => cb.checked = false);
             } else {
                 if (currentSubCat !== 'All') {
-                    filteredList = filteredList.filter(p => p.subCategory === currentSubCat || p.category === currentSubCat);
+                    filteredList = filteredList.filter(p => p.subCategory === currentSubCat || window.normalizeCatalogCategory(p.category) === currentSubCat);
                 }
                 filteredList = filteredList.filter(p => p.price <= currentMaxPrice);
             }
@@ -680,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                             </div>
                             <div class="card-body bg-white rounded-bottom-4 p-4 text-center">
-                                <p class="text-muted small mb-1">${prod.category}</p>
+                                <p class="text-muted small mb-1">${window.normalizeCatalogCategory(prod.category)}</p>
                                 <h6 class="card-title fw-bold text-dark mb-2 text-truncate" title="${prod.title}">${prod.title}</h6>
                                 <div class="rating text-warning mb-2 small">${starsHtml}</div>
                                 <div class="d-flex justify-content-center align-items-center mb-3">
@@ -1339,6 +1492,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     const adminGrid = document.getElementById('adminOrdersGrid');
     if (adminGrid) {
+        const ADMIN_ORDER_STATUSES = ['Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+
+        window.updateAdminOrderStatus = async function(orderId, uid, nextStatus) {
+            try {
+                const batch = window.db.batch();
+                const globalOrderRef = window.db.collection('orders').doc(orderId);
+                batch.set(globalOrderRef, {
+                    status: nextStatus,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                if (uid) {
+                    const userOrderRef = window.db.collection('users').doc(uid).collection('my_orders').doc(orderId);
+                    batch.set(userOrderRef, {
+                        status: nextStatus,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+
+                await batch.commit();
+                if (window.showToast) window.showToast('Updated', `Order ${orderId} moved to ${nextStatus}.`);
+                if (window.refreshAdminOrdersTable) {
+                    await window.refreshAdminOrdersTable();
+                }
+                if (window.loadDashboardAnalytics) {
+                    window.loadDashboardAnalytics();
+                }
+            } catch (error) {
+                console.error('Order status update failed:', error);
+                if (window.showToast) window.showToast('Error', error.message, true);
+            }
+        };
+
         async function loadAdminData() {
             try {
                 // Warning: In production, grabbing entire "orders" collection requires admin auth rules!
@@ -1348,17 +1534,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 let tableHtml = '';
                 querySnapshot.forEach((doc) => {
                     const o = doc.data();
-                    rev += o.totalAmount;
-                    let names = o.items.map(i => `<span class="badge bg-light text-dark border me-1">${i.quantity}x ${i.title}</span>`).join('');
-                    let d = new Date(o.date);
+                    const amount = Number(o.totalAmount ?? o.totalPrice ?? 0) || 0;
+                    rev += amount;
+                    let names = (o.items || []).map(i => `<span class="badge bg-light text-dark border me-1 mb-1">${i.quantity}x ${i.title}</span>`).join('');
+                    let d = (typeof window.getAdminOrderDate === 'function') ? window.getAdminOrderDate(o) : new Date(o.date);
+                    const statusOptions = ADMIN_ORDER_STATUSES.map(status => `<option value="${status}" ${status === (o.status || 'Processing') ? 'selected' : ''}>${status}</option>`).join('');
                     tableHtml += `
                     <tr>
                         <td class="fw-bold font-monospace text-primary">${o.id}</td>
                         <td class="text-muted small">${d.toLocaleDateString()} ${d.toLocaleTimeString()}</td>
                         <td>${o.customerName}<br><small class="text-muted">${o.customerEmail}</small></td>
                         <td>${names}</td>
-                        <td class="fw-bold text-success">${formatCurrency(o.totalAmount)}</td>
-                        <td><span class="badge bg-warning text-dark px-3 py-2 rounded-pill">${o.status}</span></td>
+                        <td class="fw-bold text-success">${formatCurrency(amount)}</td>
+                        <td>
+                            <select class="form-select form-select-sm shadow-none border-success" onchange="window.updateAdminOrderStatus('${o.id}', '${o.uid || ''}', this.value)">
+                                ${statusOptions}
+                            </select>
+                        </td>
                     </tr>`;
                 });
 
@@ -1370,6 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('adminTableBody').innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Firebase Error: ${e.message}. Are your DB rules public/test mode?</td></tr>`;
             }
         }
+        window.refreshAdminOrdersTable = loadAdminData;
         loadAdminData();
     }
 
