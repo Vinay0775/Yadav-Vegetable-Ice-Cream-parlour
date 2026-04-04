@@ -309,6 +309,33 @@ function attachGlobalSettingsListener() {
         if (typeof window.applySiteQrCode === 'function') {
             window.applySiteQrCode(data.qrCodeUrl);
         }
+        
+        // Apply UPI settings to payment page if on payment page
+        if (window.location.pathname.includes('payment.html')) {
+            // Update UPI ID
+            const upiIdElement = document.getElementById('upiId');
+            if (upiIdElement && data.upiId) {
+                upiIdElement.textContent = data.upiId;
+            }
+            
+            // Toggle QR Code visibility
+            const qrSection = document.getElementById('paymentQrSection');
+            if (qrSection) {
+                qrSection.style.display = (data.showQrCode === false) ? 'none' : 'block';
+            }
+            
+            // Toggle Quick Pay buttons visibility
+            const quickPaySection = document.getElementById('paymentQuickPaySection');
+            if (quickPaySection) {
+                quickPaySection.style.display = (data.showQuickPayButtons === false) ? 'none' : 'block';
+            }
+            
+            // Toggle UPI ID visibility
+            const upiIdSection = document.getElementById('paymentUpiIdSection');
+            if (upiIdSection) {
+                upiIdSection.style.display = (data.showUpiId === false) ? 'none' : 'block';
+            }
+        }
 
         const isAdminPage = window.location.pathname.includes('admin.html');
         if (data.maintenanceMode && !isAdminPage) {
@@ -1516,6 +1543,143 @@ document.addEventListener('DOMContentLoaded', () => {
             ? finalOrders.map(order => buildCustomerOrderCard(order)).join('')
             : '<div class="text-center py-5 text-muted"><i class="bi bi-bag-x display-1 d-block mb-3"></i><h4>No order history found</h4><a href="index.html" class="btn btn-success mt-3 rounded-pill">Start Shopping</a></div>';
     }
+
+    // Copy UPI ID to clipboard
+    window.copyUPIId = function() {
+        const upiId = document.getElementById('upiId');
+        const copyMessage = document.getElementById('copyMessage');
+        const copyIcon = document.getElementById('copyIcon');
+        const copyText = document.getElementById('copyText');
+        
+        if (upiId) {
+            const textToCopy = upiId.textContent.trim();
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showCopySuccess(copyMessage, copyIcon, copyText);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    fallbackCopy(upiId, copyMessage, copyIcon, copyText);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopy(upiId, copyMessage, copyIcon, copyText);
+            }
+        }
+    };
+    
+    function showCopySuccess(copyMessage, copyIcon, copyText) {
+        // Show success message
+        if (copyMessage) {
+            copyMessage.style.display = 'block';
+            setTimeout(() => {
+                copyMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Update button icon temporarily
+        if (copyIcon) {
+            copyIcon.classList.remove('bi-clipboard');
+            copyIcon.classList.add('bi-check');
+        }
+        if (copyText) {
+            copyText.textContent = 'Copied!';
+        }
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            if (copyIcon) {
+                copyIcon.classList.remove('bi-check');
+                copyIcon.classList.add('bi-clipboard');
+            }
+            if (copyText) {
+                copyText.textContent = 'Copy';
+            }
+        }, 2000);
+    }
+    
+    function fallbackCopy(element, copyMessage, copyIcon, copyText) {
+        const range = document.createRange();
+        const selection = window.getSelection();
+        range.selectNodeContents(element);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        try {
+            document.execCommand('copy');
+            showCopySuccess(copyMessage, copyIcon, copyText);
+        } catch (err) {
+            console.error('Failed to copy UPI ID:', err);
+            if (window.showToast) {
+                window.showToast('Copy Failed', 'Please manually select and copy the UPI ID.', true);
+            }
+        }
+        
+        selection.removeAllRanges();
+    }
+
+    // UPI Payment - Direct App Redirect
+    window.payWithUPI = function(app) {
+        // Get payment amount from cart
+        const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
+        const total = Math.ceil(subtotal + (subtotal * 0.05));
+        
+        // Get UPI details - either from Firebase settings or default
+        const upiIdElement = document.getElementById('upiId');
+        const upiID = upiIdElement ? upiIdElement.textContent.trim() : 'yadav.store@okicici';
+        const payeeName = 'Yadav Veggies & Ice-Cream'; // Can be made dynamic later
+        const amount = total.toFixed(2);
+        const note = `Order Payment`;
+        
+        console.log('Initiating UPI payment to:', upiID, 'Amount:', amount);
+        
+        // Create UPI Intent URL
+        const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+        
+        // Check if on mobile device
+        const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+        
+        if (!isMobile) {
+            // Desktop: Show message to use mobile device
+            if (window.showToast) {
+                window.showToast('Mobile Only', 'UPI payment requires a mobile device. Please use your phone or scan the QR code.', true);
+            } else {
+                alert('UPI payment is only available on mobile devices. Please use your phone to complete this payment.');
+            }
+            return;
+        }
+        
+        // Try to open UPI app based on selection
+        if (app === 'any') {
+            // Use generic UPI intent (Android) or universal link (iOS)
+            window.location.href = upiURL;
+        } else if (app === 'phonepe') {
+            // PhonePe specific intent
+            const phonepeURL = `phonepe://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            window.location.href = phonepeURL;
+        } else if (app === 'paytm') {
+            // Paytm specific intent
+            const paytmURL = `paytmmp://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            window.location.href = paytmURL;
+        } else if (app === 'gpay') {
+            // Google Pay specific intent
+            const gpayURL = `tez://upi/pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            window.location.href = gpayURL;
+        }
+        
+        // Show feedback that app is opening
+        if (window.showToast) {
+            window.showToast('Opening App', `Paying ${formatCurrency(total)} to ${upiID}...`);
+        }
+        
+        // After 3 seconds, check if user might need to fallback to QR code
+        setTimeout(() => {
+            if (window.showToast) {
+                window.showToast('Payment Pending', 'If the app didn\'t open, please scan the QR code or copy the UPI ID.', true);
+            }
+        }, 3000);
+    };
 
     const payBtn = document.getElementById('payNowBtn');
     if (payBtn) {

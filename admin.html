@@ -584,6 +584,48 @@
                                 </div>
                             </div>
                             <input type="hidden" id="adminQrCodeUrlField" value="">
+                            
+                            <hr>
+                            <h6 class="fw-bold mt-4 mb-3"><i class="bi bi-upc-scan me-2 text-success"></i> UPI Payment Configuration</h6>
+                            <p class="text-muted small mb-3">Payment page par UPI ID aur QR code ka configuration yahan se control karo.</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Owner UPI ID <span class="text-danger">*</span></label>
+                                <input type="text" id="adminUpiId" class="form-control shadow-none" 
+                                    placeholder="yourname@okicici" required>
+                                <div class="form-text">Example: yadav.store@okicici ya owner@paytm</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Owner Name</label>
+                                <input type="text" id="adminUpiName" class="form-control shadow-none" 
+                                    placeholder="Yadav Veggies & Ice-Cream">
+                                <div class="form-text">Payment page par payee name ke roop me dikhega</div>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="adminShowUpiId" checked>
+                                <label class="form-check-label" for="adminShowUpiId">
+                                    <span class="fw-bold">Show UPI ID on Payment Page</span>
+                                    <div class="form-text">Enable karne se payment page par UPI ID dikhega (Copy button ke saath)</div>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="adminShowQuickPayButtons" checked>
+                                <label class="form-check-label" for="adminShowQuickPayButtons">
+                                    <span class="fw-bold">Show Quick Pay Buttons (PhonePe, Paytm, GPay)</span>
+                                    <div class="form-text">Enable karne se direct UPI app buttons dikhege</div>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="adminShowQrCode" checked>
+                                <label class="form-check-label" for="adminShowQrCode">
+                                    <span class="fw-bold">Show QR Code on Payment Page</span>
+                                    <div class="form-text">Enable karne se payment page par QR code dikhega</div>
+                                </label>
+                            </div>
                             <div class="text-end mt-4">
                                 <button type="submit" class="btn btn-success px-4">Save Settings</button>
                             </div>
@@ -1529,6 +1571,19 @@
                     if (t) t.value = data.seoTitle || '';
                     const d = document.getElementById('seoDesc');
                     if (d) d.value = data.seoDesc || '';
+                    
+                    // UPI Settings
+                    const upiId = document.getElementById('adminUpiId');
+                    if (upiId) upiId.value = data.upiId || 'yadav.store@okicici';
+                    const upiName = document.getElementById('adminUpiName');
+                    if (upiName) upiName.value = data.upiName || 'Yadav Veggies & Ice-Cream';
+                    const showUpiId = document.getElementById('adminShowUpiId');
+                    if (showUpiId) showUpiId.checked = data.showUpiId !== false; // Default: true
+                    const showQuickPay = document.getElementById('adminShowQuickPayButtons');
+                    if (showQuickPay) showQuickPay.checked = data.showQuickPayButtons !== false; // Default: true
+                    const showQrCode = document.getElementById('adminShowQrCode');
+                    if (showQrCode) showQrCode.checked = data.showQrCode !== false; // Default: true
+                    
                     const qrUrl = (data.qrCodeUrl || '').trim();
                     const qrField = document.getElementById('adminQrCodeUrlField');
                     const qrPrev = document.getElementById('adminQrCodePreview');
@@ -1621,6 +1676,19 @@
                         const mt = document.getElementById('maintenanceToggle').checked;
                         const t = document.getElementById('seoTitle').value.trim();
                         const d = document.getElementById('seoDesc').value.trim();
+                        
+                        // UPI Configuration
+                        const upiId = (document.getElementById('adminUpiId') || {}).value.trim() || 'yadav.store@okicici';
+                        const upiName = (document.getElementById('adminUpiName') || {}).value.trim() || 'Yadav Veggies & Ice-Cream';
+                        
+                        // Validate UPI ID format
+                        if (!upiId || !upiId.includes('@')) {
+                            throw new Error('UPI ID must contain @ symbol (e.g., yourname@okicici)');
+                        }
+                        
+                        const showUpiId = (document.getElementById('adminShowUpiId') || {}).checked !== false;
+                        const showQuickPay = (document.getElementById('adminShowQuickPayButtons') || {}).checked !== false;
+                        const showQrCode = (document.getElementById('adminShowQrCode') || {}).checked !== false;
 
                         let qrCodeUrl = (document.getElementById('adminQrCodeUrlField') || {}).value.trim() || '';
                         const qrPick = document.getElementById('adminQrCodeFile')?.files?.[0];
@@ -1632,6 +1700,11 @@
                             maintenanceMode: mt,
                             seoTitle: t,
                             seoDesc: d,
+                            upiId: upiId,
+                            upiName: upiName,
+                            showUpiId: showUpiId,
+                            showQuickPayButtons: showQuickPay,
+                            showQrCode: showQrCode,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         };
                         if (qrCodeUrl) {

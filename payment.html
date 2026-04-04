@@ -42,7 +42,7 @@
                     <div class="card-body p-5">
                         <h4 class="fw-bold mb-4">Contact Information</h4>
                         <div class="mb-3">
-                            <input type="email" class="form-control form-control-lg border-success bg-light shadow-none"
+                            <input type="email" class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                 placeholder="Email or Mobile Phone Number" required>
                         </div>
 
@@ -50,32 +50,53 @@
                         <div class="row g-3">
                             <div class="col-sm-6">
                                 <input type="text"
-                                    class="form-control form-control-lg border-success bg-light shadow-none"
+                                    class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                     placeholder="First Name" required>
                             </div>
                             <div class="col-sm-6">
                                 <input type="text"
-                                    class="form-control form-control-lg border-success bg-light shadow-none"
+                                    class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                     placeholder="Last Name" required>
                             </div>
                             <div class="col-12">
                                 <input type="text"
-                                    class="form-control form-control-lg border-success bg-light shadow-none"
+                                    class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                     placeholder="Address, Apartment, Suite, etc." required>
                             </div>
                             <div class="col-sm-6">
                                 <input type="text"
-                                    class="form-control form-control-lg border-success bg-light shadow-none"
+                                    class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                     placeholder="City" required>
                             </div>
                             <div class="col-sm-6">
                                 <input type="text"
-                                    class="form-control form-control-lg border-success bg-light shadow-none"
+                                    class="form-control form-control-lg border-success bg-light shadow-none payment-input"
                                     placeholder="ZIP Code" required>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Dark mode fix for payment inputs -->
+                <style>
+                body.dark-mode .payment-input,
+                .dark-mode .payment-input {
+                    color: #fff !important;
+                    background-color: #2d3748 !important;
+                    border-color: #48bb78 !important;
+                }
+                body.dark-mode .payment-input::placeholder,
+                .dark-mode .payment-input::placeholder {
+                    color: #a0aec0 !important;
+                    opacity: 1;
+                }
+                body.dark-mode .payment-input:focus,
+                .dark-mode .payment-input:focus {
+                    background-color: #2d3748 !important;
+                    color: #fff !important;
+                    border-color: #68d391 !important;
+                }
+                </style>
 
                 <!-- Payment Methods -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -99,12 +120,57 @@
                                     data-bs-parent="#accordionPayment">
                                     <div
                                         class="accordion-body bg-light-green p-4 border-top border-success border-opacity-25 text-center" data-site-qr="block">
-                                        <div class="bg-white p-3 d-inline-block rounded-4 shadow-sm mb-3">
-                                            <img src="assets/upi_qr.png" alt="Merchant UPI QR Code" data-site-qr="img" data-default-src="assets/upi_qr.png"
-                                                style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px;">
+                                        <!-- QR Code Section -->
+                                        <div id="paymentQrSection" class="text-center">
+                                            <div class="bg-white p-3 d-inline-block rounded-4 shadow-sm mb-3">
+                                                <img src="assets/upi_qr.png" alt="Merchant UPI QR Code" data-site-qr="img" data-default-src="assets/upi_qr.png"
+                                                    style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px;">
+                                            </div>
+                                            <p class="text-muted small fw-medium mb-1">Scan to pay with any UPI App</p>
                                         </div>
-                                        <p class="text-muted small fw-medium mb-1">Scan to pay with any UPI App</p>
-                                        <p class="text-dark small fw-bold">yadav.store@okicici</p>
+                                        
+                                        <!-- Quick Pay Buttons - Direct UPI Apps -->
+                                        <div id="paymentQuickPaySection" class="mt-4 p-4 bg-white rounded-3 shadow-sm">
+                                            <p class="text-muted small mb-3 fw-bold">Quick Pay - Click to Open UPI App:</p>
+                                            
+                                            <!-- UPI App Buttons -->
+                                            <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+                                                <button class="btn btn-outline-primary btn-lg d-flex align-items-center gap-2 px-4" type="button" onclick="payWithUPI('phonepe')">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/PhonePe_Logo.svg/120px-PhonePe_Logo.svg.png" alt="PhonePe" style="height: 24px; width: auto;" onerror="this.style.display='none'">
+                                                    <span class="fw-bold">PhonePe</span>
+                                                </button>
+                                                <button class="btn btn-outline-info btn-lg d-flex align-items-center gap-2 px-4" type="button" onclick="payWithUPI('paytm')">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Paytm_Logo_2024.svg/120px-Paytm_Logo_2024.svg.png" alt="Paytm" style="height: 24px; width: auto;" onerror="this.style.display='none'">
+                                                    <span class="fw-bold">Paytm</span>
+                                                </button>
+                                                <button class="btn btn-outline-success btn-lg d-flex align-items-center gap-2 px-4" type="button" onclick="payWithUPI('gpay')">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo_2020.svg/120px-Google_Pay_Logo_2020.svg.png" alt="GPay" style="height: 24px; width: auto;" onerror="this.style.display='none'">
+                                                    <span class="fw-bold">GPay</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success btn-lg d-flex align-items-center justify-content-center gap-2" type="button" onclick="payWithUPI('any')">
+                                                    <i class="bi bi-phone-fill fs-5"></i>
+                                                    <span class="fw-bold">Pay with Any UPI App</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- UPI ID Section with Copy Button -->
+                                        <div id="paymentUpiIdSection" class="mt-3 p-3 bg-white rounded-3 shadow-sm">
+                                            <p class="text-muted small mb-2">Or pay using UPI ID:</p>
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <code class="bg-light px-3 py-2 rounded fs-6 fw-bold text-dark" id="upiId">Loading...</code>
+                                                <button class="btn btn-outline-success btn-sm d-flex align-items-center gap-1" type="button" onclick="copyUPIId()" title="Copy UPI ID">
+                                                    <i class="bi bi-clipboard" id="copyIcon"></i>
+                                                    <span id="copyText">Copy</span>
+                                                </button>
+                                            </div>
+                                            <p class="text-success small fw-bold mt-2 mb-0" id="copyMessage" style="display: none;">
+                                                <i class="bi bi-check-circle"></i> UPI ID copied to clipboard!
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -203,7 +269,63 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=3"></script>
+    
+    <!-- Load Payment Settings from Firebase -->
+    <script>
+    // Load UPI settings from Firebase
+    (function loadPaymentSettings() {
+        try {
+            // Initialize Firebase if not already done
+            if (!firebase.apps.length && window.firebaseConfig) {
+                firebase.initializeApp(window.firebaseConfig);
+            }
+            
+            const db = firebase.firestore();
+            
+            db.collection('settings').doc('global').onSnapshot(doc => {
+                if (!doc.exists) return;
+                
+                const data = doc.data();
+                
+                // Update UPI ID display
+                const upiId = data.upiId || 'yadav.store@okicici';
+                const upiIdElement = document.getElementById('upiId');
+                if (upiIdElement) {
+                    upiIdElement.textContent = upiId;
+                }
+                
+                // Toggle QR Code visibility
+                const qrSection = document.getElementById('paymentQrSection');
+                if (qrSection && data.showQrCode === false) {
+                    qrSection.style.display = 'none';
+                }
+                
+                // Toggle Quick Pay buttons visibility
+                const quickPaySection = document.getElementById('paymentQuickPaySection');
+                if (quickPaySection && data.showQuickPayButtons === false) {
+                    quickPaySection.style.display = 'none';
+                }
+                
+                // Toggle UPI ID visibility
+                const upiIdSection = document.getElementById('paymentUpiIdSection');
+                if (upiIdSection && data.showUpiId === false) {
+                    upiIdSection.style.display = 'none';
+                }
+                
+                console.log('Payment settings loaded:', { upiId, showQrCode: data.showQrCode, showQuickPay: data.showQuickPayButtons, showUpiId: data.showUpiId });
+            });
+        } catch (error) {
+            console.error('Error loading payment settings:', error);
+            // Fallback to default UPI ID
+            const upiIdElement = document.getElementById('upiId');
+            if (upiIdElement) {
+                upiIdElement.textContent = 'yadav.store@okicici';
+            }
+        }
+    })();
+    </script>
+    
+    <script src="script.js?v=4"></script>
     <!-- AOS Animation JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
