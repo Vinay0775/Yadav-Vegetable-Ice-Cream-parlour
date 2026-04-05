@@ -310,33 +310,28 @@ function attachGlobalSettingsListener() {
             window.applySiteQrCode(data.qrCodeUrl);
         }
         
-        // Apply UPI settings to payment page if on payment page
-        if (window.location.pathname.includes('payment.html')) {
-            // Update UPI ID
-            const upiIdElement = document.getElementById('upiId');
-            if (upiIdElement && data.upiId) {
-                upiIdElement.textContent = data.upiId;
-            }
-            
-            // Toggle QR Code visibility
-            const qrSection = document.getElementById('paymentQrSection');
-            if (qrSection) {
-                qrSection.style.display = (data.showQrCode === false) ? 'none' : 'block';
-            }
-            
-            // Toggle Quick Pay buttons visibility
-            const quickPaySection = document.getElementById('paymentQuickPaySection');
-            if (quickPaySection) {
-                quickPaySection.style.display = (data.showQuickPayButtons === false) ? 'none' : 'block';
-            }
-            
-            // Toggle UPI ID visibility
-            const upiIdSection = document.getElementById('paymentUpiIdSection');
-            if (upiIdSection) {
-                upiIdSection.style.display = (data.showUpiId === false) ? 'none' : 'block';
-            }
-            
-            console.log('Payment settings updated:', { upiId: data.upiId, showQrCode: data.showQrCode, showQuickPay: data.showQuickPayButtons, showUpiId: data.showUpiId });
+        // Apply UPI settings 
+        const upiIdElement = document.getElementById('upiId');
+        if (upiIdElement) {
+            upiIdElement.textContent = data.upiId || 'yadav.store@okicici';
+        }
+        
+        // Toggle QR Code visibility
+        const qrSection = document.getElementById('paymentQrSection');
+        if (qrSection) {
+            qrSection.style.display = (data.showQrCode === false) ? 'none' : 'block';
+        }
+        
+        // Toggle Quick Pay buttons visibility
+        const quickPaySection = document.getElementById('paymentQuickPaySection');
+        if (quickPaySection) {
+            quickPaySection.style.display = (data.showQuickPayButtons === false) ? 'none' : 'block';
+        }
+        
+        // Toggle UPI ID visibility
+        const upiIdSection = document.getElementById('paymentUpiIdSection');
+        if (upiIdSection) {
+            upiIdSection.style.display = (data.showUpiId === false) ? 'none' : 'block';
         }
 
         const isAdminPage = window.location.pathname.includes('admin.html');
