@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="side-cart-footer">
                 <div class="d-flex justify-content-between mb-3"><span class="fw-bold">Total (incl. Tax)</span><span class="fs-5 fw-bold text-success" id="sideCartTotal">₹0</span></div>
                 <a href="cart.html" class="btn btn-outline-success w-100 mb-2 rounded-pill fw-medium">View Cart Page</a>
-                <a href="payment.html" class="btn btn-success w-100 rounded-pill fw-medium">Checkout Now</a>
+                <a href="checkout.html" class="btn btn-success w-100 rounded-pill fw-medium">Checkout Now</a>
             </div>
         </div>
     `;
@@ -1677,9 +1677,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const paytmURL = `paytmmp://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
             window.location.href = paytmURL;
         } else if (app === 'gpay') {
-            // Google Pay specific intent
-            const gpayURL = `tez://upi/pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
-            window.location.href = gpayURL;
+            // Google Pay generic upi intent (most reliable fallback for generic gpay link)
+            const gpayURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            
+            // Try specific intent first, fallback to generic
+            window.location.href = `tez://upi/pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+            
+            setTimeout(() => {
+                if (document.hasFocus()) {
+                    window.location.href = gpayURL;
+                }
+            }, 1000);
         }
         
         // Show feedback that app is opening
@@ -1695,27 +1703,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     };
 
+    // Checkout Page Logic
+    window.renderCheckoutPage = function() {
+        const cartItemsEl = document.getElementById('checkoutCartItems');
+        if (!cartItemsEl) return;
+        
+        let localCart = JSON.parse(localStorage.getItem('yadavCart')) || [];
+        let subtotal = localCart.reduce((s, item) => s + (item.price * item.quantity), 0);
+        let tax = Math.ceil(subtotal * 0.05);
+        let total = subtotal + tax;
+
+        let html = '';
+        if (localCart.length > 0) {
+            localCart.forEach(item => {
+                html += `<div class="summary-item">
+                    <img src="${item.image}" class="summary-img" alt="${item.title}" style="width:50px;height:50px;object-fit:cover;">
+                    <div class="summary-details">
+                        <h6 class="summary-title mb-0">${item.title}</h6>
+                        <span class="summary-qty text-muted">Qty: ${item.quantity}</span>
+                    </div>
+                    <span class="summary-price ms-auto fw-bold">${formatCurrency(item.price * item.quantity)}</span>
+                </div>`;
+            });
+        } else {
+            html = '<p class="text-muted text-center py-3">Your cart is empty.</p>';
+        }
+
+        cartItemsEl.innerHTML = html;
+        const stEl = document.getElementById('checkoutSubtotal');
+        if (stEl) stEl.innerText = formatCurrency(subtotal);
+        const taxEl = document.getElementById('checkoutTax');
+        if (taxEl) taxEl.innerText = formatCurrency(tax);
+        const totalEl = document.getElementById('checkoutTotal');
+        if (totalEl) totalEl.innerText = formatCurrency(total);
+    };
+
     // Payment Page Logic - wrapped in DOMContentLoaded to ensure elements exist
     function initPaymentPage() {
         const payBtn = document.getElementById('payNowBtn');
-        if (!payBtn) {
-            console.log('Payment page not detected (payNowBtn not found)');
-            return;
-        }
+        if (!payBtn) return;
         
         console.log('Payment page detected - initializing...');
         
-        // Reload cart from localStorage to ensure fresh data
         cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
-        
-        console.log('Cart data:', cart);
-        console.log('Cart items count:', cart.length);
         
         let subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
         const total = Math.ceil(subtotal + (subtotal * 0.05));
         
-        console.log('Payment page - Cart loaded:', cart.length, 'items, Subtotal:', subtotal, 'Total:', total);
-
         let html = '';
         if (cart.length > 0) {
             cart.forEach(item => {
@@ -1732,29 +1766,18 @@ document.addEventListener('DOMContentLoaded', () => {
             html = '<p class="text-muted text-center py-4">Your cart is empty</p>';
         }
         
-        // Update all payment elements
         const cartItemsEl = document.getElementById('paymentCartItems');
         const subtotalEl = document.getElementById('paymentSubtotal');
         const totalEl = document.getElementById('paymentTotal');
         const totalMobileEl = document.getElementById('paymentTotalMobile');
-        
-        console.log('DOM Elements found:', {
-            cartItems: !!cartItemsEl,
-            subtotal: !!subtotalEl,
-            total: !!totalEl,
-            totalMobile: !!totalMobileEl
-        });
         
         if (cartItemsEl) cartItemsEl.innerHTML = html;
         if (subtotalEl) subtotalEl.innerText = formatCurrency(subtotal);
         if (totalEl) totalEl.innerText = formatCurrency(total);
         if (totalMobileEl) totalMobileEl.innerText = formatCurrency(total);
         
-        // Update button text for mobile
-        payBtn.innerHTML = `<i class="bi bi-lock-fill"></i><span>Pay ${formatCurrency(total)}</span>`;
+        payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
         
-        console.log('Payment page initialized successfully with total:', formatCurrency(total));
-
         payBtn.addEventListener('click', async () => {
             if (cart.length === 0) {
                 window.showToast('Warning', 'Your cart is empty!', true);
@@ -1770,11 +1793,27 @@ document.addEventListener('DOMContentLoaded', () => {
             payBtn.disabled = true;
 
             const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            
+            // Retrieve checkout details from localStorage
+            const checkoutDetails = JSON.parse(localStorage.getItem('yadavCheckoutDetails')) || {};
+            
+            const customerEmail = checkoutDetails.email || currentUser.email;
+            let customerName = currentUser.displayName || 'Customer';
+            if (checkoutDetails.firstName) {
+                customerName = checkoutDetails.firstName + ' ' + (checkoutDetails.lastName || '');
+            }
+            
+            let addressStr = 'Not Provided';
+            if (checkoutDetails.address) {
+                addressStr = `${checkoutDetails.address}, ${checkoutDetails.city || ''} - ${checkoutDetails.pin || ''}`;
+            }
+
             const orderData = {
                 id: orderId,
                 uid: currentUser.uid,
-                customerEmail: currentUser.email,
-                customerName: currentUser.displayName || 'Customer',
+                customerEmail: customerEmail,
+                customerName: customerName,
+                shippingAddress: addressStr,
                 items: cart,
                 totalAmount: total,
                 status: 'Processing',
@@ -1795,11 +1834,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 cart = [];
                 saveCart();
+                localStorage.removeItem('yadavCheckoutDetails'); // clear up
                 setTimeout(() => window.location.href = 'orders.html', 2000);
             } catch (e) {
                 console.error("Order save sync error:", e);
                 window.showToast('Error', 'Error placing order! Check your internet connection or DB Rules.', true);
-                payBtn.innerHTML = `<i class="bi bi-lock-fill"></i><span>Pay ${formatCurrency(total)}</span>`;
+                payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
                 payBtn.disabled = false;
             }
         });
