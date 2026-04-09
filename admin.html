@@ -1867,7 +1867,7 @@
                                 </ul>
                             </td>
                             <td class="text-end">
-                                <a href="https://wa.me/91${data.phone.replace(/\\D/g, '')}?text=Hello ${data.name}, from Yadav Store!" target="_blank" class="btn btn-sm btn-outline-success shadow-sm" title="Reply on WA"><i class="bi bi-whatsapp"></i></a>
+                                <a href="https://wa.me/91${data.phone.replace(/\\D/g, '').slice(-10)}?text=Hello ${data.name}, from Yadav Store!" target="_blank" class="btn btn-sm btn-outline-success shadow-sm" title="Reply on WA"><i class="bi bi-whatsapp"></i></a>
                                 <button class="btn btn-sm btn-outline-danger ms-1 shadow-sm" title="Delete" onclick="deleteEnquiry('${doc.id}')"><i class="bi bi-trash"></i></button>
                             </td>
                         </tr>
