@@ -2066,12 +2066,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const statusOptions = ADMIN_ORDER_STATUSES.map(status => `<option value="${status}" ${status === (o.status || 'Processing') ? 'selected' : ''}>${status}</option>`).join('');
                     tableHtml += `
                     <tr>
-                        <td class="fw-bold font-monospace text-primary">${o.id}</td>
-                        <td class="text-muted small">${d.toLocaleDateString()} ${d.toLocaleTimeString()}</td>
-                        <td>${o.customerName}<br><small class="text-muted">${o.customerEmail}</small></td>
-                        <td>${names}</td>
-                        <td class="fw-bold text-success">${formatCurrency(amount)}</td>
-                        <td class="admin-order-status-cell">
+                        <td data-label="Order ID" class="fw-bold font-monospace text-primary">${o.id}</td>
+                        <td data-label="Date" class="text-muted small">${d.toLocaleDateString()} ${d.toLocaleTimeString()}</td>
+                        <td data-label="Customer">${o.customerName}<br><small class="text-muted">${o.customerEmail}</small></td>
+                        <td data-label="Items">${names}</td>
+                        <td data-label="Total" class="fw-bold text-success">${formatCurrency(amount)}</td>
+                        <td data-label="Status" class="admin-order-status-cell">
                             <select class="form-select form-select-sm admin-order-status-select shadow-none border-success" onchange="window.updateAdminOrderStatus('${o.id}', '${o.uid || ''}', this.value)">
                                 ${statusOptions}
                             </select>

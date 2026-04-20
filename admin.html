@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="style.css">
 
         <style>
+            /* =====================
+               SIDEBAR
+            ===================== */
             .admin-sidebar {
                 background-color: var(--theme-dark-green);
             }
@@ -26,12 +29,201 @@
                 text-decoration: none;
                 border-radius: 8px;
                 margin-bottom: 5px;
+                transition: background 0.2s, color 0.2s;
             }
 
             .admin-nav-link:hover,
             .admin-nav-link.active {
                 background-color: rgba(255, 255, 255, 0.1);
                 color: #fff;
+            }
+
+            /* =====================
+               MOBILE TOPBAR
+            ===================== */
+            .admin-mobile-bar {
+                position: sticky;
+                top: 0;
+                z-index: 1040;
+            }
+
+            /* =====================
+               TOPBAR / PAGE HEADER
+            ===================== */
+            .admin-topbar .admin-eyebrow {
+                font-size: 0.75rem;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #6c757d;
+            }
+
+            .admin-status-badge {
+                background: linear-gradient(135deg, #198754, #20c997);
+                color: #fff;
+                font-size: 0.75rem;
+            }
+
+            .admin-avatar {
+                border: 2px solid #dee2e6;
+            }
+
+            /* =====================
+               RESPONSIVE TABLES
+               (Mobile Card Style)
+            ===================== */
+            @media (max-width: 767.98px) {
+
+                /* Main content padding reduce on mobile */
+                .admin-main-shell {
+                    padding: 1rem !important;
+                }
+
+                /* Topbar stack on mobile */
+                .admin-topbar {
+                    flex-direction: column;
+                    align-items: flex-start !important;
+                    gap: 0.5rem;
+                }
+
+                .admin-topbar > div:last-child {
+                    width: 100%;
+                    justify-content: flex-start !important;
+                    flex-wrap: wrap;
+                    gap: 0.5rem !important;
+                }
+
+                /* Hide table header on mobile - show as label on each cell */
+                .admin-resp-table thead {
+                    display: none;
+                }
+
+                .admin-resp-table,
+                .admin-resp-table tbody,
+                .admin-resp-table tr,
+                .admin-resp-table td {
+                    display: block;
+                    width: 100%;
+                }
+
+                .admin-resp-table tr {
+                    border: 1px solid #dee2e6;
+                    border-radius: 12px;
+                    margin-bottom: 1rem;
+                    padding: 0.75rem;
+                    background: #fff;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+                    overflow: hidden;
+                }
+
+                .admin-resp-table td {
+                    border: none !important;
+                    padding: 0.4rem 0.5rem !important;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                    font-size: 0.875rem;
+                    min-height: unset;
+                }
+
+                .admin-resp-table td::before {
+                    content: attr(data-label);
+                    font-weight: 700;
+                    font-size: 0.72rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #6c757d;
+                    min-width: 90px;
+                    padding-top: 2px;
+                    flex-shrink: 0;
+                }
+
+                /* Action buttons full width on mobile */
+                .admin-resp-table td.td-actions {
+                    justify-content: flex-end;
+                    padding-top: 0.6rem !important;
+                    border-top: 1px dashed #dee2e6 !important;
+                    margin-top: 0.25rem;
+                }
+
+                .admin-resp-table td.td-actions::before {
+                    display: none;
+                }
+
+                /* Product image cell */
+                .admin-resp-table td.td-img {
+                    padding-bottom: 0.5rem !important;
+                }
+
+                .admin-resp-table td.td-img::before {
+                    display: none;
+                }
+
+                /* Order status column - full width dropdown */
+                .admin-order-status-col {
+                    min-width: unset !important;
+                }
+
+                /* Calculator - stack fields */
+                #sec-analytics .row.g-3 .col-md-3 {
+                    width: 100%;
+                }
+
+                /* Dashboard stat cards - 2 per row on mobile */
+                #adminOrdersGrid .col-sm-6 {
+                    width: 50%;
+                }
+
+                /* Card font size adjustments */
+                #adminOrdersGrid h3 {
+                    font-size: 1.25rem;
+                }
+
+                #adminOrdersGrid .rounded-circle {
+                    font-size: 1.25rem !important;
+                    padding: 0.6rem !important;
+                }
+
+                /* Staff form - stack */
+                #addStaffForm .col-md-5,
+                #addStaffForm .col-md-4,
+                #addStaffForm .col-md-3 {
+                    width: 100%;
+                }
+
+                /* Settings QR Preview */
+                #sec-settings .col-md-6 {
+                    width: 100%;
+                }
+
+                /* Price Calculator */
+                #sec-analytics .col-md-3 {
+                    width: 100%;
+                }
+
+                /* Add product form */
+                #adminAddProductForm .col-md-4,
+                #adminAddProductForm .col-md-6,
+                #adminAddProductForm .col-md-3 {
+                    width: 100%;
+                }
+
+                /* Analytics mini cards */
+                #sec-analytics .col-sm-6.col-xl-3 {
+                    width: 50%;
+                }
+            }
+
+            /* Extra small phones */
+            @media (max-width: 480px) {
+                #adminOrdersGrid .col-sm-6 {
+                    width: 100%;
+                }
+                #sec-analytics .col-sm-6.col-xl-3 {
+                    width: 100%;
+                }
+                .admin-resp-table td::before {
+                    min-width: 75px;
+                }
             }
         </style>
     </head>
@@ -337,8 +529,8 @@
                         <p class="text-muted small mt-2 mb-0" id="adminProductSearchMeta">Search works across default catalog and future products.</p>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
-                            <table class="table table-hover align-middle mb-0">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0 admin-resp-table">
                                 <thead class="bg-dark text-muted small position-sticky top-0 z-index-2">
                                     <tr>
                                         <th class="py-3 px-4 border-0">Image</th>
@@ -438,7 +630,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table table-hover align-middle mb-0 admin-resp-table">
                                 <thead class="bg-light text-muted small">
                                     <tr>
                                         <th class="py-3 px-4 fw-medium border-0">Tracking ID</th>
@@ -476,7 +668,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
+                            <table class="table table-hover align-middle mb-0 admin-resp-table">
                                 <thead class="bg-light text-muted small">
                                     <tr>
                                         <th class="py-3 px-4 border-0">Date</th>
@@ -1378,23 +1570,27 @@
                         : '<div class="small text-muted">No original price</div>';
                     html += `
                     <tr>
-                        <td class="px-4"><img src="${data.image}" class="rounded shadow-sm border" style="width: 56px; height: 56px; object-fit: cover;"></td>
-                        <td>
-                            <div class="fw-bold text-dark">${data.title}</div>
-                            <div class="small text-muted text-wrap" style="max-width: 280px;">${shortDesc}</div>
-                            <div class="mt-2 d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark border">${data.sourceLabel}</span>
-                                ${data.badge ? `<span class="badge bg-warning-subtle text-dark border">${data.badge}</span>` : ''}
+                        <td class="td-img px-4"><img src="${data.image}" class="rounded shadow-sm border" style="width: 56px; height: 56px; object-fit: cover;"></td>
+                        <td data-label="Product">
+                            <div>
+                                <div class="fw-bold text-dark">${data.title}</div>
+                                <div class="small text-muted text-wrap">${shortDesc}</div>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    <span class="badge bg-light text-dark border">${data.sourceLabel}</span>
+                                    ${data.badge ? `<span class="badge bg-warning-subtle text-dark border">${data.badge}</span>` : ''}
+                                </div>
                             </div>
                         </td>
-                        <td>
-                            <span class="badge bg-light text-dark border">${window.normalizeCatalogCategory ? window.normalizeCatalogCategory(data.category) : data.category}</span>
-                            <div class="small text-muted mt-1">${data.subCategory || 'No sub category'}</div>
+                        <td data-label="Category">
+                            <div>
+                                <span class="badge bg-light text-dark border">${window.normalizeCatalogCategory ? window.normalizeCatalogCategory(data.category) : data.category}</span>
+                                <div class="small text-muted mt-1">${data.subCategory || 'No sub category'}</div>
+                            </div>
                         </td>
-                        <td class="text-success fw-bold">₹${data.price}</td>
-                        <td class="px-4 text-end">
-                            <button class="btn btn-sm btn-outline-primary shadow-sm me-2 admin-edit-product-btn" type="button" title="Edit Product" data-product-id="${data.id}"><i class="bi bi-pencil-square"></i></button>
-                            <button class="btn btn-sm btn-outline-danger shadow-sm admin-delete-product-btn" type="button" title="Delete Product" data-product-id="${data.id}"><i class="bi bi-trash"></i></button>
+                        <td data-label="Price" class="text-success fw-bold">₹${data.price}</td>
+                        <td class="td-actions text-end">
+                            <button class="btn btn-sm btn-outline-primary shadow-sm me-2 admin-edit-product-btn" type="button" title="Edit Product" data-product-id="${data.id}"><i class="bi bi-pencil-square"></i> Edit</button>
+                            <button class="btn btn-sm btn-outline-danger shadow-sm admin-delete-product-btn" type="button" title="Delete Product" data-product-id="${data.id}"><i class="bi bi-trash"></i> Delete</button>
                         </td>
                     </tr>
                     `;
@@ -1852,22 +2048,22 @@
 
                         html += `
                         <tr class="${data.status === 'pending' ? 'table-warning' : ''}">
-                            <td class="text-muted small">${dateStr}</td>
-                            <td class="fw-bold">${data.name}</td>
-                            <td>
+                            <td data-label="Date" class="text-muted small">${dateStr}</td>
+                            <td data-label="Name" class="fw-bold">${data.name}</td>
+                            <td data-label="Contact">
                                 <div><i class="bi bi-telephone text-muted me-1"></i> ${data.phone}</div>
                                 <div class="small text-muted"><i class="bi bi-envelope me-1"></i> ${data.email}</div>
                             </td>
-                            <td><p class="mb-0 small text-wrap text-break" style="max-height: 80px; overflow-y: auto;">${data.message}</p></td>
-                            <td>
+                            <td data-label="Message"><p class="mb-0 small text-wrap text-break" style="max-height: 80px; overflow-y: auto;">${data.message}</p></td>
+                            <td data-label="Status">
                                 <span class="badge ${data.status === 'pending' ? 'bg-danger' : 'bg-success'} dropdown-toggle" style="cursor:pointer;" data-bs-toggle="dropdown">${data.status.toUpperCase()}</span>
                                 <ul class="dropdown-menu shadow">
                                     <li><button class="dropdown-item small py-2" onclick="updateEnquiryStatus('${doc.id}', 'pending')">Mark Pending 🔴</button></li>
                                     <li><button class="dropdown-item small py-2" onclick="updateEnquiryStatus('${doc.id}', 'resolved')">Mark Resolved 🟢</button></li>
                                 </ul>
                             </td>
-                            <td class="text-end">
-                                <a href="https://wa.me/91${data.phone.replace(/\\D/g, '').slice(-10)}?text=Hello ${data.name}, from Yadav Store!" target="_blank" class="btn btn-sm btn-outline-success shadow-sm" title="Reply on WA"><i class="bi bi-whatsapp"></i></a>
+                            <td class="td-actions">
+                                <a href="https://wa.me/91${data.phone.replace(/\\D/g, '').slice(-10)}?text=Hello ${data.name}, from Yadav Store!" target="_blank" class="btn btn-sm btn-outline-success shadow-sm" title="Reply on WA"><i class="bi bi-whatsapp"></i> WA</a>
                                 <button class="btn btn-sm btn-outline-danger ms-1 shadow-sm" title="Delete" onclick="deleteEnquiry('${doc.id}')"><i class="bi bi-trash"></i></button>
                             </td>
                         </tr>
