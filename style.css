@@ -2358,3 +2358,449 @@ body.dark-mode .typing-indicator {
     0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
     40% { transform: scale(1); opacity: 1; }
 }
+
+/* =========================================================================
+   21. COMPREHENSIVE STOREFRONT MOBILE RESPONSIVENESS
+   Full audit-based fixes for all pages — Professional & Premium
+   ========================================================================= */
+
+/* ---- GLOBAL TOUCH & TYPOGRAPHY ---- */
+@media (max-width: 991.98px) {
+    /* Fluid headings — stop giant text on tablets */
+    .display-3 { font-size: 2.4rem !important; }
+    .display-4 { font-size: 2rem !important; }
+    .display-5 { font-size: 1.75rem !important; }
+    .display-6 { font-size: 1.5rem !important; }
+
+    /* Ensure all buttons are easy to tap */
+    .btn { min-height: 44px; }
+
+    /* Hero: shrink the image so text has room */
+    .hero-section .carousel-item {
+        min-height: auto;
+        padding: 3rem 0 2rem;
+    }
+    .hero-section .drop-shadow-img {
+        max-width: 260px;
+        margin: 0 auto;
+    }
+
+    /* CTA section: stack on tablet */
+    .cta-section .bg-success.rounded-4 {
+        padding: 2.5rem 1.5rem !important;
+    }
+}
+
+/* ---- MOBILE (<= 767px) ---- */
+@media (max-width: 767.98px) {
+
+    /* === GLOBAL === */
+    section, .py-5 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+    .container { padding-left: 1rem; padding-right: 1rem; }
+    .gap-3 { gap: 0.75rem !important; }
+
+    /* === MARQUEE PROMO BAR === */
+    .bg-warning.text-dark marquee {
+        font-size: 0.82rem !important;
+    }
+    .bg-warning .badge.fs-6 {
+        font-size: 0.75rem !important;
+    }
+
+    /* === HEADER / LOGO === */
+    .navbar-brand.fs-3 {
+        font-size: 1.3rem !important;
+    }
+    .main-header .container {
+        gap: 0.5rem !important;
+    }
+    .main-header {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    /* === HERO SECTION === */
+    .hero-title {
+        font-size: 1.9rem !important;
+        line-height: 1.15 !important;
+    }
+    .hero-section .carousel-item {
+        min-height: auto;
+        padding: 2rem 0 1.5rem;
+    }
+    .hero-section .col-md-6.text-center img,
+    .hero-section .drop-shadow-img {
+        max-width: 200px !important;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .hero-section .lead {
+        font-size: 0.92rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+    .hero-section .btn-lg {
+        padding: 0.65rem 1.75rem !important;
+        font-size: 0.9rem !important;
+    }
+    .hero-section .carousel-control-prev,
+    .hero-section .carousel-control-next {
+        display: none; /* arrows not needed — swipe works */
+    }
+    .hero-section .carousel-indicators {
+        bottom: 4px;
+    }
+
+    /* === FEATURES SECTION === */
+    .features-section .col-md-4 {
+        width: 100%;
+    }
+    .features-section .feature-box {
+        padding: 1.25rem !important;
+        display: flex;
+        align-items: center;
+        text-align: left !important;
+        gap: 1rem;
+    }
+    .features-section .icon-circle {
+        width: 58px !important;
+        height: 58px !important;
+        flex-shrink: 0;
+        margin: 0 !important;
+    }
+    .features-section .icon-circle i {
+        font-size: 1.4rem !important;
+    }
+    .features-section h4 {
+        font-size: 1rem !important;
+        margin-bottom: 0.2rem !important;
+    }
+    .features-section .text-muted.small {
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+    }
+
+    /* === CATEGORIES SECTION === */
+    .categories-section .section-title h2 {
+        font-size: 1.6rem !important;
+    }
+    .cat-img-wrap {
+        width: 88px !important;
+        height: 88px !important;
+    }
+    .category-card h5 {
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+    }
+    .categories-section .row.g-4 {
+        --bs-gutter-y: 1rem;
+        --bs-gutter-x: 0.75rem;
+    }
+
+    /* === FEATURED PRODUCTS (index.html) === */
+    .products-section .col-sm-6 {
+        width: 50%;
+    }
+    .products-section .section-title h2 {
+        font-size: 1.6rem !important;
+    }
+    .product-image-wrapper {
+        height: 160px !important;
+        padding: 1rem !important;
+    }
+    .product-emoji { font-size: 72px !important; }
+    .card-body.p-4 { padding: 1rem !important; }
+    .card-body h5.card-title { font-size: 0.92rem !important; }
+    .card-body .btn.rounded-pill { font-size: 0.82rem; padding: 0.5rem 0.75rem; }
+
+    /* === CTA / NEWSLETTER BANNER === */
+    .cta-section .bg-success.rounded-4 {
+        padding: 2rem 1.25rem !important;
+        border-radius: 20px !important;
+    }
+    .cta-section h2.display-5 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .cta-section .lead {
+        font-size: 0.88rem !important;
+    }
+    .cta-section .col-lg-4 {
+        margin-top: 1.25rem !important;
+    }
+    .cta-section .input-group {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .cta-section .input-group .form-control {
+        border-radius: 50px !important;
+        width: 100% !important;
+    }
+    .cta-section .input-group .btn {
+        border-radius: 50px !important;
+        width: 100% !important;
+    }
+
+    /* === PRODUCT MODAL === */
+    .product-modal .modal-content {
+        width: 96% !important;
+        max-width: 96% !important;
+        padding: 1.25rem !important;
+    }
+    .product-modal .modal-content h3 { font-size: 1.1rem !important; }
+    .product-modal .modal-content h4 { font-size: 1rem !important; }
+    #modalProductQty { min-width: 60px; }
+
+    /* === CONTACT PAGE === */
+    .contact-info-item,
+    section.py-5.bg-light .d-flex.align-items-center {
+        padding: 1rem !important;
+    }
+    section.py-5.bg-light .fs-1 {
+        font-size: 1.8rem !important;
+        margin-right: 1rem !important;
+    }
+    section.py-5.bg-light h2.display-5 {
+        font-size: 1.75rem !important;
+    }
+    section.py-5.bg-light .card.p-5 {
+        padding: 1.5rem !important;
+    }
+    section.py-5.bg-light iframe {
+        height: 200px !important;
+    }
+
+    /* === FOOTER === */
+    .footer .col-lg-4,
+    .footer .col-lg-2,
+    .footer .col-lg-3 {
+        width: 100%;
+        text-align: center;
+    }
+    .footer .col-md-6 {
+        width: 100%;
+        text-align: center !important;
+    }
+    .footer ul.list-unstyled {
+        margin-bottom: 1rem;
+    }
+    .footer .footer-links a {
+        font-size: 0.9rem;
+    }
+    .footer .social-links {
+        justify-content: center !important;
+    }
+    .footer li.mb-3.d-flex {
+        justify-content: center;
+        text-align: left;
+    }
+    .footer h5 {
+        font-size: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .footer .pt-5 { padding-top: 2rem !important; }
+    .footer .mb-5 { margin-bottom: 2rem !important; }
+
+    /* === PAGE HEADER (product listing pages) === */
+    .page-header {
+        padding: 1.5rem 0 !important;
+    }
+    .page-header h1 {
+        font-size: 1.6rem !important;
+    }
+    .page-header .lead {
+        font-size: 0.88rem !important;
+    }
+    .page-header img {
+        max-width: 80px !important;
+    }
+
+    /* === PRODUCT LISTING PAGES (fresh-veggies, fresh-fruits, ice-cream) === */
+    /* Filter sidebar: full width stacked */
+    .products-filter-col {
+        width: 100% !important;
+        margin-bottom: 1.5rem;
+    }
+    /* Search and Sort bar */
+    .page-sort-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    #sortSelect {
+        width: 100%;
+    }
+
+    /* === CART PAGE === */
+    .cart-item-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .cart-summary-col {
+        width: 100% !important;
+    }
+
+    /* === LOGIN / REGISTER PAGE === */
+    .login-card {
+        padding: 1.5rem !important;
+    }
+    .auth-toggle {
+        flex-wrap: wrap;
+    }
+
+    /* === ABOUT PAGE === */
+    .about-hero-img {
+        max-width: 200px;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* === ORDER TRACKER (orders.html) === */
+    .order-tracker {
+        margin: 1.25rem 0;
+    }
+    .tracker-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+    .tracker-step { padding: 0 5px; }
+
+    /* === SIDE CART DRAWER === */
+    .side-cart-drawer {
+        width: 92vw !important;
+    }
+    .side-cart-item img {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* === SECTION TITLES === */
+    .section-title h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.25 !important;
+    }
+    .section-title p {
+        font-size: 0.78rem !important;
+    }
+
+    /* === MISC UTILITY FIXES === */
+    .text-center.mt-5 { margin-top: 2rem !important; }
+    .mb-5 { margin-bottom: 2rem !important; }
+    .py-5 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+    .rounded-4 { border-radius: 16px !important; }
+    .shadow-lg { box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important; }
+    .p-5 { padding: 1.5rem !important; }
+    .gap-5 { gap: 1.5rem !important; }
+}
+
+/* ---- EXTRA SMALL PHONES (<= 480px) ---- */
+@media (max-width: 480px) {
+
+    /* One product card per row on very small phones */
+    .products-section .col-sm-6 {
+        width: 100%;
+    }
+
+    /* Hero: even smaller text */
+    .hero-title { font-size: 1.65rem !important; }
+    .hero-section .drop-shadow-img { max-width: 160px !important; }
+
+    /* Category: still 2 per row */
+    .categories-section .col-6 { width: 50%; }
+
+    /* Footer full center */
+    .footer .border-top.pt-3 {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        text-align: center;
+    }
+
+    /* CTA: tighter */
+    .cta-section .bg-success.rounded-4 { padding: 1.5rem 1rem !important; }
+
+    /* Contact cards */
+    section.py-5.bg-light .d-flex.align-items-center {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    section.py-5.bg-light .d-flex.align-items-center i.fs-1 {
+        margin-right: 0 !important;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Navbar logo very small */
+    .navbar-brand.fs-3 { font-size: 1.15rem !important; }
+
+    /* Order card */
+    .card .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+}
+
+/* ---- PRODUCT LISTING PAGE SPECIFIC FIXES ---- */
+/* Ensures product grid on catalog pages is responsive */
+@media (max-width: 575.98px) {
+    /* Product grid: force 1 col on very small */
+    #productGrid > div {
+        width: 100%;
+    }
+    /* Sort + filter bar */
+    #productGrid + div,
+    .d-flex.align-items-center.gap-3.mb-4 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* ---- CHECKOUT / PAYMENT PAGE FIX ---- */
+@media (max-width: 767.98px) {
+    /* Payment page: stack cart and form */
+    .checkout-grid {
+        flex-direction: column !important;
+    }
+    /* Order summary cards: readable */
+    .order-item {
+        gap: 0.75rem;
+    }
+    .order-item-img {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+/* ---- ABOUT US PAGE ---- */
+@media (max-width: 767.98px) {
+    /* Team cards: 1 per row on small phones */
+    .team-card-col {
+        width: 100%;
+    }
+    /* About hero row */
+    .about-us-row {
+        flex-direction: column !important;
+    }
+}
+
+/* ---- DARK MODE MOBILE OVERRIDES ---- */
+@media (max-width: 767.98px) {
+    body.dark-mode .features-section .feature-box {
+        background: rgba(30,30,30,0.8) !important;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    body.dark-mode .cta-section .bg-success.rounded-4 {
+        box-shadow: 0 12px 30px rgba(0,0,0,0.3) !important;
+    }
+}
+
+/* ---- FLOATING CHAT BTN: don't block content on mobile ---- */
+@media (max-width: 767.98px) {
+    #aiChatbotContainer {
+        bottom: 14px;
+        right: 14px;
+    }
+    #aiChatbotToggleBtn {
+        width: 52px;
+        height: 52px;
+        font-size: 1.5rem;
+    }
+}
