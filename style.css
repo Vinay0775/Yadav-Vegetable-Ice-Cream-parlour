@@ -2804,3 +2804,299 @@ body.dark-mode .typing-indicator {
         font-size: 1.5rem;
     }
 }
+
+/* =========================================================================
+   22. BUTTON SIZE AUDIT FIX — All Pages, All Breakpoints
+   Fixes oversized btn-lg, excessive padding, and mobile bloat
+   ========================================================================= */
+
+/* ---- GLOBAL: Normalize btn-lg so it's not too chunky ---- */
+.btn-lg {
+    font-size: 0.95rem !important;
+    padding: 0.6rem 1.5rem !important;
+    line-height: 1.5 !important;
+}
+
+/* Desktop: btn-lg can be slightly larger — restore a tasteful size */
+@media (min-width: 992px) {
+    .btn-lg {
+        font-size: 1rem !important;
+        padding: 0.7rem 1.75rem !important;
+    }
+}
+
+/* Base all .btn — ensure consistent height, no weird jumps */
+.btn {
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+}
+
+/* ---- HERO SECTION: Shop Now / Taste Now buttons ---- */
+/* Desktop — keep them visually large but not massive */
+.hero-section .btn-lg {
+    font-size: 1rem !important;
+    padding: 0.72rem 2rem !important;
+}
+
+/* Tablet */
+@media (max-width: 991.98px) {
+    .hero-section .btn-lg {
+        font-size: 0.92rem !important;
+        padding: 0.6rem 1.5rem !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+    .hero-section .btn-lg {
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1.25rem !important;
+        min-height: 42px;
+    }
+}
+
+/* ---- INDEX: "View All Products" button ---- */
+.products-section .text-center .btn-lg,
+.text-center.mt-5 .btn-lg,
+.text-center .btn-outline-dark.btn-lg {
+    font-size: 0.95rem !important;
+    padding: 0.65rem 1.75rem !important;
+}
+
+@media (max-width: 767.98px) {
+    .products-section .text-center .btn-lg,
+    .text-center.mt-5 .btn-lg,
+    .text-center .btn-outline-dark.btn-lg {
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1.25rem !important;
+        width: auto;
+    }
+}
+
+/* ---- INDEX: Newsletter CTA Subscribe button ---- */
+.cta-section .btn-warning.btn-lg,
+.cta-section .btn.btn-lg {
+    font-size: 0.9rem !important;
+    padding: 0.6rem 1.25rem !important;
+    min-height: 44px;
+}
+
+@media (max-width: 767.98px) {
+    .cta-section .btn.btn-lg,
+    .cta-section .btn-warning.btn-lg {
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1rem !important;
+        width: 100% !important;
+    }
+}
+
+/* ---- PRODUCT LISTING PAGES: Filter toggle button ---- */
+.btn-outline-success.w-100.rounded-3,
+.btn-outline-warning.w-100.rounded-3,
+.btn-outline-pink.w-100.rounded-3 {
+    font-size: 0.9rem !important;
+    padding: 0.55rem 1rem !important;
+    min-height: 42px;
+}
+
+/* ---- PRODUCT CARDS: "Add to Cart" buttons ---- */
+.dynamic-add-cart,
+.card-body .btn.rounded-pill,
+.card-body .btn-outline-success,
+.card-body .btn-outline-pink {
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.9rem !important;
+    min-height: 40px;
+}
+
+@media (max-width: 575.98px) {
+    .dynamic-add-cart,
+    .card-body .btn.rounded-pill {
+        font-size: 0.8rem !important;
+        padding: 0.45rem 0.75rem !important;
+        min-height: 38px;
+    }
+}
+
+/* ---- PRODUCT CARDS: Wishlist / Quick-view icon buttons ---- */
+.product-action-overlay .btn,
+.wishlist-btn,
+.quick-view-btn {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.9rem !important;
+    line-height: 1 !important;
+}
+
+@media (max-width: 575.98px) {
+    .product-action-overlay .btn,
+    .wishlist-btn,
+    .quick-view-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.8rem !important;
+    }
+}
+
+/* ---- CART PAGE: "Proceed to Checkout" button ---- */
+/* The py-3 on cart checkout makes it 50px+ tall — reduce on mobile */
+.cart-checkout-btn {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    font-size: 0.95rem !important;
+}
+
+@media (max-width: 767.98px) {
+    .cart-checkout-btn {
+        padding-top: 0.65rem !important;
+        padding-bottom: 0.65rem !important;
+        font-size: 0.9rem !important;
+    }
+    /* Empty cart "Continue Shopping" */
+    #emptyCartMessage .btn {
+        font-size: 0.88rem !important;
+        padding: 0.5rem 1.25rem !important;
+    }
+}
+
+/* ---- LOGIN PAGE: Login/Create Account buttons ---- */
+/* btn-lg on a d-grid (full width) = very tall and chunky */
+#authSubmitBtn.btn-lg {
+    font-size: 0.95rem !important;
+    padding: 0.7rem 1.25rem !important;
+    min-height: 48px;
+}
+
+/* Social Login buttons */
+.social-btn {
+    font-size: 0.88rem !important;
+    padding: 0.6rem 1rem !important;
+    min-height: 44px;
+}
+
+@media (max-width: 480px) {
+    #authSubmitBtn.btn-lg {
+        font-size: 0.9rem !important;
+        padding: 0.6rem 1rem !important;
+        min-height: 44px;
+    }
+    .social-btn {
+        font-size: 0.82rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+}
+
+/* ---- DAIRY PAGE: Hero CTA buttons ---- */
+/* btn-lg px-4 in a flex-wrap row — fine on desktop, too big on mobile */
+@media (max-width: 767.98px) {
+    .dairy-page-btns .btn-lg,
+    section .d-flex.flex-wrap.gap-3 .btn-lg {
+        font-size: 0.88rem !important;
+        padding: 0.55rem 1.1rem !important;
+    }
+    /* Early access card buttons (py-3) */
+    .d-grid.gap-3 .btn.rounded-pill {
+        padding-top: 0.6rem !important;
+        padding-bottom: 0.6rem !important;
+        font-size: 0.88rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Stack dairy buttons if needed */
+    section .d-flex.flex-wrap.gap-3 .btn-lg {
+        width: 100% !important;
+        justify-content: center;
+    }
+}
+
+/* ---- CONTACT PAGE: WhatsApp Submit button ---- */
+#waContactForm .btn {
+    padding: 0.65rem 1.25rem !important;
+    font-size: 0.92rem !important;
+    min-height: 44px;
+}
+
+/* ---- PRODUCT DETAIL PAGE: Add to Cart ---- */
+#pdAddToCart.btn {
+    font-size: 0.95rem !important;
+    padding: 0.65rem 1.5rem !important;
+}
+
+@media (max-width: 767.98px) {
+    #pdAddToCart.btn {
+        padding: 0.6rem 1.25rem !important;
+        font-size: 0.9rem !important;
+        width: 100%;
+    }
+}
+
+/* ---- PRODUCT QUICK-VIEW MODAL: Add to Cart ---- */
+#modalAddToCartBtn {
+    font-size: 0.9rem !important;
+    padding: 0.55rem 1.25rem !important;
+}
+
+@media (max-width: 480px) {
+    #modalAddToCartBtn {
+        font-size: 0.85rem !important;
+        padding: 0.5rem 1rem !important;
+        width: 100% !important;
+    }
+    #modalProductQty {
+        min-width: 64px;
+        max-width: 72px;
+    }
+}
+
+/* ---- ORDERS / PROFILE: Action buttons ---- */
+@media (max-width: 767.98px) {
+    .order-action-btn,
+    .profile-action-btn {
+        font-size: 0.82rem !important;
+        padding: 0.4rem 0.9rem !important;
+    }
+}
+
+/* ---- GLOBAL MOBILE: All full-width btn-success/btn-pink in cards ---- */
+/* Prevent over-tall buttons in stacked card contexts */
+@media (max-width: 767.98px) {
+    .card .btn-success,
+    .card .btn-pink,
+    .card .btn-outline-success,
+    .card .btn-outline-pink {
+        min-height: 42px;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        font-size: 0.88rem !important;
+    }
+}
+
+/* ---- FIXED BOTTOM BAR (payment "Pay Now") — keep large for touch ---- */
+.pay-now-btn {
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+}
+
+@media (max-width: 480px) {
+    .pay-now-btn {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.88rem !important;
+    }
+}
+
+/* ---- NAV OFFCANVAS: "Download App" button ---- */
+.offcanvas-body .btn-success.w-100.rounded-pill {
+    font-size: 0.88rem !important;
+    padding: 0.55rem 1rem !important;
+    min-height: 44px;
+}
+
+/* ---- DARK MODE: ensure buttons keep correct sizes ---- */
+body.dark-mode .btn-lg {
+    font-size: 0.95rem !important;
+}
