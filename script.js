@@ -899,6 +899,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const prodJson = encodeURIComponent(JSON.stringify(prod));
 
+        // Variable weight product display
+        const isVarWeight = prod.isVariableWeight === true;
+        const priceDisplay = isVarWeight
+            ? `<span class="fs-5 fw-bold text-${colorClass}">₹${prod.pricePerKg}/kg</span>`
+            : `${originalStr}<span class="fs-5 fw-bold text-${colorClass}">${formatCurrency(prod.price)}</span>`;
+        const varWeightNote = isVarWeight
+            ? `<div class="alert alert-warning py-1 px-2 mb-2 rounded-3 text-center" style="font-size:0.72rem;"><i class="bi bi-scale me-1"></i>~${prod.approxWeightRange} per piece • Final price on actual weight</div>`
+            : '';
+        const addBtnLabel = isVarWeight ? `<i class="bi bi-cart-plus me-2"></i><span>Order 1 Piece</span>` : `<i class="bi bi-cart-plus me-2"></i><span>Add to Cart</span>`;
+
         return `
             <div class="${columnClass}">
                 <div class="card product-card fade-up-custom border-0 ${bgClass} h-100 shadow-sm rounded-4">
@@ -907,18 +917,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <img src="${prod.image}" alt="${prod.title}" class="img-fluid object-fit-cover shadow-sm product-card-image" style="width:140px; height:140px;">
                         <div class="product-action-overlay">
                             <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift wishlist-btn ${window.userWishlist && window.userWishlist.includes(prodId) ? 'active' : ''}" data-id="${prodId}" aria-label="Save ${prod.title}"><i class="bi bi-heart"></i></button>
-                            <button class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift quick-view-btn" data-prod="${prodJson}" aria-label="Quick view ${prod.title}"><i class="bi bi-eye"></i></button>
+                            <a href="product.html?id=${prodId}" class="btn btn-light rounded-circle shadow-sm mx-1 hover-lift" aria-label="View ${prod.title} details"><i class="bi bi-box-arrow-up-right"></i></a>
                         </div>
                     </div>
                     <div class="card-body bg-white rounded-bottom-4 p-4 product-card-body">
                         <p class="text-muted small mb-1 product-card-meta">${normalizedCategory}</p>
                         <h6 class="card-title fw-bold text-dark mb-2 product-card-title" title="${prod.title}">${prod.title}</h6>
                         <div class="rating text-warning mb-2 small product-card-rating">${starsHtml}</div>
-                        <div class="d-flex justify-content-center align-items-center mb-3 product-price-row">
-                            ${originalStr}
-                            <span class="fs-5 fw-bold text-${colorClass}">${formatCurrency(prod.price)}</span>
+                        <div class="d-flex justify-content-center align-items-center mb-2 product-price-row">
+                            ${priceDisplay}
                         </div>
-                        <button class="btn btn-outline-${colorClass} w-100 rounded-pill fw-medium dynamic-add-cart" data-prod="${prodJson}"><i class="bi bi-cart-plus me-2"></i><span>Add to Cart</span></button>
+                        ${varWeightNote}
+                        <button class="btn btn-outline-${colorClass} w-100 rounded-pill fw-medium dynamic-add-cart" data-prod="${prodJson}">${addBtnLabel}</button>
                     </div>
                 </div>
             </div>
@@ -941,11 +951,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        containerEl.querySelectorAll('.quick-view-btn').forEach(btn => {
+        containerEl.querySelectorAll('.wishlist-btn').forEach(btn => {
             btn.dataset.bound = "true";
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
-                window.openModalFromData(this.dataset.prod);
+                const id = this.dataset.id;
+                if (window.toggleWishlist) window.toggleWishlist(id);
             });
         });
     };
@@ -1170,52 +1181,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('modalProductImage').src = data.image;
                 document.getElementById('modalProductTitle').innerText = data.title;
                 document.getElementById('modalProductDesc').innerText = data.desc || `Fresh and high quality direct from Yadav Store.`;
-                document.getElementById('modalProductPrice').innerText = formatCurrency(data.price);
-                document.getElementById('modalProductQty').value = 1;
 
-                // REVIEWS INJECTION
-                let reviewsContainer = document.getElementById('modalReviewsBox');
-                if (!reviewsContainer) {
-                    const descParent = document.getElementById('modalProductDesc').parentNode;
-                    reviewsContainer = document.createElement('div');
-                    reviewsContainer.id = 'modalReviewsBox';
-                    reviewsContainer.className = 'mt-3 border-top pt-3 text-start';
-                    descParent.appendChild(reviewsContainer);
+                // --- Variable Weight Product Handling ---
+                const isVarWeight = data.isVariableWeight === true;
+                const priceEl = document.getElementById('modalProductPrice');
+                const qtyInput = document.getElementById('modalProductQty');
+                const qtyInputWrapper = qtyInput ? qtyInput.closest('.d-flex') || qtyInput.parentElement : null;
+
+                // Remove any previous variable weight note in modal
+                const oldNote = document.getElementById('modalVarWeightNote');
+                if (oldNote) oldNote.remove();
+
+                if (isVarWeight) {
+                    priceEl.innerHTML = `₹${data.pricePerKg}/kg <small class="text-muted fw-normal" style="font-size:0.75rem;">per kg</small>`;
+                    qtyInput.value = 1;
+                    qtyInput.min = 1;
+                    // Insert variable weight note just before the qty row
+                    const noteDiv = document.createElement('div');
+                    noteDiv.id = 'modalVarWeightNote';
+                    noteDiv.className = 'alert alert-warning rounded-4 py-2 px-3 mb-3 text-start';
+                    noteDiv.style.fontSize = '0.82rem';
+                    noteDiv.innerHTML = `
+                        <strong><i class="bi bi-scale me-1"></i>Variable Weight Item</strong><br>
+                        Ek tarbuj ka approximate weight <strong>${data.approxWeightRange}</strong> hota hai.<br>
+                        Estimated price: <strong>₹${data.pricePerKg * 3}–₹${data.pricePerKg * 5}</strong> per piece.<br>
+                        <span class="text-muted">Delivery se pehle actual weight ke baad final amount WhatsApp pe confirm kiya jayega.</span>
+                    `;
+                    if (qtyInputWrapper) {
+                        qtyInputWrapper.parentNode.insertBefore(noteDiv, qtyInputWrapper);
+                    } else {
+                        priceEl.insertAdjacentElement('afterend', noteDiv);
+                    }
+                } else {
+                    priceEl.innerText = formatCurrency(data.price);
+                    qtyInput.value = 1;
+                    qtyInput.min = 1;
                 }
+                // --- End Variable Weight Handling ---
 
-                reviewsContainer.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="fw-bold mb-0 text-success"><i class="bi bi-star-half me-1"></i> Reviews</h6>
-                        <button class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" onclick="document.getElementById('reviewFormWrap').classList.toggle('d-none')">Write</button>
-                    </div>
-                    <div id="reviewFormWrap" class="d-none bg-light p-3 rounded-4 mb-3 shadow-sm border">
-                        <input type="text" id="revName" class="form-control form-control-sm mb-2 shadow-none" placeholder="Your Name" ${currentUser ? `value="${currentUser.displayName || ''}"` : ''}>
-                        <div class="mb-2">
-                            <select id="revRating" class="form-select form-select-sm shadow-none text-warning fw-bold">
-                                <option value="5" selected>⭐⭐⭐⭐⭐ (5/5)</option>
-                                <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                                <option value="3">⭐⭐⭐ (3/5)</option>
-                                <option value="2">⭐⭐ (2/5)</option>
-                                <option value="1">⭐ (1/5)</option>
-                            </select>
-                        </div>
-                        <textarea id="revText" class="form-control form-control-sm mb-2 shadow-none" rows="2" placeholder="Your review..."></textarea>
-                        <button class="btn btn-success btn-sm w-100 rounded-pill" onclick="window.submitReview('${data.id}')">Submit Review</button>
-                    </div>
-                    <div id="reviewsList" class="small" style="max-height: 150px; overflow-y: auto;">
-                        <div class="text-center text-muted py-2"><div class="spinner-border spinner-border-sm text-success"></div></div>
-                    </div>
-                `;
-
-                if (window.fetchReviews) window.fetchReviews(data.id);
-
+                // Add a "View Full Details & Reviews" link below the cart button
                 const btn = document.getElementById('modalAddToCartBtn');
                 btn.className = `btn btn-${data.category === 'Ice-Creams' ? 'pink' : 'success'} px-5 rounded-pill fw-bold hover-lift`;
+
+                let viewDetailsLink = document.getElementById('modalViewDetailsLink');
+                if (!viewDetailsLink) {
+                    viewDetailsLink = document.createElement('a');
+                    viewDetailsLink.id = 'modalViewDetailsLink';
+                    viewDetailsLink.className = 'btn btn-outline-secondary w-100 rounded-pill fw-medium mt-2';
+                    viewDetailsLink.innerHTML = '<i class="bi bi-box-arrow-up-right me-2"></i>View Full Details & Reviews';
+                    btn.insertAdjacentElement('afterend', viewDetailsLink);
+                }
+                const pid = data.id || data.title;
+                viewDetailsLink.href = `product.html?id=${encodeURIComponent(pid)}`;
 
                 btn.onclick = () => {
                     window.addToCartGlobal(encodeURIComponent(JSON.stringify({ ...data, quantity: parseInt(document.getElementById('modalProductQty').value) || 1 })));
                     closeModal();
-                    // Alert replaced by Toast inside addToCartGlobal!
                 };
 
                 modal.classList.remove('d-none');
@@ -1361,18 +1382,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartContainer.innerHTML = '<div class="p-5 text-center text-muted"><i class="bi bi-cart-x display-1 d-block mb-3 opacity-50"></i><h4>Your cart is empty.</h4><a href="index.html" class="btn btn-success mt-3 rounded-pill px-4">Shop Now</a></div>';
                 if (document.getElementById('cartSubtotal')) document.getElementById('cartSubtotal').innerText = '₹0';
                 if (document.getElementById('cartTotal')) document.getElementById('cartTotal').innerText = '₹0';
+                // Remove variable weight banner if present
+                const oldBanner = document.getElementById('varWeightCartBanner');
+                if (oldBanner) oldBanner.remove();
                 return;
             }
+
+            // Check if any variable weight items exist in cart
+            const hasVarWeightItem = cart.some(item => item.isVariableWeight === true);
+
+            // Show/hide variable weight global notice above cart container
+            let banner = document.getElementById('varWeightCartBanner');
+            if (hasVarWeightItem) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'varWeightCartBanner';
+                    banner.className = 'alert alert-warning border-warning rounded-4 mb-4 shadow-sm';
+                    banner.style.borderLeft = '5px solid #ffc107';
+                    banner.innerHTML = `
+                        <div class="d-flex align-items-start gap-3">
+                            <span style="font-size:2rem;">🍉</span>
+                            <div>
+                                <strong class="d-block mb-1">Variable Weight Item in your cart</strong>
+                                Tarbuj (Watermelon) ka actual weight alag ho sakta hai (approx. 3–5 kg per piece).
+                                Delivery se pehle hum aapko <strong>WhatsApp pe actual weight aur final amount confirm</strong> karenge.
+                                Aapko sirf confirmed amount pay karna hoga.
+                            </div>
+                        </div>
+                    `;
+                    cartContainer.parentElement.insertBefore(banner, cartContainer);
+                }
+            } else {
+                if (banner) banner.remove();
+            }
+
             let subtotal = 0;
             let html = '<div class="list-group list-group-flush">';
             cart.forEach((item, index) => {
+                const isVarWeight = item.isVariableWeight === true;
                 const itemTotal = item.price * item.quantity;
                 subtotal += itemTotal;
+                const priceLabel = isVarWeight
+                    ? `<span class="text-muted small">₹${item.pricePerKg || item.price}/kg &bull; 1 piece (~${item.approxWeightRange || '3–5 kg'})</span>`
+                    : `<span class="text-muted small">₹${item.price} per kg</span>`;
+                const totalLabel = isVarWeight
+                    ? `<span class="fw-bold text-warning small">Est. ₹${(item.pricePerKg || item.price) * 3}–₹${(item.pricePerKg || item.price) * 5}</span>`
+                    : `<span class="fw-bold text-dark">₹${itemTotal}</span>`;
+                const varNote = isVarWeight
+                    ? `<div class="mt-1"><span class="badge bg-warning text-dark" style="font-size:0.68rem;"><i class="bi bi-scale me-1"></i>Actual weight pe final price</span></div>`
+                    : '';
+
                 html += `
                 <div class="list-group-item p-4">
                     <div class="row align-items-center">
                         <div class="col-3 col-sm-2 text-center"><img src="${item.image}" class="img-fluid rounded-circle object-fit-cover shadow-sm" style="width:60px; height:60px;"></div>
-                        <div class="col-9 col-sm-4 mb-2 mb-sm-0"><h6 class="fw-bold mb-1">${item.title}</h6><span class="text-muted small">₹${item.price} each</span></div>
+                        <div class="col-9 col-sm-4 mb-2 mb-sm-0"><h6 class="fw-bold mb-1">${item.title}</h6>${priceLabel}${varNote}</div>
                         <div class="col-8 col-sm-3">
                             <div class="input-group input-group-sm rounded-pill border overflow-hidden w-100" style="max-width: 120px;">
                                 <button class="btn btn-light px-3 border-0 change-qty" data-index="${index}" data-change="-1">-</button>
@@ -1380,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="btn btn-light px-3 border-0 change-qty" data-index="${index}" data-change="1">+</button>
                             </div>
                         </div>
-                        <div class="col-4 col-sm-2 text-end"><span class="fw-bold text-dark">₹${itemTotal}</span></div>
+                        <div class="col-4 col-sm-2 text-end">${totalLabel}</div>
                         <div class="col-12 col-sm-1 text-end mt-2 mt-sm-0"><button class="btn btn-sm text-danger remove-item" data-index="${index}"><i class="bi bi-trash fs-5"></i></button></div>
                     </div>
                 </div>`;

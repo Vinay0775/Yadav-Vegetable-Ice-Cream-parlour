@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Product Details - Yadav Store</title>
+    <link rel="icon" type="image/png" href="assets/fav-icon.png">
+    <link rel="apple-touch-icon" href="assets/fav-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ---- Product Page Styles ---- */
+        .product-main-img {
+            width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            border-radius: 20px;
+            background: #f8f9fa;
+            padding: 24px;
+            transition: transform 0.3s ease;
+        }
+        .product-main-img:hover { transform: scale(1.03); }
+
+        .rating-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .rating-bar-track { flex: 1; height: 8px; background: #e9ecef; border-radius: 99px; overflow: hidden; }
+        .rating-bar-fill { height: 100%; border-radius: 99px; background: #198754; transition: width 0.6s ease; }
+
+        .review-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        .review-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.07); }
+        .review-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .review-img:hover { transform: scale(1.08); }
+
+        .verified-badge {
+            background: #d1fae5;
+            color: #065f46;
+            font-size: 0.72rem;
+            padding: 2px 10px;
+            border-radius: 99px;
+            font-weight: 600;
+        }
+
+        .star-interactive i {
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.15s, transform 0.15s;
+            color: #dee2e6;
+        }
+        .star-interactive i.active,
+        .star-interactive i:hover { color: #ffc107; transform: scale(1.15); }
+
+        .img-upload-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 2px dashed #ced4da;
+            border-radius: 12px;
+            padding: 14px 20px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .img-upload-label:hover { border-color: #198754; color: #198754; background: #f0fdf4; }
+        .img-preview-box { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .img-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
+        }
+        .img-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .img-preview-item .remove-img {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .qty-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1.5px solid #dee2e6;
+            border-radius: 12px;
+            overflow: hidden;
+            width: fit-content;
+        }
+        .qty-ctrl button {
+            background: #f8f9fa;
+            border: none;
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: background 0.15s;
+        }
+        .qty-ctrl button:hover { background: #e9ecef; }
+        .qty-ctrl input {
+            width: 52px;
+            text-align: center;
+            border: none;
+            border-left: 1.5px solid #dee2e6;
+            border-right: 1.5px solid #dee2e6;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 10px 0;
+        }
+
+        .breadcrumb-item+.breadcrumb-item::before { color: #adb5bd; }
+
+        /* Image lightbox */
+        #imgLightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        #imgLightbox.show { display: flex; }
+        #imgLightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
+        #imgLightbox .close-lb {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .write-review-box {
+            background: linear-gradient(135deg, #f0fdf4, #fff);
+            border: 1.5px solid #d1fae5;
+            border-radius: 20px;
+            padding: 28px;
+        }
+
+        .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <!-- Header (same as other pages) -->
+    <div class="sticky-top w-100 shadow-sm" style="z-index: 1050;">
+        <header class="main-header py-2 py-lg-3 bg-white border-bottom">
+            <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <a class="navbar-brand fw-bold fs-3 logo-text m-0 p-0" style="white-space:nowrap;" href="index.html">
+                    Yadav <span class="text-success">Vegetable</span> <span class="text-pink fs-6 d-none d-sm-inline">&
+                        Ice-Cream</span>
+                </a>
+                <div class="header-icons d-none d-lg-flex align-items-center gap-3 ms-auto">
+                    <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn me-2" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
+                    <a href="login.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Login/Profile"><i class="bi bi-person"></i></a>
+                    <a href="orders.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="My Orders"><i class="bi bi-box-seam"></i></a>
+                    <a href="favorites.html" class="text-dark text-decoration-none fs-5 icon-link position-relative" title="Favorites" data-favorites-link="true">
+                        <i class="bi bi-heart"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success badge-count favorites-total-badge d-none" data-favorites-badge="true">0</span>
+                    </a>
+                    <a href="cart.html" class="text-dark text-decoration-none fs-5 icon-link position-relative d-flex align-items-center" title="Cart">
+                        <i class="bi bi-cart3"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge" id="cartCount">0</span>
+                    </a>
+                </div>
+                <div class="d-flex d-lg-none align-items-center gap-3 ms-auto">
+                    <a href="#" class="text-dark text-decoration-none fs-5 icon-link theme-toggle-btn" title="Toggle Dark/Light Mode"><i class="bi bi-moon"></i></a>
+                    <a href="cart.html" class="text-dark text-decoration-none fs-5 position-relative icon-link" title="Cart">
+                        <i class="bi bi-cart3"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pink badge-count cart-total-badge">0</span>
+                    </a>
+                    <button class="navbar-toggler border-0 shadow-none p-0 ms-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNav">
+                        <i class="bi bi-list fs-1 text-dark"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-0 p-lg-0" id="mainNavbar">
+            <div class="container">
+                <div class="offcanvas-lg offcanvas-end bg-white" tabindex="-1" id="mainNav" style="--bs-offcanvas-width: 280px;">
+                    <div class="offcanvas-header border-bottom d-lg-none py-3">
+                        <h5 class="offcanvas-title fw-bold logo-text text-dark fs-4">Yadav <span class="text-success">Menu</span></h5>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" data-bs-target="#mainNav"></button>
+                    </div>
+                    <div class="offcanvas-body d-flex align-items-lg-center">
+                        <ul class="navbar-nav flex-lg-row ms-lg-auto justify-content-lg-start align-items-lg-center w-100 gap-2 gap-lg-4 fw-medium text-uppercase small text-nowrap py-3 py-lg-0">
+                            <li class="nav-item"><a class="nav-link text-success px-lg-0 py-lg-3" href="index.html">Home</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="fresh-veggies.html">Veggies</a></li>
+                            <li class="nav-item"><a class="nav-link text-warning px-lg-0 py-lg-3" href="fresh-fruits.html">Fruits</a></li>
+                            <li class="nav-item"><a class="nav-link text-pink px-lg-0 py-lg-3" href="ice-cream-parlour.html">Ice-Cream</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="about-us.html">About</a></li>
+                            <li class="nav-item"><a class="nav-link px-lg-0 py-lg-3" href="contact.html">Contact</a></li>
+                            <li class="nav-item d-lg-none border-top pt-3 mt-2"><a class="nav-link text-dark" href="orders.html"><i class="bi bi-box-seam me-2 text-success"></i>My Orders</a></li>
+                            <li class="nav-item d-lg-none"><a class="nav-link text-dark" href="login.html"><i class="bi bi-person me-2 text-success"></i>Profile Login</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="bg-white border-bottom py-2">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small fw-medium" id="productBreadcrumb">
+                    <li class="breadcrumb-item"><a href="index.html" class="text-decoration-none text-success">Home</a></li>
+                    <li class="breadcrumb-item active" id="breadcrumbCategory">Loading...</li>
+                    <li class="breadcrumb-item active" id="breadcrumbTitle">...</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Product Details Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-5" id="productDetailSection">
+                <!-- Skeleton Loading -->
+                <div class="col-md-5" id="skeletonLeft">
+                    <div class="skeleton" style="height: 380px; border-radius: 20px;"></div>
+                </div>
+                <div class="col-md-7" id="skeletonRight">
+                    <div class="skeleton mb-3" style="height: 28px; width: 60%;"></div>
+                    <div class="skeleton mb-2" style="height: 18px; width: 40%;"></div>
+                    <div class="skeleton mb-4" style="height: 42px; width: 30%;"></div>
+                    <div class="skeleton mb-2" style="height: 16px; width: 80%;"></div>
+                    <div class="skeleton mb-5" style="height: 16px; width: 65%;"></div>
+                    <div class="skeleton" style="height: 52px; width: 55%;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="py-5 bg-white border-top" id="reviewsSection" style="display:none;">
+        <div class="container">
+            <div class="row g-5">
+
+                <!-- Rating Summary -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+                        <h4 class="fw-bold mb-1">Customer Reviews</h4>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="display-5 fw-bold text-dark" id="avgRatingDisplay">—</span>
+                            <div>
+                                <div class="text-warning small" id="avgStarsDisplay"></div>
+                                <span class="text-muted small" id="totalReviewsDisplay">0 reviews</span>
+                            </div>
+                        </div>
+                        <!-- Rating bars -->
+                        <div id="ratingBarsContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Reviews List + Write Review -->
+                <div class="col-lg-8">
+
+                    <!-- Write Review Box -->
+                    <div id="writeReviewSection" class="mb-4"></div>
+
+                    <!-- Reviews List -->
+                    <h5 class="fw-bold mb-4" id="reviewsListHeading">All Reviews</h5>
+                    <div id="reviewsList">
+                        <div class="text-center py-5 text-muted">
+                            <div class="spinner-border text-success mb-3" role="status"></div>
+                            <p>Loading reviews...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Image Lightbox -->
+    <div id="imgLightbox">
+        <span class="close-lb" id="closeLightbox"><i class="bi bi-x-lg"></i></span>
+        <img src="" alt="Review Photo" id="lightboxImg">
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark-green text-light pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center flex-wrap">
+                <p class="mb-0 text-light-50 small">&copy; 2026 Yadav Vegetable & Ice-Cream. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap + Firebase + Custom Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="catalog.js"></script>
+    <script src="script.js?v=3"></script>
+
+    <script>
+    // =============================================
+    // PRODUCT DETAIL PAGE LOGIC
+    // =============================================
+    (function () {
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+        let currentProduct = null;
+        let currentUser = null;
+        let selectedRating = 5;
+        let selectedImageFile = null;
+        let allReviews = [];
+
+        // Wait for Firebase auth + catalog
+        const initPage = () => {
+            if (!productId) {
+                document.getElementById('productDetailSection').innerHTML =
+                    '<div class="col-12 text-center py-5"><h3 class="text-muted">Product not found.</h3><a href="index.html" class="btn btn-success mt-3 rounded-pill px-4">Go Home</a></div>';
+                return;
+            }
+
+            // Find product in catalog
+            const findAndRender = () => {
+                const catalog = window.CATALOG || [];
+                const prod = catalog.find(p => (p.id || p.title) === productId);
+
+                if (prod) {
+                    currentProduct = prod;
+                    renderProductDetail(prod);
+                    loadReviews(prod.id || prod.title);
+                    document.title = `${prod.title} - Yadav Store`;
+                    // Breadcrumb
+                    const catMap = { Vegetables: 'fresh-veggies.html', Fruits: 'fresh-fruits.html', 'Ice-Creams': 'ice-cream-parlour.html' };
+                    document.getElementById('breadcrumbCategory').innerHTML =
+                        `<a href="${catMap[prod.category] || 'index.html'}" class="text-decoration-none text-success">${prod.category}</a>`;
+                    document.getElementById('breadcrumbTitle').innerText = prod.title;
+                } else {
+                    // Try Firestore
+                    if (window.db) {
+                        window.db.collection('products').doc(productId).get().then(doc => {
+                            if (doc.exists) {
+                                currentProduct = { ...doc.data(), id: doc.id, category: window.normalizeCatalogCategory(doc.data().category) };
+                                renderProductDetail(currentProduct);
+                                loadReviews(productId);
+                            } else {
+                                document.getElementById('skeletonLeft').remove();
+                                document.getElementById('skeletonRight').innerHTML =
+                                    '<div class="col-12 py-5 text-center text-muted"><h3>Product not found.</h3><a href="index.html" class="btn btn-success mt-3 rounded-pill px-4">Go Home</a></div>';
+                            }
+                        });
+                    }
+                }
+            };
+
+            // Wait for CATALOG to be populated
+            if (window.CATALOG && window.CATALOG.length > 0) {
+                findAndRender();
+            } else {
+                const iv = setInterval(() => {
+                    if (window.CATALOG && window.CATALOG.length > 0) { clearInterval(iv); findAndRender(); }
+                }, 200);
+                setTimeout(() => { clearInterval(iv); findAndRender(); }, 5000);
+            }
+        };
+
+        // =============================================
+        // RENDER PRODUCT DETAIL
+        // =============================================
+        function renderProductDetail(prod) {
+            const isVarWeight = prod.isVariableWeight === true;
+            const fmtCur = window.formatCurrency || (v => `₹${v}`);
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(prod.rating || 0)) starsHtml += '<i class="bi bi-star-fill text-warning"></i>';
+                else if (i - 0.5 === prod.rating) starsHtml += '<i class="bi bi-star-half text-warning"></i>';
+                else starsHtml += '<i class="bi bi-star text-warning"></i>';
+            }
+
+            const priceHtml = isVarWeight
+                ? `<div class="mb-1">
+                    <span class="display-6 fw-bold text-success">₹${prod.pricePerKg}<small class="fs-5">/kg</small></span>
+                   </div>
+                   <div class="alert alert-warning rounded-4 py-2 px-3 mt-2 mb-0 d-inline-block" style="font-size:0.85rem;">
+                     <i class="bi bi-scale me-1"></i> Approx. <strong>${prod.approxWeightRange}</strong> per piece &bull;
+                     Est. <strong>₹${prod.pricePerKg * 3}–₹${prod.pricePerKg * 5}</strong><br>
+                     <span class="text-muted" style="font-size:0.78rem;">Actual weight pe final amount WhatsApp se confirm hoga</span>
+                   </div>`
+                : `<div class="d-flex align-items-baseline gap-3 mb-1">
+                    <span class="display-6 fw-bold text-success">${fmtCur(prod.price)}</span>
+                    ${prod.originalPrice ? `<span class="text-muted text-decoration-line-through fs-5">${fmtCur(prod.originalPrice)}</span>` : ''}
+                   </div>`;
+
+            const addBtnLabel = isVarWeight ? 'Order 1 Piece' : 'Add to Cart';
+            const prodId = prod.id || prod.title;
+
+            document.getElementById('productDetailSection').innerHTML = `
+                <div class="col-md-5">
+                    <div class="bg-white rounded-4 shadow-sm p-3 text-center">
+                        <img src="${prod.image}" alt="${prod.title}" class="product-main-img" id="mainProductImg">
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <span class="badge bg-success bg-opacity-10 text-success fw-medium mb-2 px-3 py-2 rounded-pill">${prod.category} ${prod.subCategory ? '· ' + prod.subCategory : ''}</span>
+                    <h1 class="fw-bold fs-2 mb-2">${prod.title}</h1>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="text-warning small">${starsHtml}</span>
+                        <span class="text-muted small fw-medium" id="headerRatingText">${prod.rating || '—'} rating</span>
+                        <span class="text-muted small">·</span>
+                        <a href="#reviewsSection" class="text-success small fw-medium text-decoration-none" id="headerReviewCount">See reviews</a>
+                    </div>
+                    <div class="mb-4">${priceHtml}</div>
+                    <p class="text-muted mb-4 lh-lg">${prod.desc || 'Fresh and high quality, directly from source.'}</p>
+                    ${!isVarWeight ? `
+                    <div class="d-flex align-items-center gap-4 mb-4">
+                        <label class="fw-medium text-dark">Quantity (kg)</label>
+                        <div class="qty-ctrl">
+                            <button type="button" id="pdQtyMinus">−</button>
+                            <input type="number" id="pdQtyInput" value="1" min="1" max="50">
+                            <button type="button" id="pdQtyPlus">+</button>
+                        </div>
+                    </div>` : ''}
+                    <div class="d-flex flex-wrap gap-3 mb-4">
+                        <button class="btn btn-success px-5 py-3 rounded-pill fw-bold hover-lift fs-6" id="pdAddToCart">
+                            <i class="bi bi-cart-plus me-2"></i>${addBtnLabel}
+                        </button>
+                        <button class="btn btn-outline-success px-4 py-3 rounded-pill fw-bold hover-lift wishlist-btn" data-id="${prodId}" id="pdWishlistBtn">
+                            <i class="bi bi-heart me-2"></i>Wishlist
+                        </button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-4 text-muted small border-top pt-4">
+                        <span><i class="bi bi-truck text-success me-1"></i> Free delivery on ₹500+</span>
+                        <span><i class="bi bi-patch-check text-success me-1"></i> Fresh Quality Guaranteed</span>
+                        <span><i class="bi bi-shield-check text-success me-1"></i> Secure Checkout</span>
+                    </div>
+                </div>
+            `;
+
+            // Qty controls
+            if (!isVarWeight) {
+                document.getElementById('pdQtyMinus').addEventListener('click', () => {
+                    const inp = document.getElementById('pdQtyInput');
+                    if (parseInt(inp.value) > 1) inp.value = parseInt(inp.value) - 1;
+                });
+                document.getElementById('pdQtyPlus').addEventListener('click', () => {
+                    const inp = document.getElementById('pdQtyInput');
+                    inp.value = parseInt(inp.value) + 1;
+                });
+            }
+
+            // Add to Cart
+            document.getElementById('pdAddToCart').addEventListener('click', () => {
+                const qty = isVarWeight ? 1 : parseInt(document.getElementById('pdQtyInput').value) || 1;
+                if (window.addToCartGlobal) {
+                    window.addToCartGlobal(encodeURIComponent(JSON.stringify({ ...prod, quantity: qty })));
+                }
+            });
+
+            // Wishlist
+            document.getElementById('pdWishlistBtn').addEventListener('click', () => {
+                if (window.toggleWishlist) window.toggleWishlist(prodId);
+            });
+            if (window.userWishlist && window.userWishlist.includes(prodId)) {
+                document.getElementById('pdWishlistBtn').classList.add('active');
+            }
+
+            document.getElementById('reviewsSection').style.display = '';
+        }
+
+        // =============================================
+        // LOAD REVIEWS
+        // =============================================
+        function loadReviews(pid) {
+            if (!window.db) return;
+            window.db.collection('reviews')
+                .where('productId', '==', pid)
+                .onSnapshot(snap => {
+                    allReviews = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    renderRatingSummary(allReviews);
+                    renderReviewsList(allReviews);
+                    renderWriteReviewSection(pid);
+                });
+        }
+
+        // =============================================
+        // RATING SUMMARY (Bars like Flipkart)
+        // =============================================
+        function renderRatingSummary(reviews) {
+            const total = reviews.length;
+            const avg = total > 0
+                ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1)
+                : '—';
+
+            document.getElementById('avgRatingDisplay').innerText = avg;
+            document.getElementById('totalReviewsDisplay').innerText = `${total} review${total !== 1 ? 's' : ''}`;
+
+            let starsHtml = '';
+            const avgNum = parseFloat(avg) || 0;
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(avgNum)) starsHtml += '<i class="bi bi-star-fill text-warning"></i>';
+                else if (i - 0.5 <= avgNum) starsHtml += '<i class="bi bi-star-half text-warning"></i>';
+                else starsHtml += '<i class="bi bi-star text-warning"></i>';
+            }
+            document.getElementById('avgStarsDisplay').innerHTML = starsHtml;
+
+            // Rating bars
+            const counts = [5, 4, 3, 2, 1].map(n => ({
+                star: n,
+                count: reviews.filter(r => Math.round(r.rating) === n).length
+            }));
+            const barsHtml = counts.map(({ star, count }) => {
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                return `
+                <div class="rating-bar-wrap mb-2">
+                    <span class="text-muted small fw-medium" style="width:20px;">${star}</span>
+                    <i class="bi bi-star-fill text-warning small"></i>
+                    <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${pct}%"></div></div>
+                    <span class="text-muted small" style="width:28px;">${count}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('ratingBarsContainer').innerHTML = barsHtml;
+
+            // Update header review count
+            const rcEl = document.getElementById('headerReviewCount');
+            if (rcEl) rcEl.innerText = `${total} Review${total !== 1 ? 's' : ''}`;
+        }
+
+        // =============================================
+        // RENDER REVIEWS LIST
+        // =============================================
+        function renderReviewsList(reviews) {
+            const listEl = document.getElementById('reviewsList');
+            if (reviews.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-chat-square-text display-3 d-block mb-3 opacity-50"></i>
+                        <p class="fw-medium">Abhi koi review nahi hai. Pehle reviewer bano!</p>
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = reviews.map(r => {
+                let stars = '';
+                for (let i = 1; i <= 5; i++) stars += `<i class="bi bi-star${i <= r.rating ? '-fill' : ''} text-warning small"></i>`;
+                const dateStr = r.date ? new Date(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                const imgHtml = r.imageUrl
+                    ? `<div class="mt-3"><img src="${r.imageUrl}" alt="Review Photo" class="review-img" onclick="document.getElementById('lightboxImg').src='${r.imageUrl}';document.getElementById('imgLightbox').classList.add('show');"></div>`
+                    : '';
+                const verifiedHtml = r.verified
+                    ? `<span class="verified-badge ms-2"><i class="bi bi-patch-check-fill me-1"></i>Verified Purchase</span>`
+                    : '';
+                return `
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                        <div>
+                            <span class="fw-bold text-dark">${r.name || 'Customer'}</span>
+                            ${verifiedHtml}
+                        </div>
+                        <span class="text-muted small">${dateStr}</span>
+                    </div>
+                    <div class="mb-2">${stars}</div>
+                    <p class="text-dark mb-0">${r.text || ''}</p>
+                    ${imgHtml}
+                </div>`;
+            }).join('');
+        }
+
+        // =============================================
+        // WRITE REVIEW SECTION (verified purchase only)
+        // =============================================
+        async function renderWriteReviewSection(pid) {
+            const box = document.getElementById('writeReviewSection');
+            const user = window.auth?.currentUser;
+
+            if (!user) {
+                box.innerHTML = `
+                    <div class="write-review-box mb-4 text-center">
+                        <i class="bi bi-person-circle display-4 text-success mb-3 d-block"></i>
+                        <h5 class="fw-bold mb-1">Is product ka review likhna chahte hain?</h5>
+                        <p class="text-muted mb-3">Review likhne ke liye pehle login karein.</p>
+                        <a href="login.html" class="btn btn-success rounded-pill px-4 fw-medium">Login / Sign Up</a>
+                    </div>`;
+                return;
+            }
+
+            // Check purchase history
+            let hasPurchased = false;
+            try {
+                const ordersSnap = await window.db.collection('orders').where('uid', '==', user.uid).get();
+                hasPurchased = ordersSnap.docs.some(doc => {
+                    const items = doc.data().items || [];
+                    return items.some(item => item.id === pid || item.title === (currentProduct?.title));
+                });
+            } catch (e) { console.warn('Order check failed', e); }
+
+            if (!hasPurchased) {
+                box.innerHTML = `
+                    <div class="write-review-box mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-bag-check-fill text-success fs-2"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Review likhne ke liye product khareedna hoga</h6>
+                                <p class="text-muted small mb-0">Sirf verified purchasers hi review likh sakte hain. Order karein aur experience share karein!</p>
+                            </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            // Full review form
+            box.innerHTML = `
+                <div class="write-review-box mb-4">
+                    <h5 class="fw-bold mb-1"><i class="bi bi-pencil-square text-success me-2"></i>Apna Review Likhein</h5>
+                    <p class="text-muted small mb-4">Aapka review doosre customers ki madad karta hai!</p>
+
+                    <div class="mb-3">
+                        <label class="fw-medium mb-2">Rating dijiye *</label>
+                        <div class="star-interactive d-flex gap-1" id="starPicker">
+                            <i class="bi bi-star-fill active" data-val="1"></i>
+                            <i class="bi bi-star-fill active" data-val="2"></i>
+                            <i class="bi bi-star-fill active" data-val="3"></i>
+                            <i class="bi bi-star-fill active" data-val="4"></i>
+                            <i class="bi bi-star-fill active" data-val="5"></i>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-medium mb-2">Review *</label>
+                        <textarea id="reviewTextInput" class="form-control rounded-4 shadow-none border-success bg-light" rows="3"
+                            placeholder="Vegetable/fruit ki quality kaisi thi? Packaging kaisi thi? Kya aap dobara khareedenge?"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-medium mb-2">Photo add karein (optional)</label>
+                        <label class="img-upload-label" for="reviewImgInput">
+                            <i class="bi bi-camera-fill fs-4 text-success"></i>
+                            <span>Photo select karein (max 1 image)</span>
+                        </label>
+                        <input type="file" id="reviewImgInput" accept="image/*" style="display:none;">
+                        <div class="img-preview-box" id="imgPreviewBox"></div>
+                    </div>
+
+                    <button class="btn btn-success rounded-pill px-5 py-2 fw-bold hover-lift" id="submitReviewBtn">
+                        <i class="bi bi-send me-2"></i>Review Submit Karein
+                    </button>
+                    <p class="text-muted mt-2 small"><i class="bi bi-shield-check text-success me-1"></i>Aapka naam aur review publicly dikhega.</p>
+                </div>`;
+
+            // Star picker
+            const stars = document.querySelectorAll('#starPicker i');
+            stars.forEach(s => {
+                s.addEventListener('click', function () {
+                    selectedRating = parseInt(this.dataset.val);
+                    stars.forEach(st => {
+                        st.classList.toggle('active', parseInt(st.dataset.val) <= selectedRating);
+                    });
+                });
+            });
+
+            // Image input
+            document.getElementById('reviewImgInput').addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    if (window.showToast) window.showToast('Error', 'Image 5MB se chhoti honi chahiye.', true);
+                    this.value = '';
+                    return;
+                }
+                selectedImageFile = file;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('imgPreviewBox').innerHTML = `
+                        <div class="img-preview-item">
+                            <img src="${e.target.result}" alt="Preview">
+                            <button class="remove-img" id="removeImgBtn"><i class="bi bi-x"></i></button>
+                        </div>`;
+                    document.getElementById('removeImgBtn').addEventListener('click', () => {
+                        selectedImageFile = null;
+                        document.getElementById('imgPreviewBox').innerHTML = '';
+                        document.getElementById('reviewImgInput').value = '';
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Submit review
+            document.getElementById('submitReviewBtn').addEventListener('click', async () => {
+                const text = document.getElementById('reviewTextInput').value.trim();
+                if (!text) { if (window.showToast) window.showToast('Validation', 'Review text likhna zaroori hai.', true); return; }
+
+                const btn = document.getElementById('submitReviewBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+                try {
+                    let imageUrl = null;
+
+                    // Upload image to Firebase Storage if selected
+                    if (selectedImageFile && window.firebase?.storage) {
+                        const storageRef = window.firebase.storage().ref();
+                        const imgRef = storageRef.child(`review-images/${pid}/${Date.now()}_${user.uid}`);
+                        const snapshot = await imgRef.put(selectedImageFile);
+                        imageUrl = await snapshot.ref.getDownloadURL();
+                    }
+
+                    await window.db.collection('reviews').add({
+                        productId: pid,
+                        uid: user.uid,
+                        name: user.displayName || 'Customer',
+                        rating: selectedRating,
+                        text: text,
+                        imageUrl: imageUrl,
+                        date: new Date().toISOString(),
+                        verified: true
+                    });
+
+                    if (window.showToast) window.showToast('Review Posted!', 'Shukriya! Aapka review submit ho gaya. 🎉');
+                    // Reset form fields
+                    document.getElementById('reviewTextInput').value = '';
+                    document.getElementById('imgPreviewBox').innerHTML = '';
+                    document.getElementById('reviewImgInput').value = '';
+                    selectedImageFile = null;
+                    selectedRating = 5;
+                    stars.forEach(st => st.classList.add('active'));
+
+                } catch (e) {
+                    if (window.showToast) window.showToast('Error', e.message || 'Review submit karne mein error aai.', true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-send me-2"></i>Review Submit Karein';
+                }
+            });
+        }
+
+        // Lightbox
+        document.getElementById('closeLightbox').addEventListener('click', () => {
+            document.getElementById('imgLightbox').classList.remove('show');
+        });
+        document.getElementById('imgLightbox').addEventListener('click', function (e) {
+            if (e.target === this) this.classList.remove('show');
+        });
+
+        // Auth state - needed to show write review correctly
+        const checkInit = setInterval(() => {
+            if (window.auth) {
+                clearInterval(checkInit);
+                window.auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    initPage();
+                });
+            }
+        }, 100);
+
+    })();
+    </script>
+</body>
+
+</html>

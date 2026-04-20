@@ -149,6 +149,22 @@ const YADAV_CATALOG = [
         badge: '',
         desc: 'Sweet, imported premium red cherries.'
     },
+    {
+        id: 'f6',
+        title: 'Fresh Watermelon',
+        category: 'Fruits',
+        subCategory: 'Everyday Fruits',
+        price: 25,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🍉',
+        rating: 4.8,
+        badge: 'Summer',
+        desc: 'Sweet and juicy watermelon, freshly sourced. Sold per piece (approx. 3–5 kg). Final price confirmed on actual weight after delivery.',
+        isVariableWeight: true,
+        approxWeightRange: '3–5 kg',
+        pricePerKg: 25
+    },
 
     // --- ICE CREAMS ---
     {
