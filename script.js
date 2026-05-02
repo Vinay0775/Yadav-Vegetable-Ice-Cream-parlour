@@ -211,21 +211,25 @@ window.ensureOwnerAdminAccess = async function (userOrEmail) {
     const email = window.getUserEmail(userOrEmail);
     if (!email || email !== window.YADAV_OWNER_EMAIL || !window.db) return null;
 
-    const roleRef = window.getRoleDocumentRef(email);
-    const roleSnap = await roleRef.get();
-    const currentRole = roleSnap.exists ? roleSnap.data() : null;
+    try {
+        const roleRef = window.getRoleDocumentRef(email);
+        const roleSnap = await roleRef.get();
+        const currentRole = roleSnap.exists ? roleSnap.data() : null;
 
-    if (!currentRole || currentRole.role !== 'superadmin' || currentRole.owner !== true) {
-        const ownerPayload = {
-            role: 'superadmin',
-            owner: true,
-            label: 'Primary Owner',
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        if (!roleSnap.exists) {
-            ownerPayload.addedAt = firebase.firestore.FieldValue.serverTimestamp();
+        if (!currentRole || currentRole.role !== 'superadmin' || currentRole.owner !== true) {
+            const ownerPayload = {
+                role: 'superadmin',
+                owner: true,
+                label: 'Primary Owner',
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (!roleSnap.exists) {
+                ownerPayload.addedAt = firebase.firestore.FieldValue.serverTimestamp();
+            }
+            await roleRef.set(ownerPayload, { merge: true });
         }
-        await roleRef.set(ownerPayload, { merge: true });
+    } catch (error) {
+        console.warn('Owner role sync failed. Falling back to built-in owner access.', error);
     }
 
     return {
@@ -245,14 +249,20 @@ window.fetchAccessRole = async function (userOrEmail) {
         return window.ensureOwnerAdminAccess(email);
     }
 
-    const roleRef = window.getRoleDocumentRef(email);
-    let roleSnap = await roleRef.get();
+    let roleSnap = null;
+    try {
+        const roleRef = window.getRoleDocumentRef(email);
+        roleSnap = await roleRef.get();
 
-    if (!roleSnap.exists && rawEmail && rawEmail !== email) {
-        roleSnap = await window.db.collection('roles').doc(rawEmail).get();
+        if (!roleSnap.exists && rawEmail && rawEmail !== email) {
+            roleSnap = await window.db.collection('roles').doc(rawEmail).get();
+        }
+    } catch (error) {
+        console.warn('Role lookup failed for admin access.', error);
+        return null;
     }
 
-    if (!roleSnap.exists) return null;
+    if (!roleSnap || !roleSnap.exists) return null;
 
     return {
         email,

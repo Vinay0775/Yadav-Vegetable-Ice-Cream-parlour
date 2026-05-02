@@ -1678,8 +1678,8 @@
             // Role Based Security Lock
             window.auth.onAuthStateChanged(async (user) => {
                 if (!user) {
-                    document.body.innerHTML = '<div class="text-center mt-5"><h3>Unauthorized Access. Redirecting...</h3></div>';
-                    setTimeout(() => { window.location.replace('index.html'); }, 100);
+                    document.body.innerHTML = '<div class="text-center mt-5 px-3"><h3>Please login as admin.</h3><p class="text-muted">Redirecting to secure login...</p></div>';
+                    setTimeout(() => { window.location.replace('login.html?redirect=admin.html'); }, 250);
                     return;
                 }
 
@@ -1711,7 +1711,8 @@
                     }
                 } catch (e) {
                     console.error("RBAC Check Failed:", e);
-                    window.location.replace('index.html');
+                    document.body.innerHTML = '<div class="text-center mt-5 px-3"><h3>Admin access check failed.</h3><p class="text-muted">Please login again. If this repeats, check Firestore roles rules.</p></div>';
+                    setTimeout(() => { window.location.replace('login.html?redirect=admin.html'); }, 1500);
                 }
             });
 

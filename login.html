@@ -301,10 +301,25 @@
         }
 
         async function getRedirectForUser(user) {
-            if (typeof window.getPostLoginRedirect === 'function') {
-                return window.getPostLoginRedirect(user);
+            const requestedRedirect = getSafeRequestedRedirect();
+            if (typeof window.fetchAccessRole === 'function') {
+                const roleData = await window.fetchAccessRole(user);
+                if (requestedRedirect === 'admin.html') {
+                    return roleData ? 'admin.html' : 'profile.html';
+                }
+                return roleData ? 'admin.html' : (requestedRedirect || 'profile.html');
             }
-            return 'profile.html';
+            return requestedRedirect || 'profile.html';
+        }
+
+        function getSafeRequestedRedirect() {
+            const params = new URLSearchParams(window.location.search);
+            const redirect = String(params.get('redirect') || '').trim();
+            if (!redirect) return '';
+
+            const allowedPages = ['admin.html', 'profile.html', 'orders.html', 'favorites.html', 'cart.html', 'checkout.html'];
+            const normalized = redirect.replace(/^\.?\//, '');
+            return allowedPages.includes(normalized) ? normalized : '';
         }
 
         window.setAuthMode = function (mode) {
