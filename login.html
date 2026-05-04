@@ -387,14 +387,18 @@
                     // Update display name natively in Firebase
                     await user.updateProfile({ displayName: name });
 
-                    await window.db.collection("users").doc(user.uid).set({
-                        uid: user.uid,
-                        name: name,
-                        email: email,
-                        phone: phone,
-                        joinedAt: new Date().toISOString(),
-                        lastLoginAt: new Date().toISOString()
-                    }, { merge: true });
+                    try {
+                        await window.db.collection("users").doc(user.uid).set({
+                            uid: user.uid,
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            joinedAt: new Date().toISOString(),
+                            lastLoginAt: new Date().toISOString()
+                        }, { merge: true });
+                    } catch (dbError) {
+                        console.warn("Firestore save failed (likely permission rules). Signup proceeds.", dbError);
+                    }
 
                     const redirectUrl = await getRedirectForUser(user);
                     showSuccessCelebration("Account Created!", `Welcome ${name || 'User'}, your account is ready.`, redirectUrl);
@@ -493,24 +497,28 @@
                 const user = result.user;
                 const normalizedEmail = window.normalizeEmail ? window.normalizeEmail(user.email || '') : (user.email || '').trim().toLowerCase();
 
-                const userDocRef = window.db.collection("users").doc(user.uid);
-                const userDocSnap = await userDocRef.get();
-                if (!userDocSnap.exists) {
-                    await userDocRef.set({
-                        uid: user.uid,
-                        name: user.displayName || 'User',
-                        email: normalizedEmail,
-                        phone: user.phoneNumber || 'Not provided',
-                        joinedAt: new Date().toISOString()
-                    }, { merge: true });
-                }
+                try {
+                    const userDocRef = window.db.collection("users").doc(user.uid);
+                    const userDocSnap = await userDocRef.get();
+                    if (!userDocSnap.exists) {
+                        await userDocRef.set({
+                            uid: user.uid,
+                            name: user.displayName || 'User',
+                            email: normalizedEmail,
+                            phone: user.phoneNumber || 'Not provided',
+                            joinedAt: new Date().toISOString()
+                        }, { merge: true });
+                    }
 
-                await userDocRef.set({
-                    email: normalizedEmail,
-                    name: user.displayName || 'User',
-                    phone: user.phoneNumber || 'Not provided',
-                    lastLoginAt: new Date().toISOString()
-                }, { merge: true });
+                    await userDocRef.set({
+                        email: normalizedEmail,
+                        name: user.displayName || 'User',
+                        phone: user.phoneNumber || 'Not provided',
+                        lastLoginAt: new Date().toISOString()
+                    }, { merge: true });
+                } catch (dbError) {
+                    console.warn("Firestore save failed (likely permission rules). Login proceeds.", dbError);
+                }
 
                 const redirectUrl = await getRedirectForUser(user);
                 showSuccessCelebration("Awesome!", `Welcome ${user.displayName || 'back'}! Successfully authenticated with ${providerName}.`, redirectUrl);
