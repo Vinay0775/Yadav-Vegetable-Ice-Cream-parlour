@@ -612,7 +612,7 @@
                                     <textarea id="addDesc" class="form-control shadow-none" rows="2"></textarea>
                                 </div>
                                 <div class="col-12 text-end">
-                                    <button type="button" onclick="submitNewProduct()" id="submitProdBtn"
+                                    <button type="submit" id="submitProdBtn"
                                         class="btn btn-success px-4 rounded-pill mt-3"><i
                                             class="bi bi-cloud-arrow-up me-2"></i> Save to Database</button>
                                 </div>
@@ -1403,6 +1403,13 @@
             document.getElementById('editProductForm').addEventListener('submit', (event) => {
                 event.preventDefault();
                 window.saveAdminProductChanges();
+            });
+        }
+
+        if (document.getElementById('adminAddProductForm')) {
+            document.getElementById('adminAddProductForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+                submitNewProduct();
             });
         }
 
