@@ -916,7 +916,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=12"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -1205,32 +1205,39 @@
                 });
             });
 
-            const liveSnap = await window.db.collection('products').get();
-            liveSnap.forEach(doc => {
-                const liveData = doc.data();
-                const key = doc.id || liveData.id || liveData.title;
-                const existing = mergedCatalog.get(key);
+            window.ADMIN_PRODUCT_DB_ERROR = null;
 
-                if (liveData.archived) {
-                    mergedCatalog.delete(key);
-                    return;
-                }
+            try {
+                const liveSnap = await window.db.collection('products').get();
+                liveSnap.forEach(doc => {
+                    const liveData = doc.data();
+                    const key = doc.id || liveData.id || liveData.title;
+                    const existing = mergedCatalog.get(key);
 
-                mergedCatalog.set(key, {
-                    ...existing,
-                    ...liveData,
-                    id: key,
-                    firestoreId: doc.id,
-                    category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || existing?.category) : (liveData.category || existing?.category),
-                    subCategory: liveData.subCategory || existing?.subCategory || '',
-                    rating: Number(liveData.rating ?? existing?.rating ?? 5) || 5,
-                    badge: liveData.badge || existing?.badge || '',
-                    desc: liveData.desc || existing?.desc || '',
-                    sourceType: existing ? 'synced' : 'custom',
-                    sourceLabel: existing ? 'Catalog Sync' : 'Custom Firestore',
-                    archived: false
+                    if (liveData.archived) {
+                        mergedCatalog.delete(key);
+                        return;
+                    }
+
+                    mergedCatalog.set(key, {
+                        ...existing,
+                        ...liveData,
+                        id: key,
+                        firestoreId: doc.id,
+                        category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || existing?.category) : (liveData.category || existing?.category),
+                        subCategory: liveData.subCategory || existing?.subCategory || '',
+                        rating: Number(liveData.rating ?? existing?.rating ?? 5) || 5,
+                        badge: liveData.badge || existing?.badge || '',
+                        desc: liveData.desc || existing?.desc || '',
+                        sourceType: existing ? 'synced' : 'custom',
+                        sourceLabel: existing ? 'Catalog Sync' : 'Custom Firestore',
+                        archived: false
+                    });
                 });
-            });
+            } catch (error) {
+                console.warn('Products database read failed. Showing default catalog only.', error);
+                window.ADMIN_PRODUCT_DB_ERROR = error;
+            }
 
             const items = Array.from(mergedCatalog.values()).sort((a, b) => {
                 const dateA = window.getAdminDateFromValue(a.updatedAt) || window.getAdminDateFromValue(a.createdAt);
@@ -1302,7 +1309,7 @@
 
             try {
                 let finalImageUrl = imageUrl;
-                if (imageFile && !window.isInlineImageUrl(imageUrl)) {
+                if (imageFile) {
                     finalImageUrl = await window.uploadAdminProductImage(imageFile, productId);
                 }
 
@@ -1554,9 +1561,12 @@
                     });
 
                 if (searchMeta) {
-                    searchMeta.innerText = query
+                    const dbWarning = window.ADMIN_PRODUCT_DB_ERROR
+                        ? ' Firebase products database read failed, showing default catalog only.'
+                        : '';
+                    searchMeta.innerText = (query
                         ? `${visibleItems.length} product${visibleItems.length === 1 ? '' : 's'} matched "${window.ADMIN_PRODUCT_FILTER_QUERY}".`
-                        : `Showing ${catalogItems.length} product${catalogItems.length === 1 ? '' : 's'} from default catalog + future admin additions.`;
+                        : `Showing ${catalogItems.length} product${catalogItems.length === 1 ? '' : 's'} from default catalog + future admin additions.`) + dbWarning;
                 }
 
                 if (!catalogItems.length) {
@@ -2049,7 +2059,7 @@
 
                     snap.forEach(doc => {
                         const data = doc.data();
-                        const dateNum = data.createdAt ? data.createdAt.toDate() : new Date();
+                        const dateNum = window.getAdminDateFromValue(data.createdAt) || new Date();
                         const dateStr = dateNum.toLocaleDateString();
 
                         if (data.status === 'pending') unreadCount++;
@@ -2118,7 +2128,8 @@
                     const enqSnap = await db.collection('enquiries').orderBy('createdAt', 'desc').limit(5).get();
                     enqSnap.forEach(doc => {
                         const d = doc.data();
-                        if (d.createdAt) activities.push({ type: 'enquiry', time: d.createdAt.toDate(), data: d });
+                        const enquiryDate = window.getAdminDateFromValue(d.createdAt);
+                        if (enquiryDate) activities.push({ type: 'enquiry', time: enquiryDate, data: d });
                     });
 
                     // Fetch recent Orders
@@ -2136,8 +2147,8 @@
                     const allOrdSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(50).get();
                     allOrdSnap.forEach(doc => {
                         const d = doc.data();
-                        if (d.createdAt) {
-                            const dateObj = d.createdAt.toDate();
+                        const dateObj = window.getAdminDateFromValue(d.createdAt) || window.getAdminDateFromValue(d.date);
+                        if (dateObj) {
                             const dateStr = dateObj.toLocaleDateString('en-CA');
 
                             // For Activity List
@@ -2147,7 +2158,7 @@
 
                             // For Chart
                             if (dailySales[dateStr] !== undefined) {
-                                dailySales[dateStr] += (d.totalPrice || 0);
+                                dailySales[dateStr] += window.getAdminOrderAmount(d);
                             }
                         }
                     });
@@ -2170,7 +2181,7 @@
                                 actHtml += `<li class="list-group-item px-4 py-3 border-0 border-bottom">
                                     <div class="d-flex w-100 justify-content-between align-items-center">
                                         <div class="small fw-bold text-dark"><i class="bi bi-box-seam text-success me-2"></i> Order ${act.id.slice(-6).toUpperCase()}</div>
-                                        <small class="text-success fw-bold">₹${act.data.totalPrice}</small>
+                                        <small class="text-success fw-bold">${formatCurrency(window.getAdminOrderAmount(act.data))}</small>
                                     </div>
                                 </li>`;
                             }

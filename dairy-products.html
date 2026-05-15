@@ -81,6 +81,22 @@
         </div>
     </section>
 
+    <section class="py-5 bg-white">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+                <div>
+                    <p class="text-success fw-bold text-uppercase small mb-1">Live Dairy Catalog</p>
+                    <h2 class="fw-bold text-dark mb-0">Available Dairy Products</h2>
+                </div>
+                <span class="text-muted small" id="resultsCount">Loading products...</span>
+            </div>
+            <div class="row g-4" id="productGrid" data-catalog-category="Dairy"></div>
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center" id="paginationNav"></ul>
+            </nav>
+        </div>
+    </section>
+
     <footer class="footer bg-dark-green text-light pt-5 pb-3">
         <div class="container text-center">
             <a class="text-decoration-none fw-bold fs-3 text-white mb-3 d-inline-block" href="index.html">Yadav <span class="text-success">Store</span></a>
@@ -93,6 +109,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=12"></script>
 </body>
 </html>

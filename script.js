@@ -424,6 +424,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // HYBRID CATALOG FETCH
     // ==========================================
+    function refreshStorefrontCatalogViews() {
+        if (document.getElementById('productGrid') && typeof window.renderDynamicGrid === 'function') {
+            const q = localStorage.getItem('yadavSearchQuery');
+            if (new URLSearchParams(window.location.search).get('search') === 'true' && q) {
+                window.renderDynamicGrid(1, q, localStorage.getItem('yadavSearchCat'));
+            } else {
+                window.renderDynamicGrid();
+            }
+        }
+
+        if (typeof window.renderHomepageFeaturedProducts === 'function') {
+            window.renderHomepageFeaturedProducts();
+        }
+
+        if (typeof window.renderFavoritesPage === 'function') {
+            window.renderFavoritesPage();
+        }
+    }
+
     if (window.db) {
         window.db.collection('products').get().then(snapshot => {
             const mergedCatalog = new Map(window.CATALOG.map(item => [item.id || item.title, {
@@ -447,18 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
             CATALOG = Array.from(mergedCatalog.values());
             window.CATALOG = CATALOG;
 
-            if (document.getElementById('productGrid') && typeof window.renderDynamicGrid === 'function') {
-                const q = localStorage.getItem('yadavSearchQuery');
-                if (new URLSearchParams(window.location.search).get('search') === 'true' && q) {
-                    window.renderDynamicGrid(1, q, localStorage.getItem('yadavSearchCat'));
-                } else {
-                    window.renderDynamicGrid();
-                }
-            }
-
-            if (typeof window.renderFavoritesPage === 'function') {
-                window.renderFavoritesPage();
-            }
+            refreshStorefrontCatalogViews();
+        }).catch(error => {
+            console.warn('Live products could not be loaded. Showing default catalog only.', error);
+            refreshStorefrontCatalogViews();
         });
     }
 
@@ -970,6 +981,38 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     };
+
+    window.renderHomepageFeaturedProducts = function () {
+        const featuredEl = document.getElementById('homepageFeaturedProducts');
+        if (!featuredEl || !Array.isArray(window.CATALOG)) return;
+
+        const preferredIds = ['v1', 'i7', 'v5', 'i4'];
+        const latestAdminProducts = window.CATALOG
+            .filter(item => getOrderTimeValue(item.updatedAt) || getOrderTimeValue(item.createdAt))
+            .sort((a, b) => {
+                const aTime = getOrderTimeValue(a.updatedAt) || getOrderTimeValue(a.createdAt);
+                const bTime = getOrderTimeValue(b.updatedAt) || getOrderTimeValue(b.createdAt);
+                return bTime - aTime;
+            });
+        const defaultFeatured = preferredIds
+            .map(id => window.CATALOG.find(item => (item.id || item.title) === id))
+            .filter(Boolean);
+        const seenFeaturedIds = new Set();
+        const products = [...latestAdminProducts, ...defaultFeatured].filter(item => {
+            const id = item.id || item.title;
+            if (!id || seenFeaturedIds.has(id)) return false;
+            seenFeaturedIds.add(id);
+            return true;
+        }).slice(0, 4);
+
+        if (!products.length) return;
+
+        featuredEl.innerHTML = products
+            .map(prod => window.buildStorefrontProductCard(prod, { columnClass: 'col-sm-6 col-lg-3' }))
+            .join('');
+        window.bindStoreProductCardActions(featuredEl);
+    };
+    window.renderHomepageFeaturedProducts();
 
     const gridEl = document.getElementById('productGrid');
     if (gridEl) {
@@ -1484,22 +1527,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sortOrdersByLatest(orders = []) {
         return [...orders].sort((a, b) => {
-            const aTime = Number(a?.createdAt) || new Date(a?.date || 0).getTime() || 0;
-            const bTime = Number(b?.createdAt) || new Date(b?.date || 0).getTime() || 0;
+            const aTime = getOrderTimeValue(a?.createdAt) || getOrderTimeValue(a?.date) || 0;
+            const bTime = getOrderTimeValue(b?.createdAt) || getOrderTimeValue(b?.date) || 0;
             return bTime - aTime;
         });
     }
 
+    function getOrderTimeValue(value) {
+        if (!value) return 0;
+        if (typeof value.toMillis === 'function') return value.toMillis();
+        if (typeof value.toDate === 'function') return value.toDate().getTime();
+        if (typeof value === 'number') return value;
+        const parsed = new Date(value).getTime();
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
     function normalizeOrderData(rawOrder = {}, fallbackId = '') {
-        const createdAt = Number(rawOrder.createdAt) || new Date(rawOrder.date || Date.now()).getTime();
+        const createdAtMs = getOrderTimeValue(rawOrder.createdAt) || getOrderTimeValue(rawOrder.date) || Date.now();
         return {
             ...rawOrder,
             id: rawOrder.id || rawOrder.orderId || fallbackId,
             items: Array.isArray(rawOrder.items) ? rawOrder.items : [],
             totalAmount: Number(rawOrder.totalAmount) || 0,
             status: rawOrder.status || 'Processing',
-            date: rawOrder.date || new Date(createdAt).toISOString(),
-            createdAt
+            date: rawOrder.date || new Date(createdAtMs).toISOString(),
+            createdAt: rawOrder.createdAt || createdAtMs
         };
     }
 
@@ -1690,32 +1742,74 @@ document.addEventListener('DOMContentLoaded', () => {
         selection.removeAllRanges();
     }
 
-    // UPI Payment - Direct App Redirect
-    window.payWithUPI = function(app) {
+    async function createCustomerOrder(paymentMethod = 'Online Payment', status = 'Processing') {
         // Reload cart to get latest data
         cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
-        
-        // Get payment amount from cart
+        if (cart.length === 0) {
+            throw new Error('Your cart is empty!');
+        }
+
+        const activeUser = window.auth?.currentUser || currentUser;
+        if (!activeUser) {
+            throw new Error('Please log in first to place a secured order.');
+        }
+
         const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
         const total = Math.ceil(subtotal + (subtotal * 0.05));
-        
-        // Get UPI details - either from Firebase settings or default
-        const upiIdElement = document.getElementById('upiId');
-        const upiID = upiIdElement ? upiIdElement.textContent.trim() : 'yadav.store@okicici';
-        const payeeName = 'Yadav Veggies & Ice-Cream'; // Can be made dynamic later
-        const amount = total.toFixed(2);
-        const note = `Order Payment`;
-        
-        console.log('Initiating UPI payment to:', upiID, 'Amount:', amount, 'Cart items:', cart.length);
-        
-        // Create UPI Intent URL
-        const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
-        
-        // Check if on mobile device
+
+        const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const checkoutDetails = JSON.parse(localStorage.getItem('yadavCheckoutDetails')) || {};
+
+        const customerEmail = checkoutDetails.email || activeUser.email;
+        let customerName = activeUser.displayName || 'Customer';
+        if (checkoutDetails.firstName) {
+            customerName = `${checkoutDetails.firstName} ${checkoutDetails.lastName || ''}`.trim();
+        }
+
+        let addressStr = 'Not Provided';
+        if (checkoutDetails.address) {
+            addressStr = `${checkoutDetails.address}, ${checkoutDetails.city || ''} - ${checkoutDetails.pin || ''}`;
+        }
+
+        const orderData = {
+            id: orderId,
+            uid: activeUser.uid,
+            customerEmail,
+            customerName,
+            shippingAddress: addressStr,
+            items: cart,
+            subtotal,
+            totalAmount: total,
+            paymentMethod,
+            paymentStatus: paymentMethod.startsWith('UPI') ? 'Pending customer confirmation' : 'Pending',
+            status,
+            date: new Date().toISOString(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const batch = window.db.batch();
+        const globalOrderRef = window.db.collection('orders').doc(orderId);
+        const userOrderRef = window.db.collection('users').doc(activeUser.uid).collection('my_orders').doc(orderId);
+
+        batch.set(globalOrderRef, orderData);
+        batch.set(userOrderRef, orderData);
+        await batch.commit();
+
+        cart = [];
+        saveCart();
+        localStorage.removeItem('yadavCheckoutDetails');
+        return { orderId, total };
+    }
+
+    // UPI Payment - Direct App Redirect
+    window.payWithUPI = async function(app) {
+        cart = JSON.parse(localStorage.getItem('yadavCart')) || [];
+        const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
+        const total = Math.ceil(subtotal + (subtotal * 0.05));
+
         const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-        
         if (!isMobile) {
-            // Desktop: Show message to use mobile device
             if (window.showToast) {
                 window.showToast('Mobile Only', 'UPI payment requires a mobile device. Please use your phone or scan the QR code.', true);
             } else {
@@ -1723,7 +1817,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return;
         }
+
+        let savedOrderId = '';
+        try {
+            const order = await createCustomerOrder(`UPI - ${app}`, 'Payment Pending');
+            savedOrderId = order.orderId;
+        } catch (error) {
+            console.error('UPI order save failed:', error);
+            if (window.showToast) {
+                window.showToast('Order Not Saved', error.message || 'Please log in and try again.', true);
+            }
+            if ((error.message || '').toLowerCase().includes('log in')) {
+                setTimeout(() => window.location.href = 'login.html?redirect=payment.html', 1200);
+            }
+            return;
+        }
         
+        // Get UPI details - either from Firebase settings or default
+        const upiIdElement = document.getElementById('upiId');
+        const upiID = upiIdElement ? upiIdElement.textContent.trim() : 'yadav.store@okicici';
+        const payeeName = 'Yadav Veggies & Ice-Cream'; // Can be made dynamic later
+        const amount = total.toFixed(2);
+        const note = savedOrderId ? `Order Payment ${savedOrderId}` : `Order Payment`;
+        
+        console.log('Initiating UPI payment to:', upiID, 'Amount:', amount, 'Cart items:', cart.length);
+        
+        // Create UPI Intent URL
+        const upiURL = `upi://pay?pa=${encodeURIComponent(upiID)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+        
+        // Check if on mobile device
         // Try to open UPI app based on selection
         if (app === 'any') {
             // Use generic UPI intent (Android) or universal link (iOS)
@@ -1761,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Show feedback that app is opening
         if (window.showToast) {
-            window.showToast('Opening App', `Paying ${formatCurrency(total)} to ${upiID}...`);
+            window.showToast('Order Saved', `Order ${savedOrderId} saved. Opening UPI app...`);
         }
         
         // After 3 seconds, check if user might need to fallback to QR code
@@ -1848,66 +1970,20 @@ document.addEventListener('DOMContentLoaded', () => {
         payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
         
         payBtn.addEventListener('click', async () => {
-            if (cart.length === 0) {
-                window.showToast('Warning', 'Your cart is empty!', true);
-                return;
-            }
-            if (!currentUser) {
-                window.showToast('Authentication', 'Please log in first to place a secured order.', true);
-                setTimeout(() => window.location.href = "login.html", 1500);
-                return;
-            }
-
             payBtn.innerText = "Processing...";
             payBtn.disabled = true;
 
-            const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-            
-            // Retrieve checkout details from localStorage
-            const checkoutDetails = JSON.parse(localStorage.getItem('yadavCheckoutDetails')) || {};
-            
-            const customerEmail = checkoutDetails.email || currentUser.email;
-            let customerName = currentUser.displayName || 'Customer';
-            if (checkoutDetails.firstName) {
-                customerName = checkoutDetails.firstName + ' ' + (checkoutDetails.lastName || '');
-            }
-            
-            let addressStr = 'Not Provided';
-            if (checkoutDetails.address) {
-                addressStr = `${checkoutDetails.address}, ${checkoutDetails.city || ''} - ${checkoutDetails.pin || ''}`;
-            }
-
-            const orderData = {
-                id: orderId,
-                uid: currentUser.uid,
-                customerEmail: customerEmail,
-                customerName: customerName,
-                shippingAddress: addressStr,
-                items: cart,
-                totalAmount: total,
-                status: 'Processing',
-                date: new Date().toISOString(),
-                createdAt: new Date().getTime() // For sorting easily
-            };
-
             try {
-                const batch = window.db.batch();
-                const globalOrderRef = window.db.collection('orders').doc(orderId);
-                const userOrderRef = window.db.collection('users').doc(currentUser.uid).collection('my_orders').doc(orderId);
-
-                batch.set(globalOrderRef, orderData);
-                batch.set(userOrderRef, orderData);
-                await batch.commit();
-
+                const { orderId } = await createCustomerOrder('Checkout Pay Now', 'Processing');
                 window.showToast('Success!', `Payment Success! Your order ${orderId} has been placed.`);
-
-                cart = [];
-                saveCart();
-                localStorage.removeItem('yadavCheckoutDetails'); // clear up
                 setTimeout(() => window.location.href = 'orders.html', 2000);
             } catch (e) {
                 console.error("Order save sync error:", e);
-                window.showToast('Error', 'Error placing order! Check your internet connection or DB Rules.', true);
+                const message = e.message || 'Error placing order! Check your internet connection or DB Rules.';
+                window.showToast('Error', message, true);
+                if (message.toLowerCase().includes('log in')) {
+                    setTimeout(() => window.location.href = "login.html?redirect=payment.html", 1200);
+                }
                 payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
                 payBtn.disabled = false;
             }
