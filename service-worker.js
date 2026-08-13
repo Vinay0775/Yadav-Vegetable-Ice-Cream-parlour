@@ -1,9 +1,13 @@
-const CACHE_NAME = "yadav-store-cache-v5";
+const CACHE_NAME = "yadav-store-pwa-v10";
 const urlsToCache = [
-  "/",
-  "/style.css",
-  "/script.js",
-  "/catalog.js"
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./catalog.js",
+  "./manifest.json",
+  "./assets/images/app_logo.png",
+  "./assets/fav-icon.png"
 ];
 
 self.addEventListener("install", event => {
@@ -11,9 +15,7 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        try {
-            return cache.addAll(urlsToCache);
-        } catch(e) { console.warn(e) }
+        return cache.addAll(urlsToCache).catch(e => console.warn("PWA Cache warning:", e));
       })
   );
 });
@@ -28,30 +30,32 @@ self.addEventListener("activate", event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", event => {
-  // Let the browser handle navigation requests natively
   if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request) || caches.match('./index.html'))
+    );
     return;
   }
 
-  // Network First, fallback to cache for other assets
   event.respondWith(
-    fetch(event.request).then(response => {
-      // Clone response and cache it
-      if (response && response.status === 200 && response.type === 'basic') {
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then(response => {
+        if (response && response.status === 200 && response.type === 'basic') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseToCache);
+            cache.put(event.request, responseToCache);
           });
-      }
-      return response;
-    }).catch(() => {
-      // If network fails, try cache
-      return caches.match(event.request);
-    })
+        }
+        return response;
+      });
+    }).catch(() => caches.match(event.request))
   );
 });

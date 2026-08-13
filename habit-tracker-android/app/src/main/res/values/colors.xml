@@ -1,0 +1,10 @@
+<resources>
+    <color name="paper">#F7F8FC</color>
+    <color name="ink">#0F2138</color>
+    <color name="sage">#DDEBDD</color>
+    <color name="mint">#EAF5EA</color>
+    <color name="cream">#FFF3CD</color>
+    <color name="sky">#DCEAF8</color>
+    <color name="line">#C7CBD3</color>
+    <color name="accent">#2E7D62</color>
+</resources>

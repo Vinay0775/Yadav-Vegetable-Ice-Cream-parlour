@@ -63,50 +63,213 @@ window.ensureFavoriteNavigation = function () {
 // ==========================================
 // INJECT PWA MANIFEST & SERVICE WORKER
 // ==========================================
-const manifestLink = document.createElement('link');
-manifestLink.rel = 'manifest';
-manifestLink.href = 'manifest.json';
-document.head.appendChild(manifestLink);
+// PWA (PROGRESSIVE WEB APP) FULL INSTALLATION ENGINE
+// ==========================================
+if (!document.querySelector('link[rel="manifest"]')) {
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = 'manifest.json';
+    document.head.appendChild(manifestLink);
+}
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW setup failed', err));
+        navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('SW Registered successfully:', reg.scope))
+            .catch(err => console.warn('SW Setup warning:', err));
     });
 }
 
-// PWA: Store the install prompt event for manual triggering
+// PWA: Capture native install prompt
 window.deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the default mini-infobar from appearing automatically
     e.preventDefault();
-    // Stash the event so it can be triggered later.
     window.deferredPrompt = e;
+    // Show banner if not dismissed
+    window.initPwaInstallBanner(true);
 });
 
-// PWA: Function to trigger the actual app installation
+window.addEventListener('appinstalled', () => {
+    window.deferredPrompt = null;
+    if (window.showToast) window.showToast("Success", "Yadav Store App सफलतापूर्वक आपके मोबाइल में इंस्टॉल हो गया! 🎉");
+    window.dismissPwaBanner();
+});
+
+// Helper: Check if running as standalone app
+window.isAppStandalone = function () {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+};
+
+// PWA: Primary Install Trigger (Works on ALL Mobiles & Browsers)
 window.installApp = async function () {
-    if (window.deferredPrompt) {
-        // Show the native install prompt
-        window.deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        const { outcome } = await window.deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            if (window.showToast) window.showToast("Success", "App is installing to your device! 🎉");
-        }
-        // We've used the prompt, and can't use it again, throw it away
-        window.deferredPrompt = null;
-    } else {
-        // If the PWA is already installed or browser prevents it
-        if (window.showToast) window.showToast("Information", "App is already installed or your browser requires you to use 'Add to Home screen' manually from options.");
+    if (window.isAppStandalone()) {
+        if (window.showToast) window.showToast("App Active", "आप पहले से ही ऐप में हैं! 📲");
+        return;
     }
 
-    // Close the sidebar if it's open
+    if (window.deferredPrompt) {
+        try {
+            window.deferredPrompt.prompt();
+            const { outcome } = await window.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                if (window.showToast) window.showToast("Success", "ऐप इंस्टॉल हो रहा है... 🎉");
+                window.dismissPwaBanner();
+            }
+            window.deferredPrompt = null;
+            return;
+        } catch (err) {
+            console.warn("Deferred prompt error:", err);
+        }
+    }
+
+    // Fallback: Open Step-by-Step PWA Installation Guide Modal for iOS & Android
+    window.openPwaGuideModal();
+
+    // Close mobile nav offcanvas if open
     const sidebar = document.getElementById('mainNav');
     if (sidebar) {
         const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebar);
         if (bsOffcanvas) bsOffcanvas.hide();
     }
 };
+
+// Floating PWA Banner at screen bottom
+window.initPwaInstallBanner = function (forceShow = false) {
+    if (window.isAppStandalone()) return;
+    if (!forceShow && localStorage.getItem('yadavPwaDismissed')) return;
+    if (document.getElementById('pwaInstallBanner')) return;
+
+    const bannerHtml = `
+        <div id="pwaInstallBanner" class="pwa-install-banner shadow-lg p-3">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="assets/images/app_logo.png" alt="App Logo" width="48" height="48" class="rounded-3 shadow-sm bg-white p-1" style="object-fit:cover;">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark" style="font-size:1.05rem;">Yadav Store App</h6>
+                        <p class="text-muted extra-small mb-0">फास्ट आर्डर और एक्सक्लूसिव डिस्काउंट के लिए ऐप इंस्टॉल करें!</p>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-success btn-sm rounded-pill px-3 fw-bold shadow-sm text-nowrap" onclick="window.installApp()">
+                        <i class="bi bi-download me-1"></i> Install App
+                    </button>
+                    <button type="button" class="btn-close shadow-none ms-1 p-2" onclick="window.dismissPwaBanner()" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', bannerHtml);
+};
+
+window.dismissPwaBanner = function () {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.remove();
+    localStorage.setItem('yadavPwaDismissed', 'true');
+};
+
+// Universal Installation Step-by-Step Modal Guide (Supports iOS Safari & Android Browsers)
+window.openPwaGuideModal = function () {
+    let guideModalEl = document.getElementById('pwaGuideModal');
+    if (!guideModalEl) {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        const iosGuideContent = `
+            <div class="text-center mb-4">
+                <img src="assets/images/app_logo.png" alt="App Logo" width="70" height="70" class="rounded-4 shadow-sm mb-3 p-1 bg-white border">
+                <h5 class="fw-bold text-dark">iPhone / iPad पर ऐप कैसे इंस्टॉल करें?</h5>
+                <p class="text-muted small">Safari ब्राउज़र के ज़रिए कुछ ही सेकंड्स में ऐप को अपनी होम स्क्रीन पर जोड़ें:</p>
+            </div>
+            <div class="d-flex flex-column gap-3 mb-4">
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">1</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">शेयर बटन दबाएं</div>
+                        <div class="small text-muted">नीचे सफारी के मेनू में <i class="bi bi-box-arrow-up text-primary fs-5"></i> (Share) आइकन पर टैप करें।</div>
+                    </div>
+                </div>
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">2</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">"Add to Home Screen" चुनें</div>
+                        <div class="small text-muted">नीचे स्क्रॉल करें और <i class="bi bi-plus-square text-success"></i> <strong>"Add to Home Screen" (होम स्क्रीन में जोड़ें)</strong> पर क्लिक करें।</div>
+                    </div>
+                </div>
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">3</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">"Add" पर क्लिक करें</div>
+                        <div class="small text-muted">ऊपर दाईं ओर **Add** दबाते ही ऐप आपके iPhone के होम स्क्रीन पर आ जाएगा!</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const androidGuideContent = `
+            <div class="text-center mb-4">
+                <img src="assets/images/app_logo.png" alt="App Logo" width="70" height="70" class="rounded-4 shadow-sm mb-3 p-1 bg-white border">
+                <h5 class="fw-bold text-dark">Android / ब्राउज़र पर ऐप इंस्टॉल करने की गाइड</h5>
+                <p class="text-muted small">ऐप को अपने मोबाइल की होम स्क्रीन पर डायरेक्ट ऐप की तरह चलाएं:</p>
+            </div>
+            <div class="d-flex flex-column gap-3 mb-4">
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">1</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">ब्राउज़र मेनू (3 Dots) दबाएं</div>
+                        <div class="small text-muted">ब्राउज़र के ऊपर दाईं ओर <i class="bi bi-three-dots-vertical fs-5 text-dark"></i> मेनू आइकॉन पर टैप करें।</div>
+                    </div>
+                </div>
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">2</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">"Install App" पर क्लिक करें</div>
+                        <div class="small text-muted"><i class="bi bi-download text-success me-1"></i> <strong>"Install App / ऐप इंस्टॉल करें"</strong> या <strong>"Add to Home screen"</strong> चुनें।</div>
+                    </div>
+                </div>
+                <div class="pwa-guide-step-card d-flex align-items-center gap-3">
+                    <div class="badge bg-success rounded-circle p-2 fs-5" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">3</div>
+                    <div>
+                        <div class="fw-bold text-dark mb-1">कन्फर्म करें (Confirm)</div>
+                        <div class="small text-muted">**Install** बटन दबाते ही ऐप सीधे आपके फोन में फुल स्क्रीन में चलने लगेगा!</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modalHtml = `
+            <div class="modal fade" id="pwaGuideModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                        <div class="modal-header bg-success text-white py-3 border-0">
+                            <h5 class="modal-header-title fw-bold mb-0 text-white"><i class="bi bi-phone me-2"></i>Install Yadav Store App</h5>
+                            <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            ${isIOS ? iosGuideContent : androidGuideContent}
+                        </div>
+                        <div class="modal-footer bg-light border-0 justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">समझ गया (Got it)</button>
+                            <button type="button" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" onclick="window.location.reload();">
+                                <i class="bi bi-arrow-clockwise me-1"></i> रिफ्रेश करें
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        guideModalEl = document.getElementById('pwaGuideModal');
+    }
+
+    const modalInstance = new bootstrap.Modal(guideModalEl);
+    modalInstance.show();
+};
+
+// Trigger banner initialization on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        window.initPwaInstallBanner();
+    }, 1200);
+});
 
 // ==========================================
 // GLOBAL SETTINGS LISTENER (SEO & MAINTENANCE)
