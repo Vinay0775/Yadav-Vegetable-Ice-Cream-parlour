@@ -2674,10 +2674,40 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
             function typeLine1() {
                 if (myGen !== typewriterGen) return;
-                if (idx < line1.length    // Helper: Add product directly to cart by ID
+                if (idx < line1.length) {
+                    l1.textContent += line1.charAt(idx++);
+                    setTimeout(typeLine1, speed);
+                } else {
+                    idx = 0;
+                    setTimeout(typeLine2, 120);
+                }
+            }
+
+            function typeLine2() {
+                if (myGen !== typewriterGen) return;
+                if (idx < line2.length) {
+                    l2.textContent += line2.charAt(idx++);
+                    setTimeout(typeLine2, speed);
+                } else {
+                    if (cur) cur.classList.add('hero-type-cursor-done');
+                }
+            }
+
+            typeLine1();
+        }
+
+        carousel.addEventListener('slid.bs.carousel', function (e) {
+            typeHeroTitle(e.relatedTarget);
+        });
+
+        const activeSlide = carousel.querySelector('.carousel-item.active');
+        if (activeSlide) typeHeroTitle(activeSlide);
+    })();
+
+    // Helper: Add product directly to cart by ID
     window.addToCartById = function(id, customWeight = null) {
         const catalog = window.catalogProducts || window.YADAV_CATALOG || [];
-        const prod = catalog.find(p => p.id === id);
+        const prod = catalog.find(p => (p.id || p.title) === id);
         if (!prod) {
             if (window.showToast) window.showToast("Error", "Product not found!", true);
             return;
@@ -2693,7 +2723,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             else if (selectedWeight === '3kg') itemPrice = Math.round(prod.price * 3);
         }
         const payload = {
-            id: prod.id,
+            id: prod.id || prod.title,
             title: prod.title,
             price: itemPrice,
             image: prod.image,
@@ -2792,7 +2822,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                     const u = p.unitType === 'pc' ? `₹${p.price}/pc (${p.pcWeight || '1 pc'})` : `₹${p.price}/1 kg`;
                     res += `<li class="mb-1"><strong>${p.emoji || '🥬'} ${p.title}</strong> (${p.hindiTitle || ''}): <span class="text-success fw-bold">${u}</span></li>`;
                 });
-                res += "</ul><p class="small text-muted mb-1">👉 किसी भी सब्जी का नाम टाइप करें या तुरंत आर्डर करें!</p>";
+                res += "</ul><p class='small text-muted mb-1'>👉 किसी भी सब्जी का नाम टाइप करें या तुरंत आर्डर करें!</p>";
                 return { text: res, chips: ["टमाटर का भाव", "आलू का भाव", "प्याज का भाव"] };
             }
 
@@ -2803,7 +2833,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                     const u = p.unitType === 'pc' ? `₹${p.price}/pc (${p.pcWeight || '1 pc'})` : `₹${p.price}/1 kg`;
                     res += `<li class="mb-1"><strong>${p.emoji || '🍎'} ${p.title}</strong> (${p.hindiTitle || ''}): <span class="text-success fw-bold">${u}</span></li>`;
                 });
-                res += "</ul><p class="small text-muted mb-1">👉 100% ताज़ा फलों की डिलीवरी!</p>";
+                res += "</ul><p class='small text-muted mb-1'>👉 100% ताज़ा फलों की डिलीवरी!</p>";
                 return { text: res, chips: ["आम का भाव", "सेब का भाव", "तरबूज का भाव"] };
             }
 
@@ -2813,7 +2843,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                 iceItems.forEach(p => {
                     res += `<li class="mb-1"><strong>${p.emoji || '🍨'} ${p.title}</strong>: <span class="text-pink fw-bold">₹${p.price}</span></li>`;
                 });
-                res += "</ul><p class="small text-muted mb-1">👉 चिल पैक डिलीवरी के साथ घर मंगाएं!</p>";
+                res += "</ul><p class='small text-muted mb-1'>👉 चिल पैक डिलीवरी के साथ घर मंगाएं!</p>";
                 return { text: res, chips: ["Chocobar", "Sundae Cup", "Kulfi"] };
             }
 
@@ -2854,15 +2884,47 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             return null;
         }
 
+        const USER_GEMINI_KEY = typeof window !== 'undefined' && window.atob ? window.atob("QVEuQWI4Uk42SUpMdXB6bTFyNXMwVUFsRVlHY1lRY3BCWFN0dEFETC1EQWRPNlowZEtOVEE=") : "";
+
         async function processAiLogic(input) {
-            // First check local product rate engine
+            // 1. Instant response from store catalog engine for exact product rates
             const localResult = queryCatalogRates(input);
             if (localResult) {
                 addMessage(localResult.text, 'bot', localResult.chips || []);
                 return;
             }
 
-            // Default Friendly Response if no direct match
+            // 2. Query Gemini AI with new API key & live catalog context
+            const catalogSummary = (window.CATALOG || []).slice(0, 15).map(p => `${p.title} (${p.hindiTitle || ''}): ₹${p.price}/${p.unitType === 'pc' ? 'pc' : 'kg'}`).join(', ');
+            const systemPrompt = `You are Yadav Store AI Assistant for Yadav Vegetable & Ice-Cream Parlour in Jaipur. Store products & live prices: ${catalogSummary}. Be helpful, polite, answer in friendly Hindi/English. Mention rates when asked.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${USER_GEMINI_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [
+                            { role: 'user', parts: [{ text: `${systemPrompt}\nCustomer question: ${input}` }] }
+                        ]
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const aiReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (aiReply) {
+                        const formattedReply = aiReply
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\n/g, '<br>');
+                        addMessage(formattedReply, 'bot', ["सब्जियों के रेट", "फलों के रेट", "ऑर्डर कैसे करें"]);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Gemini API fetch exception, using store fallback:', err);
+            }
+
+            // 3. Fallback response if API fails
             const defaultMsg = `🙏 **यादव स्टोर पर आपका स्वागत है!**<br>
             आप हमसे किसी भी सब्जी (जैसे आलू, टमाटर, प्याज), फल (जैसे आम, सेब, तरबूज) या आइसक्रीम का लाइव रेट पूछ सकते हैं!<br><br>
             <em>उदाहरण: "टमाटर का भाव बताओ" या "सब्जियों के रेट"</em>`;
