@@ -256,8 +256,11 @@
                         </div>
 
                         <div class="mt-4">
-                            <button type="button" class="continue-btn" onclick="saveCheckoutDetailsAndProceed()">
+                            <button type="button" class="continue-btn mb-2" onclick="saveCheckoutDetailsAndProceed('payment')">
                                 Proceed to Payment <i class="bi bi-shield-lock-fill shadow-sm"></i>
+                            </button>
+                            <button type="button" class="btn btn-success w-100 py-3 rounded-3 fw-bold text-white shadow-sm" onclick="saveCheckoutDetailsAndProceed('whatsapp')">
+                                <i class="bi bi-whatsapp me-2 fs-5"></i> Direct Order on WhatsApp
                             </button>
                             <p class="text-center text-muted small mt-3 mb-0">
                                 <i class="bi bi-shield-check text-success"></i> Your data is perfectly secure
@@ -284,7 +287,7 @@
         AOS.init({ once: true });
         
         // Checkout Validation & Navigation Flow
-        function saveCheckoutDetailsAndProceed() {
+        function saveCheckoutDetailsAndProceed(action = 'payment') {
             const form = document.getElementById('checkoutForm');
             if(!form.checkValidity()) {
                 form.reportValidity();
@@ -303,8 +306,16 @@
             
             localStorage.setItem('yadavCheckoutDetails', JSON.stringify(checkoutData));
             
-            // Navigate to payment page
-            window.location.href = 'payment.html';
+            if (action === 'whatsapp') {
+                if (typeof window.processWhatsAppOrder === 'function') {
+                    window.processWhatsAppOrder('Direct WhatsApp Order');
+                } else {
+                    window.location.href = 'payment.html';
+                }
+            } else {
+                // Navigate to payment page
+                window.location.href = 'payment.html';
+            }
         }
         
         // Render Checkout Page Initializer (logic inside script.js)

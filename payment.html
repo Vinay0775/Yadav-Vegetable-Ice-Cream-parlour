@@ -703,8 +703,32 @@
                             All transactions are secure and encrypted
                         </p>
 
+                        <!-- Direct WhatsApp Order (Primary Recommended) -->
+                        <div class="payment-method active" id="whatsappMethod">
+                            <div class="payment-method-header" onclick="togglePaymentMethod('whatsappMethod')">
+                                <div class="payment-method-icon whatsapp" style="background: linear-gradient(135deg, #dcf8c6 0%, #25d366 100%); color: #075e54;">
+                                    <i class="bi bi-whatsapp fs-3"></i>
+                                </div>
+                                <div>
+                                    <h4 class="payment-method-title">Direct WhatsApp Order <span class="badge bg-success ms-1 fs-7">Recommended</span></h4>
+                                    <p class="payment-method-desc">Send order details & summary to shop WhatsApp (+91 7232825204)</p>
+                                </div>
+                                <i class="bi bi-chevron-down payment-method-toggle"></i>
+                            </div>
+                            <div class="payment-method-body">
+                                <div class="p-3 bg-light rounded-3 text-center border mt-2 mb-2">
+                                    <i class="bi bi-whatsapp text-success display-5 d-block mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-1">Instant Order via WhatsApp Business</h6>
+                                    <p class="text-muted small mb-3">Your order details, customer name, delivery address, and full cart summary will be sent directly to our WhatsApp Business account (+91 7232825204) for quick confirmation.</p>
+                                    <button type="button" class="btn btn-success px-4 py-3 rounded-3 fw-bold w-100 shadow-sm text-white fs-6" onclick="window.processWhatsAppOrder('WhatsApp Direct Order')">
+                                        <i class="bi bi-whatsapp me-2 fs-5"></i> Send Order to WhatsApp (+91 7232825204)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- UPI Payment -->
-                        <div class="payment-method active" id="upiMethod">
+                        <div class="payment-method" id="upiMethod">
                             <div class="payment-method-header" onclick="togglePaymentMethod('upiMethod')">
                                 <div class="payment-method-icon upi">
                                     <i class="bi bi-phone-vibrate-fill"></i>
@@ -841,6 +865,10 @@
                                 <span id="paymentTotal">₹0</span>
                             </div>
                         </div>
+                        <button class="pay-now-btn w-100 justify-content-center mt-3 py-3" type="button" id="payNowBtnDesktop" onclick="document.getElementById('payNowBtn').click()">
+                            <i class="bi bi-whatsapp me-2"></i>
+                            <span>Send Order to WhatsApp</span>
+                        </button>
                     </div>
                 </div>
             </div>

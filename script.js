@@ -1750,20 +1750,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const activeUser = window.auth?.currentUser || currentUser;
-        if (!activeUser) {
-            throw new Error('Please log in first to place a secured order.');
-        }
-
-        const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
-        const total = Math.ceil(subtotal + (subtotal * 0.05));
-
-        const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
         const checkoutDetails = JSON.parse(localStorage.getItem('yadavCheckoutDetails')) || {};
 
-        const customerEmail = checkoutDetails.email || activeUser.email;
-        let customerName = activeUser.displayName || 'Customer';
+        const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        const customerEmail = checkoutDetails.email || (activeUser ? activeUser.email : 'Guest Customer');
+        let customerName = 'Customer';
         if (checkoutDetails.firstName) {
             customerName = `${checkoutDetails.firstName} ${checkoutDetails.lastName || ''}`.trim();
+        } else if (activeUser && activeUser.displayName) {
+            customerName = activeUser.displayName;
         }
 
         let addressStr = 'Not Provided';
@@ -1771,9 +1766,12 @@ document.addEventListener('DOMContentLoaded', () => {
             addressStr = `${checkoutDetails.address}, ${checkoutDetails.city || ''} - ${checkoutDetails.pin || ''}`;
         }
 
+        const subtotal = cart.reduce((s, item) => s + (item.price * item.quantity), 0);
+        const total = Math.ceil(subtotal + (subtotal * 0.05));
+
         const orderData = {
             id: orderId,
-            uid: activeUser.uid,
+            uid: activeUser ? activeUser.uid : ('guest-' + Date.now()),
             customerEmail,
             customerName,
             shippingAddress: addressStr,
@@ -1781,26 +1779,117 @@ document.addEventListener('DOMContentLoaded', () => {
             subtotal,
             totalAmount: total,
             paymentMethod,
-            paymentStatus: paymentMethod.startsWith('UPI') ? 'Pending customer confirmation' : 'Pending',
+            paymentStatus: paymentMethod.toLowerCase().includes('whatsapp') ? 'Sent to WhatsApp' : (paymentMethod.startsWith('UPI') ? 'Pending customer confirmation' : 'Pending'),
             status,
             date: new Date().toISOString(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: (firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+            updatedAt: (firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
         };
 
-        const batch = window.db.batch();
-        const globalOrderRef = window.db.collection('orders').doc(orderId);
-        const userOrderRef = window.db.collection('users').doc(activeUser.uid).collection('my_orders').doc(orderId);
+        try {
+            if (activeUser && window.db) {
+                const batch = window.db.batch();
+                const globalOrderRef = window.db.collection('orders').doc(orderId);
+                const userOrderRef = window.db.collection('users').doc(activeUser.uid).collection('my_orders').doc(orderId);
 
-        batch.set(globalOrderRef, orderData);
-        batch.set(userOrderRef, orderData);
-        await batch.commit();
+                batch.set(globalOrderRef, orderData);
+                batch.set(userOrderRef, orderData);
+                await batch.commit();
+            } else if (window.db) {
+                await window.db.collection('orders').doc(orderId).set(orderData);
+            }
+        } catch (dbErr) {
+            console.warn("Firestore order save (local fallback):", dbErr);
+        }
+
+        // Save to LocalStorage My Orders as persistent backup
+        const myOrders = JSON.parse(localStorage.getItem('yadavMyOrders')) || [];
+        myOrders.unshift(orderData);
+        localStorage.setItem('yadavMyOrders', JSON.stringify(myOrders));
 
         cart = [];
         saveCart();
         localStorage.removeItem('yadavCheckoutDetails');
-        return { orderId, total };
+        return { orderId, total, orderData };
     }
+    window.createCustomerOrder = createCustomerOrder;
+
+    // Formats order data into clean, structured WhatsApp message and returns wa.me URL
+    window.generateWhatsAppOrderUrl = function(orderData, shopNumber = '917232825204') {
+        const orderId = orderData.id || ('ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase());
+        const name = orderData.customerName || 'Customer';
+        const contact = orderData.customerEmail || 'Not Provided';
+        const address = orderData.shippingAddress || 'Not Provided';
+        const items = orderData.items || [];
+        const subtotal = orderData.subtotal || 0;
+        const total = orderData.totalAmount || subtotal;
+        const paymentMethod = orderData.paymentMethod || 'WhatsApp Direct Order';
+
+        let itemLines = '';
+        items.forEach((item, index) => {
+            const itemTotal = (item.price * item.quantity);
+            itemLines += `${index + 1}. *${item.title}*\n   📦 Qty: ${item.quantity} | Price: ₹${item.price} | Total: ₹${itemTotal}\n`;
+        });
+
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+        const text = 
+`🛒 *NEW ORDER PLACED* 🛒
+*Yadav Vegetables & Ice-Cream Store*
+------------------------------------
+🆔 *Order ID:* ${orderId}
+📅 *Date:* ${formattedDate}
+
+👤 *CUSTOMER DETAILS:*
+• *Name:* ${name}
+• *Phone/Email:* ${contact}
+• *Address:* ${address}
+
+📦 *ORDER ITEMS SUMMARY:*
+${itemLines}
+------------------------------------
+💵 *Subtotal:* ₹${subtotal}
+🚚 *Delivery:* Free Delivery
+🏷️ *Estimated Tax (5%):* ₹${Math.ceil(subtotal * 0.05)}
+💰 *TOTAL AMOUNT:* ₹${total}
+💳 *Payment Mode:* ${paymentMethod}
+------------------------------------
+Please confirm my order and share delivery timing. Thank you! 🙏`;
+
+        return `https://wa.me/${shopNumber}?text=${encodeURIComponent(text)}`;
+    };
+
+    window.processWhatsAppOrder = async function(paymentMethod = 'WhatsApp Direct Order') {
+        try {
+            const cartData = JSON.parse(localStorage.getItem('yadavCart')) || [];
+            if (cartData.length === 0) {
+                if (window.showToast) window.showToast('Empty Cart', 'Your cart is empty!', true);
+                else alert('Your cart is empty!');
+                return;
+            }
+
+            const res = await createCustomerOrder(paymentMethod, 'Pending WhatsApp Confirmation');
+            const whatsappUrl = window.generateWhatsAppOrderUrl(res.orderData);
+            
+            if (window.showToast) {
+                window.showToast('Order Placed!', 'Opening WhatsApp to send order summary...');
+            }
+
+            setTimeout(() => {
+                const opened = window.open(whatsappUrl, '_blank');
+                if (!opened) {
+                    window.location.href = whatsappUrl;
+                }
+            }, 800);
+
+        } catch (e) {
+            console.error("WhatsApp order placement error:", e);
+            const message = e.message || 'Error processing order!';
+            if (window.showToast) window.showToast('Notice', message, true);
+            else alert(message);
+        }
+    };
 
     // UPI Payment - Direct App Redirect
     window.payWithUPI = async function(app) {
@@ -1967,25 +2056,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (totalEl) totalEl.innerText = formatCurrency(total);
         if (totalMobileEl) totalMobileEl.innerText = formatCurrency(total);
         
-        payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
+        payBtn.innerHTML = `<i class="bi bi-whatsapp me-1"></i><span>Send Order to WhatsApp (${formatCurrency(total)})</span>`;
         
         payBtn.addEventListener('click', async () => {
-            payBtn.innerText = "Processing...";
-            payBtn.disabled = true;
+            const activeMethodEl = document.querySelector('.payment-method.active');
+            let selectedMethod = 'WhatsApp Direct Order';
+            if (activeMethodEl) {
+                const titleEl = activeMethodEl.querySelector('.payment-method-title');
+                if (titleEl) selectedMethod = titleEl.innerText.trim();
+            }
 
-            try {
-                const { orderId } = await createCustomerOrder('Checkout Pay Now', 'Processing');
-                window.showToast('Success!', `Payment Success! Your order ${orderId} has been placed.`);
-                setTimeout(() => window.location.href = 'orders.html', 2000);
-            } catch (e) {
-                console.error("Order save sync error:", e);
-                const message = e.message || 'Error placing order! Check your internet connection or DB Rules.';
-                window.showToast('Error', message, true);
-                if (message.toLowerCase().includes('log in')) {
-                    setTimeout(() => window.location.href = "login.html?redirect=payment.html", 1200);
+            if (selectedMethod.toLowerCase().includes('whatsapp') || selectedMethod.toLowerCase().includes('direct')) {
+                await window.processWhatsAppOrder(selectedMethod);
+            } else if (selectedMethod.toLowerCase().includes('upi')) {
+                await window.payWithUPI('any');
+            } else {
+                payBtn.innerText = "Processing...";
+                payBtn.disabled = true;
+
+                try {
+                    const res = await createCustomerOrder(selectedMethod, 'Processing');
+                    const whatsappUrl = window.generateWhatsAppOrderUrl(res.orderData);
+                    window.showToast('Success!', `Order ${res.orderId} placed! Opening WhatsApp...`);
+                    setTimeout(() => {
+                        window.open(whatsappUrl, '_blank') || (window.location.href = whatsappUrl);
+                    }, 1000);
+                } catch (e) {
+                    console.error("Order save sync error:", e);
+                    const message = e.message || 'Error placing order! Check your connection.';
+                    window.showToast('Error', message, true);
+                    payBtn.innerHTML = `<i class="bi bi-whatsapp me-1"></i><span>Send Order to WhatsApp (${formatCurrency(total)})</span>`;
+                    payBtn.disabled = false;
                 }
-                payBtn.innerHTML = `<i class="bi bi-lock-fill me-1"></i><span>Pay ${formatCurrency(total)}</span>`;
-                payBtn.disabled = false;
             }
         });
     }
