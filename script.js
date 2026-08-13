@@ -371,10 +371,12 @@ window.normalizeEmail = function (email) {
 };
 
 window.normalizeCatalogCategory = function (category) {
-    const normalizedCategory = String(category || '').trim();
-    if (normalizedCategory === 'Fresh Fruits') return 'Fruits';
-    if (normalizedCategory === 'Veggies') return 'Vegetables';
-    return normalizedCategory;
+    const raw = String(category || '').trim().toLowerCase();
+    if (raw.includes('fruit') || raw.includes('फल')) return 'Fruits';
+    if (raw.includes('veg') || raw.includes('sabzi') || raw.includes('सब्जी') || raw.includes('gourd') || raw.includes('green')) return 'Vegetables';
+    if (raw.includes('ice') || raw.includes('cream') || raw.includes('आइसक्रीम') || raw.includes('sundae') || raw.includes('cone') || raw.includes('parlour')) return 'Ice-Creams';
+    if (raw.includes('dairy') || raw.includes('milk') || raw.includes('दूध') || raw.includes('paneer') || raw.includes('curd') || raw.includes('butter')) return 'Dairy';
+    return category || 'Vegetables';
 };
 
 window.getUserEmail = function (userOrEmail) {

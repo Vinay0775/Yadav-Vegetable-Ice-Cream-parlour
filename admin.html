@@ -955,7 +955,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=35"></script>
+    <script src="script.js?v=40"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -1698,7 +1698,7 @@
         // ==========================================
         // ADMIN SECURITY & SPA NAVIGATION LOGIC
         // ==========================================
-        window.onload = () => {
+        (function initAdminNavigationAndAuth() {
             window.activateAdminSection = function (targetId, triggerLink = null) {
                 const navLinks = Array.from(document.querySelectorAll('.admin-nav-link[data-tab]'));
                 const resolvedLink = triggerLink || navLinks.find(link => link.dataset.tab === targetId && !link.classList.contains('d-none'));
@@ -2625,7 +2625,7 @@
                 }
             };
 
-        };
+        })();
     </script>
 </body>
 
