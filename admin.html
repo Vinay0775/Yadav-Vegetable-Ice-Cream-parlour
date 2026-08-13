@@ -955,7 +955,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=30"></script>
+    <script src="script.js?v=35"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -1233,56 +1233,53 @@
         };
 
         window.getAdminCatalogSnapshot = async function () {
-            const mergedCatalog = new Map();
-            const staticCatalog = Array.isArray(window.CATALOG) && window.CATALOG.length
-                ? window.CATALOG
-                : (typeof YADAV_CATALOG !== 'undefined' ? YADAV_CATALOG : []);
-
-            staticCatalog.forEach(item => {
-                const key = item.id || item.title;
-                mergedCatalog.set(key, {
-                    ...item,
-                    id: key,
-                    category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category,
-                    subCategory: item.subCategory || '',
-                    rating: Number(item.rating) || 5,
-                    badge: item.badge || '',
-                    desc: item.desc || '',
-                    sourceType: 'catalog',
-                    sourceLabel: 'Catalog Default',
-                    archived: false
-                });
-            });
-
             window.ADMIN_PRODUCT_DB_ERROR = null;
+            let items = [];
 
             try {
                 const liveSnap = await window.db.collection('products').get();
+                const firestoreProducts = [];
+
                 liveSnap.forEach(doc => {
                     const liveData = doc.data();
                     const key = doc.id || liveData.id || liveData.title;
-                    const existing = mergedCatalog.get(key);
-
-                    if (liveData.archived) {
-                        mergedCatalog.delete(key);
-                        return;
+                    if (!liveData.archived) {
+                        firestoreProducts.push({
+                            ...liveData,
+                            id: key,
+                            firestoreId: doc.id,
+                            category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category) : (liveData.category || 'Vegetables'),
+                            subCategory: liveData.subCategory || '',
+                            rating: Number(liveData.rating) || 5,
+                            badge: liveData.badge || '',
+                            desc: liveData.desc || '',
+                            sourceType: 'custom',
+                            sourceLabel: 'Firestore Product',
+                            archived: false
+                        });
                     }
-
-                    mergedCatalog.set(key, {
-                        ...existing,
-                        ...liveData,
-                        id: key,
-                        firestoreId: doc.id,
-                        category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || existing?.category) : (liveData.category || existing?.category),
-                        subCategory: liveData.subCategory || existing?.subCategory || '',
-                        rating: Number(liveData.rating ?? existing?.rating ?? 5) || 5,
-                        badge: liveData.badge || existing?.badge || '',
-                        desc: liveData.desc || existing?.desc || '',
-                        sourceType: existing ? 'synced' : 'custom',
-                        sourceLabel: existing ? 'Catalog Sync' : 'Custom Firestore',
-                        archived: false
-                    });
                 });
+
+                if (firestoreProducts.length > 0) {
+                    items = firestoreProducts;
+                } else {
+                    const staticCatalog = Array.isArray(window.CATALOG) && window.CATALOG.length
+                        ? window.CATALOG
+                        : (typeof YADAV_CATALOG !== 'undefined' ? YADAV_CATALOG : []);
+
+                    items = staticCatalog.map(item => ({
+                        ...item,
+                        id: item.id || item.title,
+                        category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category,
+                        subCategory: item.subCategory || '',
+                        rating: Number(item.rating) || 5,
+                        badge: item.badge || '',
+                        desc: item.desc || '',
+                        sourceType: 'catalog',
+                        sourceLabel: 'Catalog Default',
+                        archived: false
+                    }));
+                }
             } catch (error) {
                 console.warn('Products database read failed. Showing default catalog only.', error);
                 window.ADMIN_PRODUCT_DB_ERROR = error;

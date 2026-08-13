@@ -1,4 +1,4 @@
-const CACHE_NAME = "yadav-store-pwa-v30";
+const CACHE_NAME = "yadav-store-pwa-v35";
 const urlsToCache = [
   "./",
   "./index.html",

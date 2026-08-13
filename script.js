@@ -630,40 +630,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.db) {
         window.db.collection('products').onSnapshot(snapshot => {
-            const liveMap = new Map();
+            const firestoreItems = [];
 
-            // 1. Insert ALL active Firestore Admin products FIRST
+            // 1. Fetch ALL active Firestore Admin products
             snapshot.forEach(doc => {
                 const liveData = doc.data();
                 const key = doc.id || liveData.id || liveData.title;
                 if (!liveData.archived) {
                     const normCat = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || 'Vegetables') : (liveData.category || 'Vegetables');
-                    liveMap.set(key, {
+                    firestoreItems.push({
                         ...liveData,
                         id: key,
+                        firestoreId: doc.id,
                         category: normCat
                     });
                 }
             });
 
-            // 2. Append default static catalog products ONLY if not already overridden by Firestore Admin
-            const defaultCatalog = Array.isArray(window.YADAV_CATALOG) && window.YADAV_CATALOG.length
-                ? window.YADAV_CATALOG
-                : (Array.isArray(window.CATALOG) ? window.CATALOG : []);
+            let mergedList = [];
+            if (firestoreItems.length > 0) {
+                // Use EXCLUSIVELY Firestore products when available in Firebase!
+                mergedList = firestoreItems;
+            } else {
+                // Fallback to static catalog defaults ONLY if Firestore database is empty
+                const defaultCatalog = Array.isArray(window.YADAV_CATALOG) && window.YADAV_CATALOG.length
+                    ? window.YADAV_CATALOG
+                    : (Array.isArray(window.CATALOG) ? window.CATALOG : []);
 
-            defaultCatalog.forEach(item => {
-                const key = item.id || item.title;
-                if (!liveMap.has(key)) {
-                    const normCat = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category;
-                    liveMap.set(key, {
-                        ...item,
-                        id: key,
-                        category: normCat
-                    });
-                }
-            });
+                mergedList = defaultCatalog.map(item => ({
+                    ...item,
+                    id: item.id || item.title,
+                    category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category
+                }));
+            }
 
-            const mergedList = Array.from(liveMap.values());
             CATALOG = mergedList;
             window.CATALOG = mergedList;
             window.catalogProducts = mergedList;
@@ -1190,27 +1190,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.renderHomepageFeaturedProducts = function () {
         const featuredEl = document.getElementById('homepageFeaturedProducts');
-        if (!featuredEl || !Array.isArray(window.CATALOG)) return;
+        if (!featuredEl) return;
 
-        const preferredIds = ['v1', 'i7', 'v5', 'i4'];
-        const latestAdminProducts = window.CATALOG
-            .filter(item => getOrderTimeValue(item.updatedAt) || getOrderTimeValue(item.createdAt))
-            .sort((a, b) => {
-                const aTime = getOrderTimeValue(a.updatedAt) || getOrderTimeValue(a.createdAt);
-                const bTime = getOrderTimeValue(b.updatedAt) || getOrderTimeValue(b.createdAt);
-                return bTime - aTime;
-            });
-        const defaultFeatured = preferredIds
-            .map(id => window.CATALOG.find(item => (item.id || item.title) === id))
-            .filter(Boolean);
-        const seenFeaturedIds = new Set();
-        const products = [...latestAdminProducts, ...defaultFeatured].filter(item => {
-            const id = item.id || item.title;
-            if (!id || seenFeaturedIds.has(id)) return false;
-            seenFeaturedIds.add(id);
-            return true;
-        }).slice(0, 4);
+        const currentCatalog = (Array.isArray(window.CATALOG) && window.CATALOG.length) ? window.CATALOG : (window.catalogProducts || []);
+        if (!currentCatalog.length) return;
 
+        const products = currentCatalog.slice(0, 4);
         if (!products.length) return;
 
         featuredEl.innerHTML = products
