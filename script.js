@@ -1235,9 +1235,8 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = page;
             gridEl.innerHTML = '';
 
-            const normalizedPageCategory = window.normalizeCatalogCategory(pageMainCategory);
-            const normalizedSearchCategory = window.normalizeCatalogCategory(searchCat);
-            let filteredList = CATALOG.filter(p => normalizedPageCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedPageCategory);
+            const currentCatalogList = window.CATALOG || window.catalogProducts || CATALOG || [];
+            let filteredList = currentCatalogList.filter(p => normalizedPageCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedPageCategory);
 
             if (searchQuery) {
                 const searchStr = searchQuery.toLowerCase();

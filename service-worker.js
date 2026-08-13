@@ -1,4 +1,4 @@
-const CACHE_NAME = "yadav-store-pwa-v10";
+const CACHE_NAME = "yadav-store-pwa-v25";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -42,20 +42,36 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // Network-First for JS and CSS files to guarantee instant updates
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          const respClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, respClone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       if (cachedResponse) {
         return cachedResponse;
       }
       return fetch(event.request).then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
         }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
         return response;
       });
-    }).catch(() => caches.match(event.request))
+    })
   );
 });
