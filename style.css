@@ -3671,4 +3671,117 @@ body.dark-mode .pwa-install-banner {
     transform: translateY(-2px);
 }
 
+/* AI Chatbot Proactive Teaser Badge */
+.ai-chatbot-teaser-badge {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    background: #ffffff;
+    color: #198754;
+    border: 2px solid #198754;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 1049;
+    animation: teaserPulse 2.5s infinite ease-in-out;
+}
+
+.teaser-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #198754;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: dotBlink 1.2s infinite;
+}
+
+@keyframes teaserPulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+body.dark-mode .ai-chatbot-teaser-badge {
+    background: #1e293b;
+    color: #20c997;
+    border-color: #20c997;
+}
+
+/* Mobile View 2-Column Product Grid & Image Speed Optimization */
+@media (max-width: 767.98px) {
+    .product-card {
+        padding: 0 !important;
+    }
+    
+    .product-image-wrapper {
+        padding: 12px 8px !important;
+    }
+    
+    .product-card-image,
+    .product-real-img {
+        width: 105px !important;
+        height: 105px !important;
+        max-height: 105px !important;
+    }
+    
+    .product-card-body {
+        padding: 12px 10px !important;
+    }
+    
+    .product-card-title {
+        font-size: 0.88rem !important;
+        line-height: 1.25 !important;
+        height: 2.5em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .product-price-row {
+        font-size: 0.95rem !important;
+    }
+
+    .dynamic-add-cart {
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+    }
+
+    /* Hero stage mobile background image scaling */
+    .hero-section {
+        min-height: auto !important;
+        padding-top: 15px !important;
+        padding-bottom: 25px !important;
+    }
+
+    .hero-visual-stage img,
+    .drop-shadow-img {
+        max-height: 180px !important;
+        width: auto !important;
+        object-fit: contain !important;
+    }
+
+    .hero-depth-card {
+        display: none !important;
+    }
+
+    .ai-chatbot-teaser-badge {
+        bottom: 82px;
+        right: 12px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+}
+
+
+
 

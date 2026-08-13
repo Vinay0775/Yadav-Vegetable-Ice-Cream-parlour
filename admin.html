@@ -825,6 +825,38 @@
                                     <div class="form-text">Enable karne se payment page par QR code dikhega</div>
                                 </label>
                             </div>
+
+                            <hr>
+                            <h6 class="fw-bold mt-4 mb-3"><i class="bi bi-megaphone me-2 text-warning"></i> Marquee & Promo Discount Banner Controls</h6>
+                            <p class="text-muted small mb-3">यहाँ से आप वेबसाइट के ऊपर चलने वाली घोषणा (Marquee Offer) और होमपेज का डिस्काउंट बैनर खुद कंट्रोल कर सकते हैं:</p>
+
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">Top Marquee Ticker Offer Text</label>
+                                <input type="text" id="adminMarqueeText" class="form-control shadow-none" placeholder="🔥 20% OFF on all fresh fruits & veggies! Use code: FRESH20">
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Promo Banner Title</label>
+                                    <input type="text" id="adminPromoTitle" class="form-control shadow-none" placeholder="Special Weekend Veggie & Fruit Discount!">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Promo Discount Percentage / Badge</label>
+                                    <input type="text" id="adminPromoDiscountBadge" class="form-control shadow-none" placeholder="Flat 20% OFF">
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Promo Coupon Code</label>
+                                    <input type="text" id="adminPromoCouponCode" class="form-control shadow-none" placeholder="FRESH20">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Promo Subtitle / Description</label>
+                                    <input type="text" id="adminPromoSubtext" class="form-control shadow-none" placeholder="Get fresh organic vegetables delivered at your doorstep with extra discount!">
+                                </div>
+                            </div>
+
                             <div class="text-end mt-4">
                                 <button type="submit" class="btn btn-success px-4">Save Settings</button>
                             </div>
@@ -1814,7 +1846,14 @@
                     if (showQuickPay) showQuickPay.checked = data.showQuickPayButtons !== false; // Default: true
                     const showQrCode = document.getElementById('adminShowQrCode');
                     if (showQrCode) showQrCode.checked = data.showQrCode !== false; // Default: true
-                    
+
+                    // Banner & Offer Controls
+                    if (document.getElementById('adminMarqueeText')) document.getElementById('adminMarqueeText').value = data.marqueeText || '🔥 20% OFF on all fresh fruits & veggies! Use code: FRESH20';
+                    if (document.getElementById('adminPromoTitle')) document.getElementById('adminPromoTitle').value = data.promoTitle || 'Get 20% Off On Your First Order!';
+                    if (document.getElementById('adminPromoDiscountBadge')) document.getElementById('adminPromoDiscountBadge').value = data.promoDiscountBadge || '20% Off';
+                    if (document.getElementById('adminPromoCouponCode')) document.getElementById('adminPromoCouponCode').value = data.promoCouponCode || 'FRESH20';
+                    if (document.getElementById('adminPromoSubtext')) document.getElementById('adminPromoSubtext').value = data.promoSubtext || 'Subscribe to our newsletter and get a discount code instantly.';
+
                     const qrUrl = (data.qrCodeUrl || '').trim();
                     const qrField = document.getElementById('adminQrCodeUrlField');
                     const qrPrev = document.getElementById('adminQrCodePreview');
@@ -1927,6 +1966,12 @@
                             qrCodeUrl = await window.uploadSiteQrCode(qrPick);
                         }
 
+                        const marqueeText = (document.getElementById('adminMarqueeText') || {}).value.trim();
+                        const promoTitle = (document.getElementById('adminPromoTitle') || {}).value.trim();
+                        const promoDiscountBadge = (document.getElementById('adminPromoDiscountBadge') || {}).value.trim();
+                        const promoCouponCode = (document.getElementById('adminPromoCouponCode') || {}).value.trim();
+                        const promoSubtext = (document.getElementById('adminPromoSubtext') || {}).value.trim();
+
                         const updatePayload = {
                             maintenanceMode: mt,
                             seoTitle: t,
@@ -1936,6 +1981,11 @@
                             showUpiId: showUpiId,
                             showQuickPayButtons: showQuickPay,
                             showQrCode: showQrCode,
+                            marqueeText: marqueeText,
+                            promoTitle: promoTitle,
+                            promoDiscountBadge: promoDiscountBadge,
+                            promoCouponCode: promoCouponCode,
+                            promoSubtext: promoSubtext,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         };
                         if (qrCodeUrl) {

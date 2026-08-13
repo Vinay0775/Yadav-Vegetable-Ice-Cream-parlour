@@ -293,6 +293,28 @@ if (window.db) {
                 meta.content = data.seoDesc;
             }
 
+            // Apply Dynamic Marquee Ticker Offer Text
+            if (data.marqueeText) {
+                document.querySelectorAll('.top-marquee-text').forEach(el => {
+                    el.innerText = data.marqueeText;
+                });
+            }
+
+            // Apply Dynamic Homepage Promo Discount Banner
+            if (data.promoDiscountBadge || data.promoTitle || data.promoCouponCode || data.promoSubtext) {
+                const promoBadgeEl = document.getElementById('homePromoBadge');
+                if (promoBadgeEl && data.promoDiscountBadge) promoBadgeEl.innerText = data.promoDiscountBadge;
+
+                const promoTitleEl = document.getElementById('homePromoTitle');
+                if (promoTitleEl && data.promoTitle) promoTitleEl.innerText = data.promoTitle;
+
+                const promoSubtextEl = document.getElementById('homePromoSubtext');
+                if (promoSubtextEl && data.promoSubtext) promoSubtextEl.innerText = data.promoSubtext;
+
+                const promoCodeEl = document.getElementById('homePromoCouponCode');
+                if (promoCodeEl && data.promoCouponCode) promoCodeEl.innerText = data.promoCouponCode;
+            }
+
             // Apply Maintenance Mode
             // if maintenanceMode == true and not on admin.html
             const isAdminPage = window.location.pathname.includes('admin.html');
@@ -1170,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!products.length) return;
 
         featuredEl.innerHTML = products
-            .map(prod => window.buildStorefrontProductCard(prod, { columnClass: 'col-sm-6 col-lg-3' }))
+            .map(prod => window.buildStorefrontProductCard(prod, { columnClass: 'col-6 col-md-4 col-lg-3' }))
             .join('');
         window.bindStoreProductCardActions(featuredEl);
     };
@@ -2631,45 +2653,40 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
             function typeLine1() {
                 if (myGen !== typewriterGen) return;
-                if (idx < line1.length) {
-                    l1.textContent += line1[idx];
-                    idx += 1;
-                    setTimeout(typeLine1, speed);
-                } else {
-                    idx = 0;
-                    setTimeout(typeLine2, 380);
-                }
-            }
-
-            function typeLine2() {
-                if (myGen !== typewriterGen) return;
-                if (idx < line2.length) {
-                    l2.textContent += line2[idx];
-                    idx += 1;
-                    setTimeout(typeLine2, speed);
-                } else if (cur) {
-                    cur.classList.add('hero-type-cursor-done');
-                    setTimeout(() => {
-                        if (myGen === typewriterGen) cur.style.display = 'none';
-                    }, 900);
-                }
-            }
-
-            typeLine1();
+                if (idx < line1.length    // Helper: Add product directly to cart by ID
+    window.addToCartById = function(id, customWeight = null) {
+        const catalog = window.catalogProducts || window.YADAV_CATALOG || [];
+        const prod = catalog.find(p => p.id === id);
+        if (!prod) {
+            if (window.showToast) window.showToast("Error", "Product not found!", true);
+            return;
         }
-
-        const firstActive = carousel.querySelector('.carousel-item.active');
-        if (firstActive) {
-            typeHeroTitle(firstActive);
+        const selectedWeight = customWeight || (prod.unitType === 'pc' ? (prod.pcWeight || '1 pc') : '1kg');
+        let itemPrice = prod.price;
+        if (prod.unitType !== 'pc' && selectedWeight) {
+            if (selectedWeight === '100g') itemPrice = Math.round(prod.price * 0.1);
+            else if (selectedWeight === '200g') itemPrice = Math.round(prod.price * 0.2);
+            else if (selectedWeight === '250g') itemPrice = Math.round(prod.price * 0.25);
+            else if (selectedWeight === '500g') itemPrice = Math.round(prod.price * 0.5);
+            else if (selectedWeight === '2kg') itemPrice = Math.round(prod.price * 2);
+            else if (selectedWeight === '3kg') itemPrice = Math.round(prod.price * 3);
         }
-
-        carousel.addEventListener('slid.bs.carousel', (e) => {
-            if (e.relatedTarget) typeHeroTitle(e.relatedTarget);
-        });
-    })();
+        const payload = {
+            id: prod.id,
+            title: prod.title,
+            price: itemPrice,
+            image: prod.image,
+            category: prod.category,
+            selectedWeight: selectedWeight,
+            quantity: 1
+        };
+        if (window.addToCartGlobal) {
+            window.addToCartGlobal(encodeURIComponent(JSON.stringify(payload)));
+        }
+    };
 
     // ==========================================
-    // 12. AI SALES ASSISTANT CHATBOT
+    // 12. AI SALES ASSISTANT & LIVE RATE CHATBOT
     // ==========================================
     (function initAIChatbot() {
         if (document.getElementById('aiChatbotContainer')) return;
@@ -2677,13 +2694,18 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
         const botHtml = `
         <div id="aiChatbotContainer">
+            <!-- Proactive Teaser Badge Popup -->
+            <div id="aiChatbotTeaserBadge" class="ai-chatbot-teaser-badge shadow-sm" onclick="window.toggleAIChatbot(true)">
+                <span class="teaser-dot"></span> 👋 जानिए आज किस सब्जी, फल या आइसक्रीम का क्या रेट है!
+            </div>
+
             <div id="aiChatbotWindow">
                 <div class="chatbot-header">
                     <div class="chatbot-header-title">
                         <span class="fs-4">🥦</span>
                         <div>
-                            <div style="font-size:1rem; line-height:1.2;">Yadav Sales AI</div>
-                            <div style="font-size:0.75rem; font-weight:normal; opacity:0.9;">Online & Ready to Help</div>
+                            <div style="font-size:1rem; line-height:1.2; font-weight:700;">Yadav Store Rate AI</div>
+                            <div style="font-size:0.75rem; font-weight:normal; opacity:0.9;">लाइव रेट एवं प्रोडक्ट जानकारी</div>
                         </div>
                     </div>
                     <button class="chatbot-header-btn" id="closeChatBtn" aria-label="Close Chat"><i class="bi bi-x-lg"></i></button>
@@ -2692,7 +2714,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                     <!-- Messages go here -->
                 </div>
                 <div class="chat-input-area">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="Type a message..." autocomplete="off">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="सब्जी, फल या आइसक्रीम का भाव पूछें..." autocomplete="off">
                     <button id="chatSendBtn" class="chat-send-btn" aria-label="Send Message"><i class="bi bi-send-fill"></i></button>
                 </div>
             </div>
@@ -2707,9 +2729,6 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         const chatMsgs = document.getElementById('chatMsgs');
         const chatInput = document.getElementById('chatInput');
         const chatSendBtn = document.getElementById('chatSendBtn');
-
-        let chatState = 'START';
-        let orderDetails = { name: '', address: '', phone: '', items: '' };
 
         function scrollToBottom() {
             chatMsgs.scrollTop = chatMsgs.scrollHeight;
@@ -2739,80 +2758,140 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             scrollToBottom();
         }
 
-        const GEMINI_API_KEY = "AIzaSyC4Ba9yHYSwkQlZzXtkYOCxjMxwfgrwUTo"; // Put your Real Google Gemini API Key here!!!
+        // Live Rate & Price Inquiry Search Engine
+        function queryCatalogRates(inputRaw) {
+            const input = inputRaw.toLowerCase().trim();
+            const catalog = window.catalogProducts || window.YADAV_CATALOG || [];
 
-        // Generate dynamic context from catalog.js if available
-        function getStoreContext() {
-            let context = "You are a smart AI sales assistant for 'Yadav Veggies & Fruits' (Location: Gandhipath Jaipur, Rajasthan). Tone: Friendly, polite, short responses, mix of Hindi+English (Hinglish). Add emojis like 🥦🍎. Your goal is to convert users to customers. You can accept orders by asking for Name, Address, Phone, and Items.";
-            if (window.catalogProducts && window.catalogProducts.length > 0) {
-                context += "\\nHere is our current live inventory & prices:\\n";
-                window.catalogProducts.slice(0, 25).forEach(p => {
-                    context += `- ${p.title} (${p.category}): ₹${p.price}\\n`;
+            // Category Level Queries
+            if (input.includes('sabzi') || input.includes('veggie') || input.includes('vegetable') || input.includes('सब्जी') || input.includes('सब्जियां')) {
+                const vegItems = catalog.filter(p => p.category === 'Vegetables').slice(0, 6);
+                let res = "🥦 <strong>आज की ताज़ा सब्ज़ियों के रेट (Today's Vegetable Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
+                vegItems.forEach(p => {
+                    const u = p.unitType === 'pc' ? `₹${p.price}/pc (${p.pcWeight || '1 pc'})` : `₹${p.price}/1 kg`;
+                    res += `<li class="mb-1"><strong>${p.emoji || '🥬'} ${p.title}</strong> (${p.hindiTitle || ''}): <span class="text-success fw-bold">${u}</span></li>`;
                 });
-            } else {
-                context += "\\nWe sell fresh vegetables like tomato, potato, broccoli and fruits like apples, bananas, mangoes, and premium Ice creams.";
+                res += "</ul><p class="small text-muted mb-1">👉 किसी भी सब्जी का नाम टाइप करें या तुरंत आर्डर करें!</p>";
+                return { text: res, chips: ["टमाटर का भाव", "आलू का भाव", "प्याज का भाव"] };
             }
-            context += "\\nRules: Keep answers under 3-4 sentences. Only quote exactly from inventory. Encourage them to buy it immediately. Format text with standard HTML if needed.";
-            return context;
+
+            if (input.includes('fruit') || input.includes('फल')) {
+                const fruitItems = catalog.filter(p => p.category === 'Fruits').slice(0, 6);
+                let res = "🍎 <strong>आज के ताज़ा फलों के रेट (Fresh Fruit Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
+                fruitItems.forEach(p => {
+                    const u = p.unitType === 'pc' ? `₹${p.price}/pc (${p.pcWeight || '1 pc'})` : `₹${p.price}/1 kg`;
+                    res += `<li class="mb-1"><strong>${p.emoji || '🍎'} ${p.title}</strong> (${p.hindiTitle || ''}): <span class="text-success fw-bold">${u}</span></li>`;
+                });
+                res += "</ul><p class="small text-muted mb-1">👉 100% ताज़ा फलों की डिलीवरी!</p>";
+                return { text: res, chips: ["आम का भाव", "सेब का भाव", "तरबूज का भाव"] };
+            }
+
+            if (input.includes('ice cream') || input.includes('icecream') || input.includes('आइसक्रीम')) {
+                const iceItems = catalog.filter(p => p.category === 'Ice-Creams').slice(0, 6);
+                let res = "🍦 <strong>प्रीमियम आइसक्रीम रेट्स (Ice-Cream Parlour Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
+                iceItems.forEach(p => {
+                    res += `<li class="mb-1"><strong>${p.emoji || '🍨'} ${p.title}</strong>: <span class="text-pink fw-bold">₹${p.price}</span></li>`;
+                });
+                res += "</ul><p class="small text-muted mb-1">👉 चिल पैक डिलीवरी के साथ घर मंगाएं!</p>";
+                return { text: res, chips: ["Chocobar", "Sundae Cup", "Kulfi"] };
+            }
+
+            // Specific Product Fuzzy Search
+            const matchedProducts = catalog.filter(p => {
+                const titleMatch = p.title.toLowerCase().includes(input) || (p.hindiTitle && p.hindiTitle.toLowerCase().includes(input));
+                const synMatch = p.synonyms && p.synonyms.some(s => input.includes(s.toLowerCase()) || s.toLowerCase().includes(input));
+                return titleMatch || synMatch;
+            });
+
+            if (matchedProducts.length > 0) {
+                let res = "✨ <strong>आज का लाइव रेट (Live Store Price):</strong><br>";
+                matchedProducts.slice(0, 4).forEach(p => {
+                    const unitStr = p.unitType === 'pc' ? `₹${p.price} / pc (${p.pcWeight || '1 pc'})` : `₹${p.price} / 1 kg`;
+                    res += `
+                    <div class="p-2 border rounded-3 my-2 bg-white shadow-sm d-flex align-items-center justify-content-between text-start gap-2">
+                        <div>
+                            <div class="fw-bold text-dark mb-0">${p.emoji || '📦'} ${p.title}</div>
+                            <div class="small text-muted">${p.hindiTitle || ''}</div>
+                            <div class="text-success fw-bold fs-6">${unitStr}</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold text-nowrap" onclick="window.addToCartById('${p.id}')">
+                            <i class="bi bi-cart-plus me-1"></i> Add
+                        </button>
+                    </div>`;
+                });
+                return { text: res, chips: ["और सब्जियां दिखाओ", "Order करना है"] };
+            }
+
+            // Order Inquiry
+            if (input.includes('order') || input.includes('आर्डर') || input.includes('खरीदना')) {
+                return {
+                    text: "🛍️ **आर्डर कैसे करें:**<br>1. आप डायरेक्ट वेबसाइट से आइटम चुनकर कार्ट में डाल सकते हैं!<br>2. या अपनी हाथ से लिखी पर्ची का फोटो **Upload Slip** बटन से अपलोड कर दें।<br>3. या नीचे अपना Name, Phone और Address लिखें, हम कॉल करके आर्डर बुक कर लेंगे!",
+                    chips: ["सब्जियों के रेट बताओ", "फलों के रेट बताओ"]
+                };
+            }
+
+            return null;
         }
 
         async function processAiLogic(input) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-                // Fallback to old simple logic if API key isn't set yet!
-                const lowerInput = input.toLowerCase();
-                if (lowerInput.includes('order')) {
-                    addMessage("Order karne ke liye please apna Name, Address aur order list yaha likh dein. Hum jald deliver karenge! 🚚 (Note: Real AI feature is active but needs an API Key inside script.js to work!)", 'bot');
-                } else {
-                    addMessage("Namaste 🙏 Main Yadav Veggies ka naya Smart AI Assistant hu. Par mera asli dimaag tab chalega jab aap `script.js` me meri `GEMINI_API_KEY` daal denge! 😅 Ek bar daal dijiye, phir dekhiye mera jaadu!", 'bot');
-                }
+            // First check local product rate engine
+            const localResult = queryCatalogRates(input);
+            if (localResult) {
+                addMessage(localResult.text, 'bot', localResult.chips || []);
                 return;
             }
 
-            // Show typing indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.id = 'aiTyping';
-            typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
-            chatMsgs.appendChild(typingDiv);
-            scrollToBottom();
-
-            try {
-                const sysPrompt = getStoreContext();
-                const payload = {
-                    contents: [{ parts: [{ text: "Context: " + sysPrompt + "\\n\\nUser Says: " + input }] }]
-                };
-
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                const typEl = document.getElementById('aiTyping');
-                if (typEl) typEl.remove();
-
-                if (data.error) {
-                    addMessage("Maaf karna, mera API connection abhi work nahi kar raha. " + data.error.message, 'bot');
-                    return;
-                }
-
-                if (data.candidates && data.candidates.length > 0) {
-                    let aiText = data.candidates[0].content.parts[0].text;
-                    aiText = aiText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    aiText = aiText.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                    addMessage(aiText, 'bot');
-                }
-
-            } catch (e) {
-                const typEl = document.getElementById('aiTyping');
-                if (typEl) typEl.remove();
-                addMessage("Oops! Thoda network/connection issue ho gaya. Humari sabzi ekdum fresh hai, aur website smooth! (" + e.message + ")", 'bot');
-            }
+            // Default Friendly Response if no direct match
+            const defaultMsg = `🙏 **यादव स्टोर पर आपका स्वागत है!**<br>
+            आप हमसे किसी भी सब्जी (जैसे आलू, टमाटर, प्याज), फल (जैसे आम, सेब, तरबूज) या आइसक्रीम का लाइव रेट पूछ सकते हैं!<br><br>
+            <em>उदाहरण: "टमाटर का भाव बताओ" या "सब्जियों के रेट"</em>`;
+            addMessage(defaultMsg, 'bot', ["सब्जियों के रेट", "फलों के रेट", "आइसक्रीम रेट"]);
         }
 
         function handleUserInput(text = null) {
             const val = text || chatInput.value.trim();
+            if (!val) return;
+
+            if (!text) {
+                chatInput.value = '';
+            }
+
+            addMessage(val, 'user');
+
+            const existingChips = chatMsgs.querySelectorAll('.chat-quick-replies');
+            existingChips.forEach(c => c.remove());
+
+            setTimeout(() => {
+                processAiLogic(val);
+            }, 300);
+        }
+
+        chatSendBtn.addEventListener('click', () => handleUserInput());
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserInput();
+        });
+
+        let botInit = false;
+        window.toggleAIChatbot = function (openOnly = false) {
+            if (openOnly) {
+                chatWindow.classList.add('show');
+            } else {
+                chatWindow.classList.toggle('show');
+            }
+            if (chatWindow.classList.contains('show')) {
+                if (!botInit) {
+                    botInit = true;
+                    addMessage("Namaste 🙏 Yadav Store Live AI Rate Assistant पर आपका स्वागत है! आज आपको किसका भाव जानना है? 🥦🍎🍦", 'bot', ["सब्जियों के रेट", "फलों के रेट", "आइसक्रीम रेट"]);
+                }
+                setTimeout(() => chatInput.focus(), 300);
+            }
+        };
+
+        toggleBtn.addEventListener('click', () => window.toggleAIChatbot());
+        closeBtn.addEventListener('click', () => {
+            chatWindow.classList.remove('show');
+        });
+    })();t || chatInput.value.trim();
             if (!val) return;
 
             if (!text) {
