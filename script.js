@@ -629,31 +629,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.db) {
-        window.db.collection('products').get().then(snapshot => {
-            const mergedCatalog = new Map(window.CATALOG.map(item => [item.id || item.title, {
-                ...item,
-                category: window.normalizeCatalogCategory(item.category)
-            }]));
+        window.db.collection('products').onSnapshot(snapshot => {
+            const liveMap = new Map();
 
+            // 1. Insert ALL active Firestore Admin products FIRST
             snapshot.forEach(doc => {
-                const product = {
-                    ...doc.data(),
-                    id: doc.id
-                };
-                if (product.archived) {
-                    mergedCatalog.delete(product.id || product.title);
-                    return;
+                const liveData = doc.data();
+                const key = doc.id || liveData.id || liveData.title;
+                if (!liveData.archived) {
+                    const normCat = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(liveData.category || 'Vegetables') : (liveData.category || 'Vegetables');
+                    liveMap.set(key, {
+                        ...liveData,
+                        id: key,
+                        category: normCat
+                    });
                 }
-                product.category = window.normalizeCatalogCategory(product.category);
-                mergedCatalog.set(product.id || product.title, product);
             });
 
-            CATALOG = Array.from(mergedCatalog.values());
-            window.CATALOG = CATALOG;
+            // 2. Append default static catalog products ONLY if not already overridden by Firestore Admin
+            const defaultCatalog = Array.isArray(window.YADAV_CATALOG) && window.YADAV_CATALOG.length
+                ? window.YADAV_CATALOG
+                : (Array.isArray(window.CATALOG) ? window.CATALOG : []);
+
+            defaultCatalog.forEach(item => {
+                const key = item.id || item.title;
+                if (!liveMap.has(key)) {
+                    const normCat = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category;
+                    liveMap.set(key, {
+                        ...item,
+                        id: key,
+                        category: normCat
+                    });
+                }
+            });
+
+            const mergedList = Array.from(liveMap.values());
+            CATALOG = mergedList;
+            window.CATALOG = mergedList;
+            window.catalogProducts = mergedList;
+
+            // Update Quick Select Dropdown options with latest live Admin products
+            if (typeof window.populateQuickListProductDropdown === 'function') {
+                window.populateQuickListProductDropdown();
+            }
 
             refreshStorefrontCatalogViews();
-        }).catch(error => {
-            console.warn('Live products could not be loaded. Showing default catalog only.', error);
+        }, error => {
+            console.warn('Live products snapshot error. Showing local catalog.', error);
             refreshStorefrontCatalogViews();
         });
     }
@@ -2888,43 +2910,6 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         };
 
         toggleBtn.addEventListener('click', () => window.toggleAIChatbot());
-        closeBtn.addEventListener('click', () => {
-            chatWindow.classList.remove('show');
-        });
-    })();t || chatInput.value.trim();
-            if (!val) return;
-
-            if (!text) {
-                chatInput.value = '';
-            }
-
-            addMessage(val, 'user');
-
-            const existingChips = chatMsgs.querySelectorAll('.chat-quick-replies');
-            existingChips.forEach(c => c.remove());
-
-            setTimeout(() => {
-                processAiLogic(val);
-            }, 500); // 500ms delay to feel AI natural
-        }
-
-        chatSendBtn.addEventListener('click', () => handleUserInput());
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleUserInput();
-        });
-
-        let botInit = false;
-        toggleBtn.addEventListener('click', () => {
-            chatWindow.classList.toggle('show');
-            if (chatWindow.classList.contains('show')) {
-                if (!botInit) {
-                    botInit = true;
-                    addMessage("Namaste 🙏 Welcome to Yadav Veggies & Fruits! Aapko kya chahiye — fresh sabzi ya fruits? 😊", 'bot', ["Sabzi chahiye", "Fruits chahiye", "Order karna hai"]);
-                }
-                setTimeout(() => chatInput.focus(), 300);
-            }
-        });
-
         closeBtn.addEventListener('click', () => {
             chatWindow.classList.remove('show');
         });
