@@ -3468,3 +3468,166 @@ body.dark-mode .typing-indicator {
 body.dark-mode .btn-lg {
     font-size: 0.95rem !important;
 }
+
+/* ==========================================
+   QUICK LIST & SLIP UPLOAD FEATURE STYLES
+   ========================================== */
+.quick-list-modal .modal-dialog {
+    max-width: 780px;
+}
+
+.quick-list-modal .modal-content {
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.quick-list-modal .modal-header {
+    background: linear-gradient(135deg, #198754 0%, #11683f 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border: none;
+}
+
+.quick-list-nav .nav-link {
+    color: #495057;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-radius: 50rem;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+}
+
+.quick-list-nav .nav-link.active {
+    background: #198754 !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+}
+
+.quick-list-nav .nav-link:hover:not(.active) {
+    background: #e9f5ed;
+    color: #198754;
+}
+
+/* Upload Dropzone */
+.slip-upload-dropzone {
+    border: 2px dashed #198754;
+    background: #f8fdf9;
+    border-radius: 20px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slip-upload-dropzone:hover, .slip-upload-dropzone.dragover {
+    background: #e6f4ea;
+    border-color: #146c43;
+    transform: scale(1.01);
+}
+
+.slip-upload-dropzone i {
+    font-size: 3.2rem;
+    color: #198754;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+/* Weight Pill Selectors */
+.weight-pills-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+}
+
+.weight-pill-btn {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 50rem;
+    border: 1.5px solid #dee2e6;
+    background: #ffffff;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.weight-pill-btn:hover {
+    border-color: #198754;
+    color: #198754;
+    background: #f0fbf4;
+}
+
+.weight-pill-btn.active {
+    background: #198754 !important;
+    color: #ffffff !important;
+    border-color: #198754 !important;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+}
+
+.weight-pill-btn.pill-pcs {
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.weight-pill-btn.pill-pcs.active {
+    background: #ffc107 !important;
+    color: #000000 !important;
+    border-color: #ffc107 !important;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35);
+}
+
+/* Matched Card in Quick List */
+.quick-matched-item {
+    background: #ffffff;
+    border: 1.5px solid #e9ecef;
+    border-radius: 16px;
+    padding: 12px 16px;
+    transition: all 0.25s ease;
+}
+
+.quick-matched-item:hover {
+    border-color: #198754;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.quick-matched-item img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.quick-list-cta-btn {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    color: white;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 6px 18px rgba(25, 135, 84, 0.3);
+    transition: all 0.3s ease;
+}
+
+.quick-list-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(25, 135, 84, 0.4);
+    color: white;
+}
+
+/* Scanning Progress Bar */
+.ocr-progress-bar {
+    height: 8px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #198754, #20c997, #ffc107);
+    background-size: 200% 100%;
+    animation: ocrGradientMove 1.5s infinite linear;
+}
+
+@keyframes ocrGradientMove {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+}
+

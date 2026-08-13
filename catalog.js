@@ -7,6 +7,7 @@ const YADAV_CATALOG = [
     {
         id: 'v1',
         title: 'Fresh Red Tomatoes',
+        hindiTitle: 'लाल टमाटर',
         category: 'Vegetables',
         subCategory: 'Gourds & Squashes',
         price: 50,
@@ -15,11 +16,14 @@ const YADAV_CATALOG = [
         emoji: '🍅',
         rating: 4.5,
         badge: '-15%',
-        desc: 'Farm fresh red tomatoes rich in antioxidants.'
+        desc: 'Farm fresh red tomatoes rich in antioxidants.',
+        unitType: 'weight',
+        synonyms: ['tomato', 'tomatoes', 'tamatar', 'tamatarr', 'टमाटर', 'लाल टमाटर']
     },
     {
         id: 'v2',
         title: 'Premium Potatoes',
+        hindiTitle: 'आलू',
         category: 'Vegetables',
         subCategory: 'Root Vegetables',
         price: 30,
@@ -28,11 +32,14 @@ const YADAV_CATALOG = [
         emoji: '🥔',
         rating: 4,
         badge: '',
-        desc: 'High quality potatoes perfect for curries and fries.'
+        desc: 'High quality potatoes perfect for curries and fries.',
+        unitType: 'weight',
+        synonyms: ['potato', 'potatoes', 'aloo', 'aalu', 'alu', 'आलू']
     },
     {
         id: 'v3',
         title: 'Nashik Onions',
+        hindiTitle: 'प्याज़',
         category: 'Vegetables',
         subCategory: 'Onions & Potatoes',
         price: 35,
@@ -41,11 +48,14 @@ const YADAV_CATALOG = [
         emoji: '🧅',
         rating: 5,
         badge: 'Sale',
-        desc: 'Authentic Nashik red onions.'
+        desc: 'Authentic Nashik red onions.',
+        unitType: 'weight',
+        synonyms: ['onion', 'onions', 'pyaz', 'pyaaz', 'piaz', 'प्याज़', 'प्याज']
     },
     {
         id: 'v4',
         title: 'Orange Carrots',
+        hindiTitle: 'गाजर',
         category: 'Vegetables',
         subCategory: 'Root Vegetables',
         price: 50,
@@ -54,11 +64,14 @@ const YADAV_CATALOG = [
         emoji: '🥕',
         rating: 4.5,
         badge: '',
-        desc: 'Crunchy and sweet, excellent for juicing.'
+        desc: 'Crunchy and sweet, excellent for juicing.',
+        unitType: 'weight',
+        synonyms: ['carrot', 'carrots', 'gajar', 'gajjar', 'गाजर']
     },
     {
         id: 'v5',
         title: 'Organic Broccoli',
+        hindiTitle: 'ब्रोकोली',
         category: 'Vegetables',
         subCategory: 'Leafy Greens',
         price: 80,
@@ -67,11 +80,14 @@ const YADAV_CATALOG = [
         emoji: '🥦',
         rating: 4,
         badge: 'Fresh',
-        desc: 'Rich in vitamins, grown without chemicals.'
+        desc: 'Rich in vitamins, grown without chemicals.',
+        unitType: 'weight',
+        synonyms: ['broccoli', 'brocoli', 'gobhi', 'gobi', 'hari gobhi', 'ब्रोकोली', 'गोभी']
     },
     {
         id: 'v6',
         title: 'Fresh Spinach',
+        hindiTitle: 'पालक',
         category: 'Vegetables',
         subCategory: 'Leafy Greens',
         price: 20,
@@ -80,13 +96,144 @@ const YADAV_CATALOG = [
         emoji: '🥬',
         rating: 5,
         badge: '',
-        desc: 'Iron-rich, vibrant fresh spinach leaves.'
+        desc: 'Iron-rich, vibrant fresh spinach leaves.',
+        unitType: 'weight',
+        synonyms: ['spinach', 'palak', 'paalak', 'पालक']
+    },
+    {
+        id: 'v7',
+        title: 'Purple Brinjal (Eggplant)',
+        hindiTitle: 'बैंगन',
+        category: 'Vegetables',
+        subCategory: 'Gourds & Squashes',
+        price: 40,
+        originalPrice: 50,
+        image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🍆',
+        rating: 4.5,
+        badge: 'Fresh',
+        desc: 'Fresh glossy purple eggplant, ideal for bharta and curries.',
+        unitType: 'weight',
+        synonyms: ['brinjal', 'eggplant', 'baingan', 'baigan', 'baingun', 'बैंगन', 'बैगन']
+    },
+    {
+        id: 'v8',
+        title: 'Spicy Green Chillies',
+        hindiTitle: 'हरी मिर्च',
+        category: 'Vegetables',
+        subCategory: 'Leafy Greens',
+        price: 60,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1588879460618-924a0b63e9f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🌶️',
+        rating: 4.8,
+        badge: '',
+        desc: 'Hot and spicy fresh green chillies.',
+        unitType: 'weight',
+        synonyms: ['chilli', 'chillies', 'chili', 'mirch', 'mirchi', 'hari mirch', 'हरी मिर्च', 'मिर्च']
+    },
+    {
+        id: 'v9',
+        title: 'Fresh Ginger',
+        hindiTitle: 'अदरक',
+        category: 'Vegetables',
+        subCategory: 'Root Vegetables',
+        price: 120,
+        originalPrice: 140,
+        image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🫚',
+        rating: 4.6,
+        badge: '',
+        desc: 'Aromatic farm-fresh ginger root.',
+        unitType: 'weight',
+        synonyms: ['ginger', 'adrak', 'adarak', 'अदरक']
+    },
+    {
+        id: 'v10',
+        title: 'Desi Garlic',
+        hindiTitle: 'लहसुन',
+        category: 'Vegetables',
+        subCategory: 'Root Vegetables',
+        price: 180,
+        originalPrice: 200,
+        image: 'https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🧄',
+        rating: 4.7,
+        badge: '',
+        desc: 'Flavorful Indian garlic pods.',
+        unitType: 'weight',
+        synonyms: ['garlic', 'lahsun', 'lahson', 'lahasun', 'लहसुन']
+    },
+    {
+        id: 'v11',
+        title: 'Fresh Lady Finger (Bhindi)',
+        hindiTitle: 'भिंडी',
+        category: 'Vegetables',
+        subCategory: 'Gourds & Squashes',
+        price: 45,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1447175008436-084170c0e708?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🫛',
+        rating: 4.4,
+        badge: '',
+        desc: 'Tender green lady finger, perfect for dry curry.',
+        unitType: 'weight',
+        synonyms: ['lady finger', 'ladyfinger', 'okra', 'bhindi', 'bhindii', 'भिंडी']
+    },
+    {
+        id: 'v12',
+        title: 'Fresh Cucumber (Kheera)',
+        hindiTitle: 'खीरा',
+        category: 'Vegetables',
+        subCategory: 'Gourds & Squashes',
+        price: 30,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1447175008436-084170c0e708?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🥒',
+        rating: 4.5,
+        badge: '',
+        desc: 'Crisp hydrating cucumbers for salads.',
+        unitType: 'weight',
+        synonyms: ['cucumber', 'kheera', 'khira', 'खीरा']
+    },
+    {
+        id: 'v13',
+        title: 'Fresh Lemons (Nimbu)',
+        hindiTitle: 'नींबू',
+        category: 'Vegetables',
+        subCategory: 'Citrus',
+        price: 80,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1534531141161-e4160499e97c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🍋',
+        rating: 4.8,
+        badge: '',
+        desc: 'Juicy yellow lemons.',
+        unitType: 'pcs_or_weight',
+        synonyms: ['lemon', 'lemons', 'nimbu', 'neembu', 'नींबू', 'निंबू']
+    },
+    {
+        id: 'v14',
+        title: 'Fresh Bottle Gourd (Lauki)',
+        hindiTitle: 'लौकी',
+        category: 'Vegetables',
+        subCategory: 'Gourds & Squashes',
+        price: 35,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🥒',
+        rating: 4.3,
+        badge: '',
+        desc: 'Soft tender bottle gourd.',
+        unitType: 'pcs_or_weight',
+        synonyms: ['bottle gourd', 'gourd', 'lauki', 'loki', 'लौकी', 'घिया']
     },
 
     // --- FRESH FRUITS ---
     {
         id: 'f1',
         title: 'Kashmiri Apples',
+        hindiTitle: 'सेब',
         category: 'Fruits',
         subCategory: 'Everyday Fruits',
         price: 120,
@@ -95,11 +242,14 @@ const YADAV_CATALOG = [
         emoji: '🍎',
         rating: 5,
         badge: 'Top Rated',
-        desc: 'Sweet, crisp, and freshly harvested Kashmiri Apples.'
+        desc: 'Sweet, crisp, and freshly harvested Kashmiri Apples.',
+        unitType: 'weight',
+        synonyms: ['apple', 'apples', 'seb', 'sew', 'सेब', 'सेव']
     },
     {
         id: 'f2',
         title: 'Robusta Bananas',
+        hindiTitle: 'केला',
         category: 'Fruits',
         subCategory: 'Everyday Fruits',
         price: 40,
@@ -108,11 +258,14 @@ const YADAV_CATALOG = [
         emoji: '🍌',
         rating: 4.5,
         badge: '',
-        desc: 'Spotless, energy-packed Robusta Bananas.'
+        desc: 'Spotless, energy-packed Robusta Bananas.',
+        unitType: 'pcs_or_weight',
+        synonyms: ['banana', 'bananas', 'kela', 'kelae', 'केला', 'केले']
     },
     {
         id: 'f3',
         title: 'Nagpur Oranges',
+        hindiTitle: 'संतरा',
         category: 'Fruits',
         subCategory: 'Citrus',
         price: 80,
@@ -121,11 +274,14 @@ const YADAV_CATALOG = [
         emoji: '🍊',
         rating: 4,
         badge: 'Fresh',
-        desc: 'Juicy and tangy oranges straight from Nagpur.'
+        desc: 'Juicy and tangy oranges straight from Nagpur.',
+        unitType: 'weight',
+        synonyms: ['orange', 'oranges', 'santra', 'santara', 'संतरा', 'संतरे']
     },
     {
         id: 'f4',
         title: 'Alphonso Mangoes',
+        hindiTitle: 'आम',
         category: 'Fruits',
         subCategory: 'Tropical',
         price: 400,
@@ -134,11 +290,14 @@ const YADAV_CATALOG = [
         emoji: '🥭',
         rating: 5,
         badge: 'Premium',
-        desc: 'The King of Mangoes, pure Alphonso delight.'
+        desc: 'The King of Mangoes, pure Alphonso delight.',
+        unitType: 'weight',
+        synonyms: ['mango', 'mangoes', 'aam', 'आम']
     },
     {
         id: 'f5',
         title: 'Red Cherries',
+        hindiTitle: 'चेरी',
         category: 'Fruits',
         subCategory: 'Berries',
         price: 250,
@@ -147,23 +306,63 @@ const YADAV_CATALOG = [
         emoji: '🍒',
         rating: 4.5,
         badge: '',
-        desc: 'Sweet, imported premium red cherries.'
+        desc: 'Sweet, imported premium red cherries.',
+        unitType: 'weight',
+        synonyms: ['cherry', 'cherries', 'cheri', 'चेरी']
     },
     {
         id: 'f6',
-        title: 'Fresh Watermelon',
+        title: 'Fresh Watermelon (Tarbooz)',
+        hindiTitle: 'तरबूज',
         category: 'Fruits',
         subCategory: 'Everyday Fruits',
-        price: 25,
-        originalPrice: null,
+        price: 90,
+        originalPrice: 110,
         image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
         emoji: '🍉',
         rating: 4.8,
-        badge: 'Summer',
-        desc: 'Sweet and juicy watermelon, freshly sourced. Sold per piece (approx. 3–5 kg). Final price confirmed on actual weight after delivery.',
+        badge: 'Summer Special',
+        desc: 'Sweet and juicy watermelon. Sold per piece (approx. 3–5 kg per piece). Final price confirmed on actual weight after delivery.',
         isVariableWeight: true,
-        approxWeightRange: '3–5 kg',
-        pricePerKg: 25
+        unitType: 'pcs',
+        approxWeightRange: '3–5 kg per piece',
+        pricePerKg: 25,
+        synonyms: ['watermelon', 'tarbooz', 'tarbuj', 'tarbujh', 'तरबूज', 'तरबुज', 'water melon']
+    },
+    {
+        id: 'f7',
+        title: 'Ripe Papaya (Papeeta)',
+        hindiTitle: 'पपीता',
+        category: 'Fruits',
+        subCategory: 'Tropical',
+        price: 60,
+        originalPrice: null,
+        image: 'https://images.unsplash.com/photo-1517282009859-f000ec3b26fe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🪅',
+        rating: 4.6,
+        badge: '',
+        desc: 'Sweet digestion-friendly ripe papaya. Sold per piece (approx. 1.5–2.5 kg).',
+        isVariableWeight: true,
+        unitType: 'pcs',
+        approxWeightRange: '1.5–2.5 kg per piece',
+        pricePerKg: 35,
+        synonyms: ['papaya', 'papeeta', 'papita', 'पपीता']
+    },
+    {
+        id: 'f8',
+        title: 'Red Pomegranate (Anar)',
+        hindiTitle: 'अनार',
+        category: 'Fruits',
+        subCategory: 'Everyday Fruits',
+        price: 160,
+        originalPrice: 180,
+        image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
+        emoji: '🍎',
+        rating: 4.9,
+        badge: 'Health',
+        desc: 'Juicy ruby red pomegranates.',
+        unitType: 'weight',
+        synonyms: ['pomegranate', 'anar', 'anaar', 'अनार']
     },
 
     // --- ICE CREAMS ---
@@ -178,7 +377,9 @@ const YADAV_CATALOG = [
         emoji: '🍨',
         rating: 5,
         badge: 'Featured',
-        desc: 'Classic vanilla ice cream topped with sweet strawberry syrup and a cherry.'
+        desc: 'Classic vanilla ice cream topped with sweet strawberry syrup and a cherry.',
+        unitType: 'pcs',
+        synonyms: ['sundae', 'strawberry icecream', 'vanilla sundae']
     },
     {
         id: 'i1',
@@ -191,7 +392,9 @@ const YADAV_CATALOG = [
         emoji: '🍦',
         rating: 5,
         badge: '',
-        desc: 'Rich Belgian chocolate loaded with choconuts in a premium cup.'
+        desc: 'Rich Belgian chocolate loaded with choconuts in a premium cup.',
+        unitType: 'pcs',
+        synonyms: ['chocolate cup', 'belgian choconut', 'ice cream cup']
     },
     {
         id: 'i2',
@@ -204,7 +407,9 @@ const YADAV_CATALOG = [
         emoji: '🍨',
         rating: 4.5,
         badge: '',
-        desc: 'Authentic royal Raj Bhog flavor served as a rich creamy cup.'
+        desc: 'Authentic royal Raj Bhog flavor served as a rich creamy cup.',
+        unitType: 'pcs',
+        synonyms: ['rajbhog', 'raj bhog']
     },
     {
         id: 'i3',
@@ -217,7 +422,9 @@ const YADAV_CATALOG = [
         emoji: '🍧',
         rating: 5,
         badge: 'Bestseller',
-        desc: 'Delicious blueberry swirl layered with rich cheesecake ice cream.'
+        desc: 'Delicious blueberry swirl layered with rich cheesecake ice cream.',
+        unitType: 'pcs',
+        synonyms: ['blueberry', 'cheesecake ice cream']
     },
     {
         id: 'i4',
@@ -230,7 +437,9 @@ const YADAV_CATALOG = [
         emoji: '🍫',
         rating: 4.5,
         badge: '',
-        desc: 'Classic vanilla wrapped in a thick, crunchy chocolate layer.'
+        desc: 'Classic vanilla wrapped in a thick, crunchy chocolate layer.',
+        unitType: 'pcs',
+        synonyms: ['chocobar', 'choco bar']
     },
     {
         id: 'i5',
@@ -243,7 +452,9 @@ const YADAV_CATALOG = [
         emoji: '🎂',
         rating: 4.5,
         badge: 'Offer',
-        desc: 'A massive 1000ml Hazelnut Mudslide Ice-Cream Cake for celebrations!'
+        desc: 'A massive 1000ml Hazelnut Mudslide Ice-Cream Cake for celebrations!',
+        unitType: 'pcs',
+        synonyms: ['ice cream cake', 'hazelnut cake']
     },
     {
         id: 'i6',
@@ -256,10 +467,13 @@ const YADAV_CATALOG = [
         emoji: '🍦',
         rating: 5,
         badge: '',
-        desc: 'Dark crunchy cookie crumbles in a wonderful vanilla cone.'
+        desc: 'Dark crunchy cookie crumbles in a wonderful vanilla cone.',
+        unitType: 'pcs',
+        synonyms: ['cone', 'cookie cone', 'ice cream cone']
     }
 ];
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { YADAV_CATALOG };
 }
+
