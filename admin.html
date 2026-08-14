@@ -960,8 +960,14 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=70"></script>
+    <script src="script.js?v=80"></script>
     <script>
+        window.formatCurrency = function (amount) {
+            const val = Number(amount) || 0;
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(val);
+        };
+        var formatCurrency = window.formatCurrency;
+
         // Smart Calculator Logic
         function performCalc() {
             const orig = parseFloat(document.getElementById('calcOrig').value) || 0;

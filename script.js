@@ -1222,13 +1222,19 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = page;
             gridEl.innerHTML = '';
 
-            const currentCatalogList = window.CATALOG || window.catalogProducts || CATALOG || [];
+            const currentCatalogList = (Array.isArray(window.CATALOG) && window.CATALOG.length)
+                ? window.CATALOG
+                : ((Array.isArray(window.catalogProducts) && window.catalogProducts.length) ? window.catalogProducts : (CATALOG || []));
+
+            const normalizedPageCategory = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(pageMainCategory) : pageMainCategory;
+
             let filteredList = currentCatalogList.filter(p => normalizedPageCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedPageCategory);
 
             if (searchQuery) {
                 const searchStr = searchQuery.toLowerCase();
+                const normalizedSearchCategory = window.normalizeCatalogCategory ? window.normalizeCatalogCategory(searchCat || 'All') : (searchCat || 'All');
                 filteredList = filteredList.filter(p => {
-                    const matchQ = p.title.toLowerCase().includes(searchStr) ||
+                    const matchQ = (p.title || '').toLowerCase().includes(searchStr) ||
                         window.normalizeCatalogCategory(p.category).toLowerCase().includes(searchStr) ||
                         (p.desc && p.desc.toLowerCase().includes(searchStr));
                     const matchC = normalizedSearchCategory === 'All' || window.normalizeCatalogCategory(p.category) === normalizedSearchCategory;
