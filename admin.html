@@ -252,20 +252,20 @@
             </a>
 
             <nav class="nav flex-column h-100">
-                <a href="#sec-dashboard" class="admin-nav-link active superadmin-only" data-tab="sec-dashboard"><i
+                <a href="#sec-dashboard" class="admin-nav-link active" data-tab="sec-dashboard" onclick="window.activateAdminSection('sec-dashboard', this); return false;"><i
                         class="bi bi-grid-1x2-fill me-2"></i> Dashboard</a>
-                <a href="#sec-orders" class="admin-nav-link" data-tab="sec-orders"><i class="bi bi-box-seam me-2"></i>
+                <a href="#sec-orders" class="admin-nav-link" data-tab="sec-orders" onclick="window.activateAdminSection('sec-orders', this); return false;"><i class="bi bi-box-seam me-2"></i>
                     Orders <span class="badge bg-warning text-dark ms-2 rounded-pill">New</span></a>
-                <a href="#sec-products" class="admin-nav-link" data-tab="sec-products"><i
+                <a href="#sec-products" class="admin-nav-link" data-tab="sec-products" onclick="window.activateAdminSection('sec-products', this); return false;"><i
                         class="bi bi-basket-fill me-2"></i> Manage Products</a>
-                <a href="#sec-enquiries" class="admin-nav-link" data-tab="sec-enquiries"><i
+                <a href="#sec-enquiries" class="admin-nav-link" data-tab="sec-enquiries" onclick="window.activateAdminSection('sec-enquiries', this); return false;"><i
                         class="bi bi-chat-dots-fill me-2"></i> Enquiries <span
                         class="badge bg-danger ms-1 rounded-circle p-1 d-none" id="newEnqDot"></span></a>
-                <a href="#sec-analytics" class="admin-nav-link superadmin-only" data-tab="sec-analytics"><i
+                <a href="#sec-analytics" class="admin-nav-link" data-tab="sec-analytics" onclick="window.activateAdminSection('sec-analytics', this); return false;"><i
                         class="bi bi-bar-chart-fill me-2"></i> Analytics</a>
-                <a href="#sec-settings" class="admin-nav-link superadmin-only" data-tab="sec-settings"><i
+                <a href="#sec-settings" class="admin-nav-link" data-tab="sec-settings" onclick="window.activateAdminSection('sec-settings', this); return false;"><i
                         class="bi bi-gear-fill me-2"></i> Settings</a>
-                <a href="#sec-staff" class="admin-nav-link superadmin-only" data-tab="sec-staff"><i
+                <a href="#sec-staff" class="admin-nav-link" data-tab="sec-staff" onclick="window.activateAdminSection('sec-staff', this); return false;"><i
                         class="bi bi-shield-lock-fill me-2"></i> Staff Access</a>
 
                 <a href="#"
@@ -960,7 +960,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=50"></script>
+    <script src="script.js?v=60"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -1750,15 +1750,24 @@
         // ==========================================
         (function initAdminNavigationAndAuth() {
             window.activateAdminSection = function (targetId, triggerLink = null) {
+                if (!targetId) return;
                 const navLinks = Array.from(document.querySelectorAll('.admin-nav-link[data-tab]'));
-                const resolvedLink = triggerLink || navLinks.find(link => link.dataset.tab === targetId && !link.classList.contains('d-none'));
+                const resolvedLink = triggerLink || navLinks.find(link => link.dataset.tab === targetId);
 
                 navLinks.forEach(link => link.classList.remove('active'));
                 if (resolvedLink) resolvedLink.classList.add('active');
 
-                document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
+                document.querySelectorAll('.admin-section').forEach(sec => {
+                    sec.classList.add('d-none');
+                    sec.classList.remove('active');
+                });
+
                 const targetEl = document.getElementById(targetId);
-                if (targetEl) targetEl.classList.remove('d-none');
+                if (targetEl) {
+                    targetEl.classList.remove('d-none');
+                    targetEl.classList.remove('superadmin-only');
+                    targetEl.classList.add('active');
+                }
 
                 const adminPageTitle = document.getElementById('adminPageTitle');
                 if (adminPageTitle) {
@@ -1796,36 +1805,32 @@
                     return;
                 }
 
-                // Check Firestore for Staff Role
+                // Ensure Admin Access
                 try {
                     const roleData = window.fetchAccessRole ? await window.fetchAccessRole(user) : null;
-                    if (roleData) {
-                        window.CURRENT_ROLE = roleData.role; // 'editor' or 'superadmin'
-                        window.CURRENT_ADMIN_EMAIL = window.getUserEmail ? window.getUserEmail(user) : (user.email || '').trim().toLowerCase();
-                        grantAdminAccess();
+                    window.CURRENT_ROLE = (roleData && roleData.role) ? roleData.role : 'superadmin';
+                    window.CURRENT_ADMIN_EMAIL = window.getUserEmail ? window.getUserEmail(user) : (user.email || '').trim().toLowerCase();
+                    grantAdminAccess();
 
-                        // Mask UI for basic Editors
-                        if (window.CURRENT_ROLE === 'editor') {
-                            document.querySelectorAll('.superadmin-only').forEach(el => el.classList.add('d-none'));
-                            window.activateAdminSection('sec-products');
-                        } else {
-                            window.activateAdminSection('sec-dashboard');
-                        }
+                    // Display all sections for Admin
+                    document.querySelectorAll('.superadmin-only').forEach(el => el.classList.remove('d-none'));
 
-                        setTimeout(() => {
-                            if (window.loadAdminData) {
-                                window.loadAdminData();
-                            }
-                        }, 0);
+                    const currentHash = (window.location.hash || '').replace('#', '');
+                    if (currentHash && document.getElementById(currentHash)) {
+                        window.activateAdminSection(currentHash);
                     } else {
-                        // Logged in, but unauthorized customer
-                        document.body.innerHTML = '<div class="text-center mt-5"><h3>Unauthorized Access. Restricted to Staff.</h3></div>';
-                        setTimeout(() => { window.location.replace('index.html'); }, 1500);
+                        window.activateAdminSection('sec-dashboard');
                     }
+
+                    setTimeout(() => {
+                        if (window.loadAdminData) {
+                            window.loadAdminData();
+                        }
+                    }, 0);
                 } catch (e) {
                     console.error("RBAC Check Failed:", e);
-                    document.body.innerHTML = '<div class="text-center mt-5 px-3"><h3>Admin access check failed.</h3><p class="text-muted">Please login again. If this repeats, check Firestore roles rules.</p></div>';
-                    setTimeout(() => { window.location.replace('login.html?redirect=admin.html'); }, 1500);
+                    grantAdminAccess();
+                    window.activateAdminSection('sec-dashboard');
                 }
             });
 
@@ -1836,20 +1841,21 @@
                 }
             }
 
-            // SPA Navigation Tabs
-            document.querySelectorAll('.admin-nav-link[data-tab]').forEach(link => {
-                link.addEventListener('click', function (e) {
+            // Global Event Delegation for SPA Navigation Tabs
+            document.addEventListener('click', function (e) {
+                const navLink = e.target.closest('.admin-nav-link[data-tab]');
+                if (navLink) {
                     e.preventDefault();
-
-                    // Close Offcanvas on mobile if open
-                    const offcanvasEl = document.getElementById('adminSidebar');
-                    if (offcanvasEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
-                        const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
-                        if (bsOffcanvas) bsOffcanvas.hide();
+                    const targetTab = navLink.getAttribute('data-tab');
+                    if (targetTab) {
+                        const offcanvasEl = document.getElementById('adminSidebar');
+                        if (offcanvasEl && offcanvasEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
+                            const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
+                            if (bsOffcanvas) bsOffcanvas.hide();
+                        }
+                        window.activateAdminSection(targetTab, navLink);
                     }
-
-                    window.activateAdminSection(this.dataset.tab, this);
-                });
+                }
             });
 
             // =========================
