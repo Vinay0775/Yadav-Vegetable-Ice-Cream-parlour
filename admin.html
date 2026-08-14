@@ -520,9 +520,14 @@
                         class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2 text-primary"></i> Manage Live Catalog
                         </h5>
-                        <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm"
-                            onclick="document.getElementById('adminAddProductForm').scrollIntoView({behavior:'smooth'})"><i
-                                class="bi bi-plus-lg me-1"></i> Add New</button>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success rounded-pill px-3 shadow-sm me-2" onclick="window.seedProductsToFirebase()">
+                                <i class="bi bi-cloud-upload-fill me-1"></i> Sync/Seed All Products to Firebase
+                            </button>
+                            <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm"
+                                onclick="document.getElementById('adminAddProductForm').scrollIntoView({behavior:'smooth'})"><i
+                                    class="bi bi-plus-lg me-1"></i> Add New</button>
+                        </div>
                     </div>
                     <div class="px-4 pt-4">
                         <div class="input-group search-bar admin-product-search-bar">
@@ -955,7 +960,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="catalog.js"></script>
-    <script src="script.js?v=40"></script>
+    <script src="script.js?v=50"></script>
     <script>
         // Smart Calculator Logic
         function performCalc() {
@@ -1572,6 +1577,51 @@
                 btn.disabled = false;
             }
         }
+
+        window.seedProductsToFirebase = async function () {
+            if (!window.db) {
+                alert('Firebase Firestore is not initialized.');
+                return;
+            }
+            const confirmSeed = confirm('Do you want to upload/sync all default products directly into Firebase Firestore?');
+            if (!confirmSeed) return;
+
+            const catalog = Array.isArray(window.YADAV_CATALOG) ? window.YADAV_CATALOG : (window.CATALOG || []);
+            let successCount = 0;
+
+            try {
+                for (const item of catalog) {
+                    const docId = item.id || item.title;
+                    await window.db.collection('products').doc(docId).set({
+                        id: docId,
+                        title: item.title,
+                        hindiTitle: item.hindiTitle || '',
+                        category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category,
+                        subCategory: item.subCategory || '',
+                        price: Number(item.price) || 0,
+                        originalPrice: item.originalPrice ? Number(item.originalPrice) : null,
+                        image: item.image || '',
+                        emoji: item.emoji || '📦',
+                        rating: Number(item.rating) || 5,
+                        badge: item.badge || '',
+                        desc: item.desc || '',
+                        unitType: item.unitType || 'weight',
+                        synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
+                        archived: false,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    successCount++;
+                }
+
+                if (window.showToast) window.showToast('Firebase Seed Success', `${successCount} products synced to Firebase Firestore!`);
+                else alert(`${successCount} products synced to Firebase Firestore!`);
+
+                await window.loadAdminCatalog();
+            } catch (err) {
+                console.error('Firebase Seed Error:', err);
+                alert('Error seeding products to Firebase: ' + err.message);
+            }
+        };
 
         // Live CMS Catalog Loading
         window.loadAdminCatalog = async () => {
