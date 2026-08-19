@@ -3808,93 +3808,125 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
     // --- 3. ADMIN SECTION SWITCHING & NAVIGATION ---
     window.activateAdminSection = function (sectionId, navLinkEl) {
+        if (!sectionId) return;
+
+        // 1. Hide all sections directly
         document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.style.display = 'none';
             sec.classList.add('d-none');
             sec.classList.remove('active');
         });
+
+        // 2. Display target section directly
         const targetSec = document.getElementById(sectionId);
         if (targetSec) {
+            targetSec.style.display = 'block';
             targetSec.classList.remove('d-none');
             targetSec.classList.add('active');
+        } else {
+            return;
         }
 
+        // 3. Keep URL hash updated
         if (window.location.hash !== '#' + sectionId) {
             try { window.history.replaceState(null, null, '#' + sectionId); } catch (e) { }
         }
 
+        // 4. Update sidebar link active highlights
         document.querySelectorAll('.admin-nav-link').forEach(link => link.classList.remove('active'));
         if (navLinkEl) {
             navLinkEl.classList.add('active');
         } else {
-            const foundLink = document.querySelector(`.admin-nav-link[data-tab="${sectionId}"]`);
+            const foundLink = document.querySelector(`.admin-nav-link[data-tab="${sectionId}"], .admin-nav-link[href="#${sectionId}"]`);
             if (foundLink) foundLink.classList.add('active');
         }
 
-        // Close mobile offcanvas sidebar if open
-        const sidebarEl = document.getElementById('adminSidebar');
-        if (sidebarEl && window.bootstrap) {
-            const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
-            if (bsOffcanvas) bsOffcanvas.hide();
+        // 5. Close mobile offcanvas ONLY on small screens (<768px)
+        if (window.innerWidth < 768) {
+            const sidebarEl = document.getElementById('adminSidebar');
+            if (sidebarEl && window.bootstrap) {
+                try {
+                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+                    if (bsOffcanvas) bsOffcanvas.hide();
+                } catch (e) { }
+            }
         }
 
-        // Render section content dynamically
-        switch (sectionId) {
-            case 'sec-dashboard':
-                window.renderDashboardOverview();
-                break;
-            case 'sec-orders':
-                window.renderOrdersTable();
-                break;
-            case 'sec-order-packing':
-                window.renderPackingQueue();
-                break;
-            case 'sec-products':
-                window.renderProductsTable();
-                break;
-            case 'sec-inventory':
-                window.renderInventoryOverview();
-                break;
-            case 'sec-customers':
-                window.renderCustomersTable();
-                break;
-            case 'sec-marketing':
-                window.renderMarketingOverview();
-                break;
-            case 'sec-delivery':
-                window.renderDeliveryZones();
-                break;
-            case 'sec-payments':
-                window.renderPaymentStats();
-                break;
-            case 'sec-analytics':
-                window.renderBusinessAnalytics();
-                break;
-            case 'sec-website-theme':
-                const ann = JSON.parse(localStorage.getItem('yadav_announcement') || '{}');
-                if (document.getElementById('announcementEnabled')) document.getElementById('announcementEnabled').checked = ann.enabled !== false;
-                if (document.getElementById('announcementText')) document.getElementById('announcementText').value = ann.text || '🔥 Special Offer: Flat ₹50 OFF on orders above ₹299! Use Code FRESH50';
-                if (document.getElementById('announcementBgColor')) document.getElementById('announcementBgColor').value = ann.bgColor || '#ffc107';
-                if (document.getElementById('announcementTextColor')) document.getElementById('announcementTextColor').value = ann.textColor || '#212529';
-                break;
-            case 'sec-cms':
-                if (typeof window.loadCmsPageContent === 'function') window.loadCmsPageContent('about_us');
-                break;
-            case 'sec-support':
-                window.renderSupportInbox();
-                break;
-            case 'sec-search-cart':
-                window.renderSearchAndCartAnalytics();
-                break;
-            case 'sec-staff':
-                window.renderStaffAccountsTable();
-                break;
-            case 'sec-settings':
-                window.renderStockAuditLogs();
-                break;
+        // 6. Safely render section contents
+        try {
+            switch (sectionId) {
+                case 'sec-dashboard':
+                    if (typeof window.renderDashboardOverview === 'function') window.renderDashboardOverview();
+                    break;
+                case 'sec-orders':
+                    if (typeof window.renderOrdersTable === 'function') window.renderOrdersTable();
+                    break;
+                case 'sec-order-packing':
+                    if (typeof window.renderPackingQueue === 'function') window.renderPackingQueue();
+                    break;
+                case 'sec-products':
+                    if (typeof window.renderProductsTable === 'function') window.renderProductsTable();
+                    break;
+                case 'sec-inventory':
+                    if (typeof window.renderInventoryOverview === 'function') window.renderInventoryOverview();
+                    break;
+                case 'sec-customers':
+                    if (typeof window.renderCustomersTable === 'function') window.renderCustomersTable();
+                    break;
+                case 'sec-marketing':
+                    if (typeof window.renderMarketingOverview === 'function') window.renderMarketingOverview();
+                    break;
+                case 'sec-delivery':
+                    if (typeof window.renderDeliveryZones === 'function') window.renderDeliveryZones();
+                    break;
+                case 'sec-payments':
+                    if (typeof window.renderPaymentStats === 'function') window.renderPaymentStats();
+                    break;
+                case 'sec-analytics':
+                    if (typeof window.renderBusinessAnalytics === 'function') window.renderBusinessAnalytics();
+                    break;
+                case 'sec-website-theme':
+                    const ann = JSON.parse(localStorage.getItem('yadav_announcement') || '{}');
+                    if (document.getElementById('announcementEnabled')) document.getElementById('announcementEnabled').checked = ann.enabled !== false;
+                    if (document.getElementById('announcementText')) document.getElementById('announcementText').value = ann.text || '🔥 Special Offer: Flat ₹50 OFF on orders above ₹299! Use Code FRESH50';
+                    if (document.getElementById('announcementBgColor')) document.getElementById('announcementBgColor').value = ann.bgColor || '#ffc107';
+                    if (document.getElementById('announcementTextColor')) document.getElementById('announcementTextColor').value = ann.textColor || '#212529';
+                    break;
+                case 'sec-cms':
+                    if (typeof window.loadCmsPageContent === 'function') window.loadCmsPageContent('about_us');
+                    break;
+                case 'sec-support':
+                    if (typeof window.renderSupportInbox === 'function') window.renderSupportInbox();
+                    break;
+                case 'sec-search-cart':
+                    if (typeof window.renderSearchAndCartAnalytics === 'function') window.renderSearchAndCartAnalytics();
+                    break;
+                case 'sec-staff':
+                    if (typeof window.renderStaffAccountsTable === 'function') window.renderStaffAccountsTable();
+                    break;
+                case 'sec-settings':
+                    if (typeof window.renderStockAuditLogs === 'function') window.renderStockAuditLogs();
+                    break;
+            }
+        } catch (err) {
+            console.warn('Section render notice:', err);
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    // Attach global click listener for any sidebar link to guarantee section navigation works 100%
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('.admin-nav-link');
+        if (link) {
+            const href = link.getAttribute('href') || '';
+            const tab = link.getAttribute('data-tab') || (href.startsWith('#') ? href.substring(1) : '');
+            if (tab && tab.startsWith('sec-')) {
+                e.preventDefault();
+                window.activateAdminSection(tab, link);
+            }
+        }
+    });
 
     window.renderStaffAccountsTable = function () {
         const tbody = document.getElementById('staffAccountsTableBody');
