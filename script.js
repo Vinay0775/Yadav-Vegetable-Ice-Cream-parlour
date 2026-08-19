@@ -316,8 +316,8 @@ if (window.db) {
             }
 
             // Apply Maintenance Mode
-            // if maintenanceMode == true and not on admin.html
-            const isAdminPage = window.location.pathname.includes('admin.html');
+            // if maintenanceMode == true and not on admin page
+            const isAdminPage = window.location.pathname.toLowerCase().includes('admin');
             if (data.maintenanceMode && !isAdminPage) {
                 // Must be Superadmin or Staff to bypass
                 const checkBypass = async () => {
@@ -531,7 +531,7 @@ function attachGlobalSettingsListener() {
             upiIdSection.style.display = (data.showUpiId === false) ? 'none' : 'block';
         }
 
-        const isAdminPage = window.location.pathname.includes('admin.html');
+        const isAdminPage = window.location.pathname.toLowerCase().includes('admin');
         if (data.maintenanceMode && !isAdminPage) {
             const checkBypass = async () => {
                 const currentUser = window.auth.currentUser;
@@ -586,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply Live Storefront Settings (Announcement bar, Theme, Maintenance Mode, Catalog Sync)
     function applyLiveStorefrontSettings() {
-        const isAdminPage = window.location.pathname.includes('admin.html');
+        const isAdminPage = window.location.pathname.toLowerCase().includes('admin');
 
         // 1. Maintenance Mode Check
         if (localStorage.getItem('yadav_maintenance_mode') === 'true' && !isAdminPage) {
@@ -3812,6 +3812,10 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             targetSec.classList.add('active');
         }
 
+        if (window.location.hash !== '#' + sectionId) {
+            try { window.history.replaceState(null, null, '#' + sectionId); } catch (e) { }
+        }
+
         document.querySelectorAll('.admin-nav-link').forEach(link => link.classList.remove('active'));
         if (navLinkEl) {
             navLinkEl.classList.add('active');
@@ -4988,11 +4992,25 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         window.showAdminToast('Staff Added', `Staff account for ${name} created.`);
     };
 
-    // DOM Ready initialization for Admin Control Center
-    document.addEventListener('DOMContentLoaded', () => {
-        if (document.body.classList.contains('admin-dashboard')) {
-            window.renderDashboardOverview();
+    // DOM Ready initialization & Hash Router for Admin Control Center
+    function handleAdminInitialRoute() {
+        if (!document.body.classList.contains('admin-dashboard')) return;
+
+        const rawHash = (window.location.hash || '').replace('#', '').trim();
+        const hash = rawHash || 'sec-dashboard';
+        if (document.getElementById(hash)) {
+            window.activateAdminSection(hash);
+        } else {
+            window.activateAdminSection('sec-dashboard');
         }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        handleAdminInitialRoute();
+    });
+
+    window.addEventListener('hashchange', () => {
+        handleAdminInitialRoute();
     });
 
 })();
