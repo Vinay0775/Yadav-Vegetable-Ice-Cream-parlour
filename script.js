@@ -3802,7 +3802,10 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
     // --- 3. ADMIN SECTION SWITCHING & NAVIGATION ---
     window.activateAdminSection = function (sectionId, navLinkEl) {
-        document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
+        document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.classList.add('d-none');
+            sec.classList.remove('active');
+        });
         const targetSec = document.getElementById(sectionId);
         if (targetSec) {
             targetSec.classList.remove('d-none');
@@ -3815,6 +3818,13 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         } else {
             const foundLink = document.querySelector(`.admin-nav-link[data-tab="${sectionId}"]`);
             if (foundLink) foundLink.classList.add('active');
+        }
+
+        // Close mobile offcanvas sidebar if open
+        const sidebarEl = document.getElementById('adminSidebar');
+        if (sidebarEl && window.bootstrap) {
+            const bsOffcanvas = bootstrap.Offcanvas.getInstance(sidebarEl);
+            if (bsOffcanvas) bsOffcanvas.hide();
         }
 
         // Render section content dynamically
@@ -3849,11 +3859,24 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             case 'sec-analytics':
                 window.renderBusinessAnalytics();
                 break;
+            case 'sec-website-theme':
+                const ann = JSON.parse(localStorage.getItem('yadav_announcement') || '{}');
+                if (document.getElementById('announcementEnabled')) document.getElementById('announcementEnabled').checked = ann.enabled !== false;
+                if (document.getElementById('announcementText')) document.getElementById('announcementText').value = ann.text || '🔥 Special Offer: Flat ₹50 OFF on orders above ₹299! Use Code FRESH50';
+                if (document.getElementById('announcementBgColor')) document.getElementById('announcementBgColor').value = ann.bgColor || '#ffc107';
+                if (document.getElementById('announcementTextColor')) document.getElementById('announcementTextColor').value = ann.textColor || '#212529';
+                break;
+            case 'sec-cms':
+                if (typeof window.loadCmsPageContent === 'function') window.loadCmsPageContent('about_us');
+                break;
             case 'sec-support':
                 window.renderSupportInbox();
                 break;
             case 'sec-search-cart':
                 window.renderSearchAndCartAnalytics();
+                break;
+            case 'sec-staff':
+                window.renderStaffAccountsTable();
                 break;
             case 'sec-settings':
                 window.renderStockAuditLogs();
@@ -3861,6 +3884,26 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.renderStaffAccountsTable = function () {
+        const tbody = document.getElementById('staffAccountsTableBody');
+        if (!tbody) return;
+
+        const staff = getStored('yadav_staff_accounts', [
+            { id: 'STAFF-1', name: 'Hemant Yadav', email: 'hyadav1317@gmail.com', role: 'Super Admin', status: 'Active' },
+            { id: 'STAFF-2', name: 'Ramesh Kumar', email: 'ramesh@yadavstore.com', role: 'Order Manager', status: 'Active' }
+        ]);
+
+        tbody.innerHTML = staff.map(s => `
+            <tr>
+                <td><span class="fw-bold">${s.name}</span></td>
+                <td>${s.email}</td>
+                <td><span class="badge bg-primary-subtle text-primary">${s.role}</span></td>
+                <td><span class="badge bg-success-subtle text-success">${s.status}</span></td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="alert('Staff accounts managed by Super Admin')">Remove</button></td>
+            </tr>
+        `).join('');
     };
 
     // --- 4. DASHBOARD METRICS & CHARTS ENGINE ---
