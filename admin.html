@@ -39,74 +39,152 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling */
+        /* Modern Techy Sidebar Styling */
         .admin-sidebar {
-            background-color: var(--admin-sidebar-bg);
+            background: linear-gradient(180deg, #080d1a 0%, #0f172a 50%, #060912 100%) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 6px 0 30px rgba(2, 6, 23, 0.5) !important;
+            width: 280px !important;
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s ease !important;
+        }
+
+        .admin-sidebar.collapsed {
+            width: 80px !important;
         }
 
         .admin-sidebar .brand-title {
             font-size: 1.25rem;
             letter-spacing: 0.5px;
-        }
-
-        .sidebar-category-header {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #94a3b8;
-            margin-top: 1.2rem;
-            margin-bottom: 0.4rem;
-            padding-left: 0.75rem;
+            background: linear-gradient(135deg, #ffffff 0%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             font-weight: 700;
         }
 
+        .admin-sidebar .brand-badge {
+            font-size: 0.65rem;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(6, 182, 212, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .admin-sidebar .sidebar-user-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 10px 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .admin-sidebar .sidebar-user-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .pulse-online-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .sidebar-category-header {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            color: #38bdf8 !important;
+            margin-top: 1.3rem;
+            margin-bottom: 0.45rem;
+            padding-left: 0.85rem;
+            font-weight: 800;
+            font-family: monospace;
+            opacity: 0.85;
+        }
+
         .admin-nav-link {
-            color: #cbd5e1;
+            color: #94a3b8 !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 12px;
+            padding: 9px 14px;
             text-decoration: none;
-            border-radius: 8px;
-            font-size: 0.88rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
             font-weight: 500;
-            margin-bottom: 3px;
-            transition: background 0.2s ease, color 0.2s ease;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
-        .admin-nav-link:hover,
+        .admin-nav-link .bi {
+            font-size: 1.05rem;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .admin-nav-link:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #f8fafc !important;
+            border-left-color: #38bdf8 !important;
+            transform: translateX(4px);
+        }
+
+        .admin-nav-link:hover .bi {
+            color: #38bdf8 !important;
+            transform: scale(1.12);
+        }
+
         .admin-nav-link.active {
-            background-color: var(--admin-sidebar-hover);
-            color: #ffffff;
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.22) 0%, rgba(6, 182, 212, 0.08) 100%) !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            border-left: 3px solid #10b981 !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15) !important;
         }
 
-        .admin-nav-link.active {
-            background-color: var(--admin-accent);
-            color: #ffffff;
-            font-weight: 600;
+        .admin-nav-link.active .bi {
+            color: #34d399 !important;
+            filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.6));
         }
 
-        .admin-sub-nav {
-            padding-left: 1.2rem;
-            margin-bottom: 0.5rem;
+        /* Techy Glow Notification Badges */
+        .admin-sidebar .badge.bg-danger {
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.6) !important;
         }
 
-        .admin-sub-link {
-            color: #94a3b8;
-            display: block;
-            padding: 5px 10px;
-            font-size: 0.82rem;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: color 0.2s, background 0.2s;
+        .admin-sidebar .badge.bg-warning {
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.6) !important;
         }
 
-        .admin-sub-link:hover,
-        .admin-sub-link.active {
-            color: #34d399;
-            background: rgba(255, 255, 255, 0.05);
+        /* Sleek Tech Scrollbar */
+        .admin-sidebar nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+        .admin-sidebar nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.4);
         }
 
         /* Topbar Styling */
@@ -124,6 +202,10 @@
             font-size: 0.875rem;
             transition: all 0.2s ease;
         }
+
+        /* Admin badge and name contrast fixes */
+        #adminSidebarName { color: #ffffff !important; }
+        #adminSidebarRole { color: #bbf7d0 !important; font-weight:700; }
 
         .admin-search-input:focus {
             background-color: #ffffff;
@@ -297,53 +379,69 @@
     <div class="d-flex flex-column flex-md-row min-vh-100">
 
         <!-- Sidebar Navigation -->
-        <div class="admin-sidebar text-white p-3 offcanvas-md offcanvas-start shadow" id="adminSidebar" style="width: 270px; z-index: 1045;">
-            <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+        <div class="admin-sidebar text-white p-3 offcanvas-md offcanvas-start shadow" id="adminSidebar" style="z-index: 1045;">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25">
                 <a href="index.html" class="text-decoration-none text-white d-flex align-items-center gap-2">
-                    <img src="assets/fav-icon.png" width="32" height="32" class="rounded" alt="Logo">
-                    <span class="fw-bold brand-title">Yadav <span class="text-success">Admin</span></span>
+                    <div class="p-1 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 d-flex align-items-center justify-content-center">
+                        <img src="assets/fav-icon.png" width="28" height="28" class="rounded" alt="Logo">
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold brand-title">Yadav Store</span>
+                            <span class="brand-badge">v2.4 PRO</span>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.65rem; font-family: monospace; letter-spacing: 0.5px;">CONTROL CENTER</div>
+                    </div>
                 </a>
-                <button type="button" class="btn-close btn-close-white d-md-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <button id="adminSidebarCollapseBtn" class="btn btn-sm btn-outline-secondary d-none d-md-inline-flex" title="Collapse sidebar"><i class="bi bi-chevron-left"></i></button>
+                    <button type="button" class="btn-close btn-close-white d-md-none" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar"></button>
+                </div>
             </div>
 
-            <!-- Role Badge -->
-            <div class="bg-dark bg-opacity-50 rounded-3 p-2 mb-3 d-flex align-items-center gap-2 border border-secondary border-opacity-25">
-                <img src="https://ui-avatars.com/api/?name=Super+Admin&background=10b981&color=fff" class="rounded-circle" width="36" height="36" id="adminSidebarAvatar">
-                <div class="lh-1 overflow-hidden">
-                    <div class="fw-bold small text-truncate" id="adminSidebarName">Hemant Yadav</div>
-                    <small class="text-success text-uppercase fs-7 fw-semibold" id="adminSidebarRole">Super Admin</small>
+            <!-- Modern Glass Role Card -->
+            <div class="sidebar-user-card mb-3 d-flex align-items-center gap-2">
+                <div class="position-relative">
+                    <img src="https://ui-avatars.com/api/?name=Super+Admin&background=10b981&color=fff" class="rounded-circle border border-success border-opacity-50" width="38" height="38" id="adminSidebarAvatar">
+                </div>
+                <div class="lh-sm overflow-hidden flex-grow-1">
+                    <div class="fw-bold text-white small text-truncate" id="adminSidebarName">Hemant Yadav</div>
+                    <div class="d-flex align-items-center gap-1 mt-1">
+                        <span class="pulse-online-dot"></span>
+                        <span class="text-emerald fw-bold text-uppercase" style="font-size: 0.68rem; color: #34d399; letter-spacing: 0.5px;" id="adminSidebarRole">SUPER ADMIN</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Nav Items -->
-            <nav class="nav flex-column overflow-y-auto" style="max-height: calc(100vh - 160px);">
+            <nav class="nav flex-column overflow-y-auto pe-1" style="max-height: calc(100vh - 170px);">
                 
-                <div class="sidebar-category-header">Core</div>
+                <div class="sidebar-category-header">// CORE SYSTEM</div>
                 <a href="#sec-dashboard" class="admin-nav-link active" data-tab="sec-dashboard" onclick="window.activateAdminSection('sec-dashboard', this); return false;">
                     <span><i class="bi bi-speedometer2 me-2"></i> Dashboard</span>
                 </a>
 
-                <div class="sidebar-category-header">Sales & Operations</div>
+                <div class="sidebar-category-header">// OPERATIONS & CATALOG</div>
                 <a href="#sec-orders" class="admin-nav-link" data-tab="sec-orders" onclick="window.activateAdminSection('sec-orders', this); return false;">
                     <span><i class="bi bi-cart-check me-2"></i> Orders</span>
-                    <span class="badge bg-danger rounded-pill" id="sidebarPendingOrdersBadge">0</span>
+                    <span class="badge bg-danger rounded-pill px-2" id="sidebarPendingOrdersBadge">0</span>
                 </a>
                 <a href="#sec-order-packing" class="admin-nav-link" data-tab="sec-order-packing" onclick="window.activateAdminSection('sec-order-packing', this); return false;">
                     <span><i class="bi bi-box-seam me-2"></i> Packing Queue</span>
-                    <span class="badge bg-warning text-dark rounded-pill" id="sidebarPackingBadge">0</span>
+                    <span class="badge bg-warning text-dark rounded-pill px-2" id="sidebarPackingBadge">0</span>
                 </a>
                 <a href="#sec-products" class="admin-nav-link" data-tab="sec-products" onclick="window.activateAdminSection('sec-products', this); return false;">
                     <span><i class="bi bi-basket me-2"></i> Catalog & Products</span>
                 </a>
                 <a href="#sec-inventory" class="admin-nav-link" data-tab="sec-inventory" onclick="window.activateAdminSection('sec-inventory', this); return false;">
                     <span><i class="bi bi-boxes me-2"></i> Inventory Manager</span>
-                    <span class="badge bg-warning text-dark rounded-pill" id="sidebarLowStockBadge">0</span>
+                    <span class="badge bg-warning text-dark rounded-pill px-2" id="sidebarLowStockBadge">0</span>
                 </a>
                 <a href="#sec-customers" class="admin-nav-link" data-tab="sec-customers" onclick="window.activateAdminSection('sec-customers', this); return false;">
                     <span><i class="bi bi-people me-2"></i> Customers</span>
                 </a>
 
-                <div class="sidebar-category-header">Growth & Marketing</div>
+                <div class="sidebar-category-header">// GROWTH & MARKETING</div>
                 <a href="#sec-marketing" class="admin-nav-link" data-tab="sec-marketing" onclick="window.activateAdminSection('sec-marketing', this); return false;">
                     <span><i class="bi bi-megaphone me-2"></i> Offers & Coupons</span>
                 </a>
@@ -357,7 +455,7 @@
                     <span><i class="bi bi-graph-up-arrow me-2"></i> Business Analytics</span>
                 </a>
 
-                <div class="sidebar-category-header">Storefront Controls</div>
+                <div class="sidebar-category-header">// STOREFRONT CONTROLS</div>
                 <a href="#sec-website-theme" class="admin-nav-link" data-tab="sec-website-theme" onclick="window.activateAdminSection('sec-website-theme', this); return false;">
                     <span><i class="bi bi-palette me-2"></i> Theme & Topbar</span>
                 </a>
@@ -369,7 +467,7 @@
                     <span class="badge bg-info text-dark rounded-circle p-1" id="sidebarEnquiriesDot"></span>
                 </a>
 
-                <div class="sidebar-category-header">Reports & Admin</div>
+                <div class="sidebar-category-header">// GOVERNANCE & REPORTS</div>
                 <a href="#sec-reports" class="admin-nav-link" data-tab="sec-reports" onclick="window.activateAdminSection('sec-reports', this); return false;">
                     <span><i class="bi bi-download me-2"></i> Financial Reports</span>
                 </a>
@@ -1350,9 +1448,98 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- On-page error console (helps when DevTools can't be opened) -->
+    <style>
+        #pageErrorConsole { position: fixed; right: 12px; bottom: 12px; width: 380px; max-height: 48px; overflow: hidden; background: rgba(0,0,0,0.8); color: #fff; border-radius: 8px; font-family: monospace; font-size: 12px; z-index: 2000; transition: max-height 0.2s ease; }
+        #pageErrorConsole.open { max-height: 320px; overflow: auto; padding: 8px; }
+        #pageErrorConsole .head { display:flex; align-items:center; justify-content:space-between; padding:6px 8px; gap:8px; }
+        #pageErrorConsole .head .title { font-weight:700; font-size:12px; color:#ffdede; }
+        #pageErrorConsole pre { white-space: pre-wrap; word-break: break-word; margin:0; padding:6px 8px; }
+        #pageErrorConsole button { background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fff; padding:4px 8px; border-radius:6px; cursor:pointer; }
+        #pageErrorConsole.has-content { box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+    </style>
+    <div id="pageErrorConsole" aria-live="polite" role="status">
+        <div class="head">
+            <div class="title">Page Console</div>
+            <div>
+                <button id="pageErrorConsoleToggle">Show Console</button>
+            </div>
+        </div>
+        <pre id="pageErrorConsolePre"></pre>
+    </div>
+    <script>
+        (function(){
+            function append(msg, level){
+                const pre = document.getElementById('pageErrorConsolePre');
+                const panel = document.getElementById('pageErrorConsole');
+                if(!pre || !panel) return;
+                const time = new Date().toLocaleTimeString();
+                pre.textContent += `[${time}] ${level}: ${msg}\n`;
+                panel.classList.add('has-content');
+                // open automatically for errors
+                if(level === 'ERROR' || level === 'UNHANDLEDREJECTION') panel.classList.add('open');
+            }
+
+            window.onerror = function(message, source, lineno, colno, error){
+                append(`${message} at ${source}:${lineno}:${colno}`, 'ERROR');
+                return false;
+            };
+
+            window.addEventListener('unhandledrejection', function(e){ append(String(e && e.reason ? e.reason : e), 'UNHANDLEDREJECTION'); });
+
+            ['error','warn','info','log'].forEach(function(level){
+                const orig = console[level] ? console[level].bind(console) : function(){};
+                console[level] = function(){
+                    try{ append(Array.from(arguments).map(a=>{ try{ return (typeof a === 'object') ? JSON.stringify(a) : String(a); } catch(e){ return String(a); } }).join(' '), level.toUpperCase()); }catch(e){}
+                    orig.apply(console, arguments);
+                };
+            });
+
+            document.addEventListener('DOMContentLoaded', function(){
+                const btn = document.getElementById('pageErrorConsoleToggle');
+                btn.addEventListener('click', function(){
+                    const panel = document.getElementById('pageErrorConsole');
+                    panel.classList.toggle('open');
+                    btn.textContent = panel.classList.contains('open') ? 'Hide Console' : 'Show Console';
+                });
+            });
+        })();
+    </script>
+    <!-- Firebase (Compat) SDK - required by script.js which uses namespaced firebase API -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- Main JavaScript Files -->
     <script src="catalog.js"></script>
     <script src="script.js"></script>
+    <script>
+        (function(){
+            const btn = document.getElementById('adminSidebarCollapseBtn');
+            const sidebar = document.getElementById('adminSidebar');
+            if (!btn || !sidebar) return;
+
+            function updateCollapsedUI(collapsed) {
+                if (collapsed) {
+                    sidebar.classList.add('collapsed');
+                    btn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    btn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                }
+            }
+
+            // initialize from localStorage
+            const saved = localStorage.getItem('yadav_admin_sidebar_collapsed');
+            updateCollapsedUI(saved === 'true');
+
+            btn.addEventListener('click', function(){
+                const isCollapsed = sidebar.classList.toggle('collapsed');
+                localStorage.setItem('yadav_admin_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+                updateCollapsedUI(isCollapsed);
+            });
+        })();
+    </script>
 </body>
 
 </html>

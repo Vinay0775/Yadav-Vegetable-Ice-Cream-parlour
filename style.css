@@ -1268,7 +1268,7 @@ body.admin-dashboard {
 }
 
 body.admin-dashboard .admin-sidebar {
-    background-color: #0f172a !important;
+    background: linear-gradient(180deg, #080d1a 0%, #0f172a 50%, #060912 100%) !important;
     color: #f8fafc !important;
 }
 

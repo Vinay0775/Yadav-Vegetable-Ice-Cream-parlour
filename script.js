@@ -677,7 +677,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.db) {
-        window.db.collection('products').onSnapshot(snapshot => {
+        console.log('Attempting to attach products onSnapshot listener...');
+        try {
+            window.db.collection('products').onSnapshot(snapshot => {
+                console.log('Products snapshot received. docs:', snapshot.docs ? snapshot.docs.length : 'no-docs');
             const firestoreItems = [];
 
             // 1. Fetch ALL active Firestore Admin products
@@ -715,6 +718,29 @@ document.addEventListener('DOMContentLoaded', () => {
             CATALOG = mergedList;
             window.CATALOG = mergedList;
             window.catalogProducts = mergedList;
+            // Persist live admin products to localStorage so admin tables render from `yadav_products`
+            try {
+                // Persist a trimmed lightweight copy to avoid localStorage quota issues (strip large base64 images)
+                const lightweight = mergedList.map(p => ({
+                    id: p.id,
+                    title: p.title,
+                    hindiTitle: p.hindiTitle,
+                    category: p.category,
+                    price: p.price,
+                    originalPrice: p.originalPrice,
+                    stock: p.stock,
+                    badge: p.badge,
+                    image: (typeof p.image === 'string' && p.image.length < 1000 && !p.image.startsWith('data:')) ? p.image : 'assets/fav-icon.png',
+                    desc: p.desc
+                }));
+                const approxSizeKb = Math.round(new Blob([JSON.stringify(lightweight)]).size/1024);
+                console.log('Persisting lightweight products to localStorage. count:', lightweight.length, 'approxKB:', approxSizeKb);
+                try {
+                    localStorage.setItem('yadav_products', JSON.stringify(lightweight));
+                } catch (e2) {
+                    console.warn('Could not persist trimmed products to localStorage (direct setItem)', e2);
+                }
+            } catch (e) { console.warn('Could not persist products to localStorage', e && e.stack ? e.stack : e); }
 
             // Update Quick Select Dropdown options with latest live Admin products
             if (typeof window.populateQuickListProductDropdown === 'function') {
@@ -722,10 +748,86 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             refreshStorefrontCatalogViews();
-        }, error => {
+            }, error => {
             console.warn('Live products snapshot error. Showing local catalog.', error);
-            refreshStorefrontCatalogViews();
+            if (typeof window.showAdminToast === 'function') {
+                window.showAdminToast('Firestore Error', String(error && error.message ? error.message : error), true);
+            }
+
+            // Attempt REST fallback to fetch products (may fail if Firestore rules require auth)
+            async function fetchProductsViaRestFallback() {
+                try {
+                    const projectId = (typeof firebaseConfig !== 'undefined' && firebaseConfig.projectId) ? firebaseConfig.projectId : (firebase && firebase.apps && firebase.apps.length ? firebase.apps[0].options.projectId : null);
+                    const apiKey = (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey) ? firebaseConfig.apiKey : null;
+                    if (!projectId || !apiKey) {
+                        console.warn('REST fallback skipped: missing projectId or apiKey');
+                        return refreshStorefrontCatalogViews();
+                    }
+
+                    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/products?key=${apiKey}`;
+                    const resp = await fetch(url, { cache: 'no-store' });
+                    if (!resp.ok) {
+                        const txt = await resp.text();
+                        console.warn('REST fallback fetch failed', resp.status, txt);
+                        return refreshStorefrontCatalogViews();
+                    }
+
+                    const payload = await resp.json();
+                    if (!payload.documents || !Array.isArray(payload.documents) || payload.documents.length === 0) {
+                        return refreshStorefrontCatalogViews();
+                    }
+
+                    const parseField = (f) => {
+                        if (!f) return null;
+                        if (f.stringValue !== undefined) return f.stringValue;
+                        if (f.integerValue !== undefined) return Number(f.integerValue);
+                        if (f.doubleValue !== undefined) return Number(f.doubleValue);
+                        if (f.booleanValue !== undefined) return f.booleanValue;
+                        if (f.mapValue && f.mapValue.fields) {
+                            const out = {};
+                            Object.keys(f.mapValue.fields).forEach(k => { out[k] = parseField(f.mapValue.fields[k]); });
+                            return out;
+                        }
+                        if (f.arrayValue && Array.isArray(f.arrayValue.values)) {
+                            return f.arrayValue.values.map(v => parseField(v));
+                        }
+                        if (f.timestampValue !== undefined) return f.timestampValue;
+                        return null;
+                    };
+
+                    const restItems = payload.documents.map(doc => {
+                        const fields = doc.fields || {};
+                        const obj = {};
+                        Object.keys(fields).forEach(k => { obj[k] = parseField(fields[k]); });
+                        // derive id from Firestore document name if not present
+                        if (!obj.id && doc.name) {
+                            const parts = doc.name.split('/'); obj.id = parts[parts.length - 1];
+                        }
+                        return obj;
+                    }).filter(item => !item.archived);
+
+                    if (restItems.length > 0) {
+                        CATALOG = restItems.map(item => ({ ...item, category: window.normalizeCatalogCategory ? window.normalizeCatalogCategory(item.category) : item.category }));
+                        window.CATALOG = CATALOG;
+                        window.catalogProducts = CATALOG;
+                        if (typeof window.populateQuickListProductDropdown === 'function') window.populateQuickListProductDropdown();
+                        refreshStorefrontCatalogViews();
+                        if (typeof window.showAdminToast === 'function') window.showAdminToast('Fallback Loaded', 'Products loaded via REST fallback.', false);
+                        return;
+                    }
+
+                    return refreshStorefrontCatalogViews();
+                } catch (e) {
+                    console.warn('REST fallback error', e);
+                    return refreshStorefrontCatalogViews();
+                }
+            }
+
+            fetchProductsViaRestFallback();
         });
+        } catch (e) {
+            console.warn('Failed to attach products snapshot listener', e);
+        }
     }
 
     // ==========================================
@@ -3754,7 +3856,35 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     }
 
     function setStored(key, val) {
-        localStorage.setItem(key, JSON.stringify(val));
+        try {
+            localStorage.setItem(key, JSON.stringify(val));
+        } catch (err) {
+            console.warn('setStored failed for', key, err);
+            // If quota exceeded while saving products, attempt to persist a trimmed lightweight copy
+            if (key === 'yadav_products') {
+                try {
+                    const trimmed = (Array.isArray(val) ? val : []).map(p => ({
+                        id: p.id,
+                        title: p.title,
+                        hindiTitle: p.hindiTitle,
+                        category: p.category,
+                        price: p.price,
+                        originalPrice: p.originalPrice,
+                        stock: p.stock,
+                        badge: p.badge,
+                        // Avoid saving huge base64 blobs: only keep image if short URL
+                        image: (typeof p.image === 'string' && p.image.length < 1000 && !p.image.startsWith('data:')) ? p.image : 'assets/fav-icon.png',
+                        desc: p.desc
+                    }));
+                    localStorage.setItem(key, JSON.stringify(trimmed));
+                    console.warn('Persisted trimmed yadav_products to localStorage to avoid quota issues.');
+                    if (typeof window.showAdminToast === 'function') window.showAdminToast('Storage', 'Saved lightweight product list (images omitted).', false);
+                } catch (e2) {
+                    console.warn('Could not persist trimmed products to localStorage', e2);
+                }
+            }
+        }
+
         // Sync with storefront live catalog if updating products
         if (key === 'yadav_products') {
             window.CATALOG = val;
@@ -4342,6 +4472,22 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         if (!tbody) return;
 
         let products = getStored('yadav_products');
+        // If localStorage is empty (quota or not persisted), fallback to in-memory CATALOG from Firestore
+        if ((!products || products.length === 0) && Array.isArray(window.CATALOG) && window.CATALOG.length > 0) {
+            console.log('renderProductsTable: falling back to window.CATALOG for products display. count:', window.CATALOG.length);
+            products = window.CATALOG.map(p => ({
+                id: p.id,
+                title: p.title,
+                hindiTitle: p.hindiTitle,
+                category: p.category,
+                price: p.price,
+                originalPrice: p.originalPrice,
+                stock: p.stock || 0,
+                badge: p.badge,
+                image: (typeof p.image === 'string' && p.image.length < 1000 && !p.image.startsWith('data:')) ? p.image : 'assets/fav-icon.png',
+                desc: p.desc
+            }));
+        }
 
         const search = (document.getElementById('productSearchTerm')?.value || '').toLowerCase();
         const cat = document.getElementById('productFilterCat')?.value || 'All';
@@ -4383,10 +4529,27 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                     ${prod.originalPrice ? `<small class="text-muted text-decoration-line-through ms-1">₹${prod.originalPrice}</small>` : ''}
                 </td>
                 <td>
-                    <span class="fw-bold ${(Number(prod.stock) || 0) <= 5 ? 'text-danger' : 'text-dark'}">${prod.stock || 0}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        ${(() => {
+                            const s = (prod.stock === null || prod.stock === undefined) ? null : Number(prod.stock);
+                            const cls = s === null ? 'text-secondary' : (s <= 5 ? 'text-danger' : 'text-dark');
+                            return `<span class="fw-bold ${cls}">${s === null ? 'Not set' : s}</span>`;
+                        })()}
+                        <select class="form-select form-select-sm ms-2" onchange="window.setProductStockStatus('${prod.id}', this.value)">
+                            <option value="__noop__">Set Status</option>
+                            <option value="in_stock">In Stock</option>
+                            <option value="low_stock">Low Stock</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                            <option value="not_set">Not Set</option>
+                        </select>
+                    </div>
                 </td>
                 <td>
-                    <span class="badge ${(Number(prod.stock) || 0) > 0 ? 'badge-soft-success' : 'badge-soft-danger'}">${(Number(prod.stock) || 0) > 0 ? 'Published' : 'Out of Stock'}</span>
+                    ${(() => {
+                        const s = (prod.stock === null || prod.stock === undefined) ? null : Number(prod.stock);
+                        if (s === null) return `<span class="badge badge-soft-secondary">Not Set</span>`;
+                        return `<span class="badge ${s > 0 ? 'badge-soft-success' : 'badge-soft-danger'}">${s > 0 ? 'Published' : 'Out of Stock'}</span>`;
+                    })()}
                 </td>
                 <td>
                     <button class="btn btn-sm ${prod.featured ? 'btn-warning' : 'btn-light'}" onclick="window.toggleProductFeatured('${prod.id}')"><i class="bi bi-star-fill"></i></button>
@@ -4508,6 +4671,42 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         if (modal) modal.hide();
 
         window.renderProductsTable();
+    };
+
+    // Allow admin to quickly set stock status via selector dropdown
+    window.setProductStockStatus = function (prodId, status) {
+        if (!prodId || !status || status === '__noop__') return;
+        const products = getStored('yadav_products');
+        const idx = products.findIndex(p => p.id === prodId);
+
+        // Determine numeric stock value based on status
+        let newStock = null;
+        switch (status) {
+            case 'in_stock': newStock = 20; break; // default healthy stock
+            case 'low_stock': newStock = 3; break;  // low threshold
+            case 'out_of_stock': newStock = 0; break;
+            case 'not_set': newStock = null; break;
+            default: return;
+        }
+
+        if (idx !== -1) {
+            products[idx].stock = newStock;
+            setStored('yadav_products', products);
+        }
+
+        // Also update in-memory CATALOG if present
+        if (Array.isArray(window.CATALOG)) {
+            const cidx = window.CATALOG.findIndex(p => p.id === prodId);
+            if (cidx !== -1) {
+                window.CATALOG[cidx].stock = newStock;
+                window.catalogProducts = window.CATALOG;
+            }
+        }
+
+        logAdminActivity(`Stock status changed for ${prodId} -> ${status}`);
+        if (typeof window.showAdminToast === 'function') window.showAdminToast('Stock Updated', `Product ${prodId} set to ${status.replace('_', ' ')}`, false);
+        window.renderProductsTable();
+        if (typeof window.refreshStorefrontCatalogViews === 'function') window.refreshStorefrontCatalogViews();
     };
 
     // --- 7. INVENTORY MANAGEMENT ENGINE ---
