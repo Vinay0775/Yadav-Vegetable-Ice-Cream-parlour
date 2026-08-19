@@ -868,6 +868,141 @@ document.addEventListener('DOMContentLoaded', () => {
     uiWrapper.innerHTML = dynamicUIHTML;
     document.body.appendChild(uiWrapper);
 
+    // --- Simple Client-side Chatbot Widget (Option 1 quick mode) ---
+    (function initClientChatbot(){
+        if (window.__yadav_chatbot_initialized) return; window.__yadav_chatbot_initialized = true;
+
+        // Styles
+        const chatStyle = document.createElement('style');
+        chatStyle.id = 'yadavChatbotStyles';
+        chatStyle.innerHTML = `
+        .yadav-chat-button { position: fixed; right: 18px; bottom: 18px; z-index:1200; }
+        .yadav-chat-panel { position: fixed; right: 18px; bottom: 78px; width: 360px; max-width: calc(100% - 36px); z-index:1200; box-shadow: 0 10px 30px rgba(2,6,23,0.3); border-radius: 12px; overflow: hidden; font-family: Jost, sans-serif; }
+        .yadav-chat-header { background: var(--admin-accent, #10b981); color: #fff; padding: 12px 14px; display:flex;align-items:center;justify-content:space-between; }
+        .yadav-chat-body { background:#fff; max-height: 420px; overflow:auto; padding:12px; }
+        .yadav-chat-footer { display:flex; gap:8px; padding:10px; background:#f8fafc; border-top:1px solid #eee; }
+        .yadav-msg { display:block; margin-bottom:10px; }
+        .yadav-msg.bot { text-align:left; }
+        .yadav-msg.user { text-align:right; }
+        .yadav-bubble { display:inline-block; padding:10px 12px; border-radius:12px; max-width:78%; }
+        .yadav-bubble.bot { background:#f1f5f9; color:#0f172a; }
+        .yadav-bubble.user { background:var(--admin-accent,#10b981); color:#fff; }
+        .yadav-suggestion { background:#eef2ff; border:1px solid #e0e7ff; padding:6px 10px; border-radius:999px; cursor:pointer; margin-right:6px; display:inline-block; font-size:0.86rem; }
+        .yadav-chat-hidden { display:none !important; }
+        `;
+        document.head.appendChild(chatStyle);
+
+        // HTML
+        const chatBtn = document.createElement('button');
+        chatBtn.className = 'btn btn-success rounded-circle yadav-chat-button';
+        chatBtn.title = 'Chat with Store Assistant';
+        chatBtn.innerHTML = '<i class="bi bi-chat-dots-fill fs-4"></i>';
+        document.body.appendChild(chatBtn);
+
+        const chatPanel = document.createElement('div');
+        chatPanel.className = 'yadav-chat-panel yadav-chat-hidden';
+        chatPanel.innerHTML = `
+            <div class="yadav-chat-header">
+                <div style="display:flex;gap:10px;align-items:center"><i class="bi bi-robot fs-5"></i><strong>Store Assistant</strong></div>
+                <div style="font-size:0.9rem;opacity:0.9;cursor:pointer" id="yadavChatClose">Close</div>
+            </div>
+            <div class="yadav-chat-body" id="yadavChatBody">
+                <div class="yadav-msg bot"><div class="yadav-bubble bot">Namaste! Main Yadav Store Assistant hoon — aap mujhse product prices, availability, ya shopping list ke liye pooch sakte hain. Kya madad chahiye?</div></div>
+            </div>
+            <div class="yadav-chat-footer">
+                <input id="yadavChatInput" placeholder="Type your question..." class="form-control form-control-sm" />
+                <button id="yadavChatSend" class="btn btn-primary btn-sm">Send</button>
+            </div>
+        `;
+        document.body.appendChild(chatPanel);
+
+        // Toggle
+        function openChat(){ chatPanel.classList.remove('yadav-chat-hidden'); chatBtn.classList.add('d-none'); const body = document.getElementById('yadavChatBody'); if (body) body.scrollTop = body.scrollHeight; }
+        function closeChat(){ chatPanel.classList.add('yadav-chat-hidden'); chatBtn.classList.remove('d-none'); }
+        chatBtn.addEventListener('click', openChat);
+        document.getElementById('yadavChatClose').addEventListener('click', closeChat);
+
+        // Helpers: message append
+        function appendBotMessage(html){ const body = document.getElementById('yadavChatBody'); const wrap = document.createElement('div'); wrap.className='yadav-msg bot'; wrap.innerHTML = `<div class="yadav-bubble bot">${html}</div>`; body.appendChild(wrap); body.scrollTop = body.scrollHeight; }
+        function appendUserMessage(text){ const body = document.getElementById('yadavChatBody'); const wrap = document.createElement('div'); wrap.className='yadav-msg user'; wrap.innerHTML = `<div class="yadav-bubble user">${escapeHtml(text)}</div>`; body.appendChild(wrap); body.scrollTop = body.scrollHeight; }
+        function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        // Shopping list
+        window.getShoppingList = function(){ return JSON.parse(localStorage.getItem('yadav_shopping_list')||'[]'); };
+        window.addToShoppingList = function(prod, qty=1){ try{ const list = window.getShoppingList(); const existing = list.find(i=>i.id===prod.id); if(existing){ existing.quantity = (existing.quantity||0)+qty; } else { list.push({ id: prod.id, title: prod.title, price: prod.price, quantity: qty }); } localStorage.setItem('yadav_shopping_list', JSON.stringify(list)); window.showToast && window.showToast('List Updated', `${prod.title} added to your shopping list`); }catch(e){console.warn(e);} };
+
+        // Add to cart helper using existing function
+        function addProductToCart(prod, qty=1){ try{ const p = { ...prod, quantity: qty }; window.addToCartGlobal && window.addToCartGlobal(encodeURIComponent(JSON.stringify(p))); window.showToast && window.showToast('Added', `${prod.title} added to cart`); }catch(e){ console.warn(e); } }
+
+        // Simple product matcher
+        function findMatchingProducts(query){
+            const q = String(query||'').trim().toLowerCase();
+            if(!q) return [];
+            const candidates = Array.isArray(window.CATALOG) ? window.CATALOG : (JSON.parse(localStorage.getItem('yadav_products')||'[]')||[]);
+            const tokens = q.split(/\s+/).filter(Boolean);
+            const results = [];
+            candidates.forEach(p=>{
+                const title = String(p.title||p.hindiTitle||'').toLowerCase();
+                const category = String(p.category||'').toLowerCase();
+                let score = 0;
+                if(title.includes(q)) score += 100;
+                tokens.forEach(t=>{ if(t.length>2 && title.includes(t)) score += 10; if(category.includes(t)) score += 6; });
+                if(score>0) results.push({ product: p, score });
+            });
+            results.sort((a,b)=>b.score-a.score);
+            return results.map(r=>r.product).slice(0,6);
+        }
+
+        // WhatsApp helper
+        function openWhatsAppForProducts(products){ const itemsText = products.map((it,idx)=>`${idx+1}. ${it.title} - ₹${it.price} x ${it.quantity||1}`).join('\n'); const msg = `Hello Yadav Store, I need help with:\n${itemsText}`; const wa = `https://wa.me/917232825204?text=${encodeURIComponent(msg)}`; window.open(wa,'_blank'); }
+        // expose
+        window.addProductToCart = addProductToCart;
+        window.openWhatsAppForProducts = openWhatsAppForProducts;
+        window.findMatchingProducts = findMatchingProducts;
+
+        // Process user message
+        async function processUserMessage(text){
+            const q = String(text||'').toLowerCase();
+            // Quick intents
+            if(q.includes('list') && (q.includes('add')||q.includes('create'))){
+                // try parse product names after 'add'
+                const toAdd = [];
+                // naive: split by comma/and
+                const parts = text.split(/,| and | aur /i).map(s=>s.trim()).filter(Boolean);
+                parts.forEach(p=>{
+                    const found = findMatchingProducts(p);
+                    if(found && found.length) toAdd.push(found[0]);
+                });
+                if(toAdd.length){
+                    toAdd.forEach(prod=>window.addToShoppingList(prod,1));
+                    appendBotMessage(`${toAdd.length} items added to your shopping list. <div style=\"margin-top:8px;\"><button class=\"btn btn-sm btn-outline-success\" onclick=\"(function(){window.open('cart.html','_self');})()\">View Cart</button> <button class=\"btn btn-sm btn-success\" onclick=\"(function(){openWhatsAppForProducts(${JSON.stringify(toAdd).replace(/'/g,'\\\'')});})()\">Contact on WhatsApp</button></div>`);
+                    return;
+                }
+            }
+
+            // Price/availability questions
+            const matches = findMatchingProducts(q);
+            if(matches && matches.length){
+                const p = matches[0];
+                const stockText = (p.stock && String(p.stock).toLowerCase().includes('out')) ? '<span class="badge bg-danger">Out of Stock</span>' : (p.stock ? `<span class="badge bg-success">In Stock</span>` : '');
+                const priceText = (typeof p.price !== 'undefined') ? `<strong>₹${p.price}</strong>` : 'Price not available';
+                const html = `<div><strong>${p.title}</strong> ${stockText}<div class=\"small text-muted\">Category: ${p.category || 'N/A'}</div><div style=\"margin-top:8px;\">Price: ${priceText}</div><div style=\"margin-top:8px;\"><button class=\"btn btn-sm btn-success\" onclick=\"(function(){addProductToCart(${JSON.stringify(p).replace(/'/g,'\\\'')},1)})()\">Add to Cart</button> <button class=\"btn btn-sm btn-outline-primary\" onclick=\"(function(){window.addToShoppingList(${JSON.stringify(p).replace(/'/g,'\\\'')},1)})()\">Add to List</button> <button class=\"btn btn-sm btn-outline-success\" onclick=\"(function(){openWhatsAppForProducts([${JSON.stringify(p).replace(/'/g,'\\\'')}])})()\">Contact on WhatsApp</button></div></div>`;
+                appendBotMessage(html);
+                return;
+            }
+
+            // Fallback: simple reply
+            appendBotMessage('Mujhe maaf kijiye, mujhe is query ka seedha jawab nahi mila. Aap kuch aur shabd use karke try kar sakte hain (jaise "price of apples" or "add tomatoes to my list"). <div style="margin-top:8px;"><span class="yadav-suggestion" onclick="document.getElementById(\'yadavChatInput\').value=\'price of apples\';document.getElementById(\'yadavChatSend\').click();">Price of apples</span><span class="yadav-suggestion" onclick="document.getElementById(\'yadavChatInput\').value=\'add tomatoes and potatoes to my list\';document.getElementById(\'yadavChatSend\').click();">Add tomatoes</span></div>');
+        }
+
+        // Wire send
+        const sendBtn = document.getElementById('yadavChatSend');
+        const inputEl = document.getElementById('yadavChatInput');
+        sendBtn.addEventListener('click', ()=>{ const v = inputEl.value.trim(); if(!v) return; appendUserMessage(v); inputEl.value=''; processUserMessage(v); });
+        inputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendBtn.click(); } });
+
+    })();
+
     window.showToast = function (title, msg, isError = false) {
         const container = document.getElementById('globalToastContainer');
         if (!container) return;
@@ -4974,6 +5109,21 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             document.documentElement.style.setProperty('--admin-sidebar-active', shadeColor(p.primary, -6));
         } catch (e) { console.warn('Theme variables apply failed', e); }
 
+        // Compute readable text/heading colors based on primary color luminance
+        function hexToRgb(hex) {
+            let c = hex.replace('#',''); if (c.length===3) c = c.split('').map(ch=>ch+ch).join('');
+            return { r: parseInt(c.substr(0,2),16), g: parseInt(c.substr(2,2),16), b: parseInt(c.substr(4,2),16) };
+        }
+        function relativeLuminance(rgb) {
+            const srgb = [rgb.r/255, rgb.g/255, rgb.b/255].map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4));
+            return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
+        }
+        const primRgb = hexToRgb(p.primary || '#0f172a');
+        const primLum = relativeLuminance(primRgb);
+        const primaryIsLight = primLum > 0.5;
+        const bodyText = primaryIsLight ? '#0f172a' : '#f8fafc';
+        const headingText = primaryIsLight ? p.accent : p.accentText || '#ffffff';
+
         // Inject/replace a stylesheet that overrides key bootstrap colors to reflect theme
         const themeCssId = 'themeOverrideStyles';
         let s = document.getElementById(themeCssId);
@@ -4994,11 +5144,22 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             a { color: ${p.accent} !important; }
             .text-primary { color: ${p.accent} !important; }
             .bg-primary { background-color: ${p.accent} !important; }
+
+            /* Text and headings contrast */
+            body { color: ${bodyText} !important; }
+            h1,h2,h3,h4,h5,h6, .fw-bold { color: ${headingText} !important; }
+            .text-muted { color: ${primaryIsLight ? '#6b7280' : '#cbd5e1'} !important; }
+            .lead, p, li, span, label { color: ${bodyText} !important; }
+            .nav-link { color: ${p.accentText} !important; }
         `;
         if (!s) {
             s = document.createElement('style'); s.id = themeCssId; document.head.appendChild(s);
         }
         s.innerHTML = css;
+        try {
+            // Persist the exact CSS overrides so storefront loader can inject the same rules
+            localStorage.setItem('yadav_theme_css', css);
+        } catch (e) { console.warn('Could not persist theme CSS to localStorage', e); }
 
         logAdminActivity(`Applied Storefront Theme Preset: ${presetName}`);
         window.showAdminToast('Theme Applied', `Storefront color preset updated to ${presetName}`);
@@ -5214,12 +5375,37 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             window.deferredPrompt.prompt();
             window.deferredPrompt.userChoice.then(choice => {
                 if (choice.outcome === 'accepted') {
-                    window.showAdminToast('Installed', 'Yadav Admin Control Center installed to device!');
+                    window.showAdminToast('Installed', 'Yadav Admin Control Center installed to device! 📲');
                 }
                 window.deferredPrompt = null;
             });
         } else {
-            alert('To install Yadav Admin App:\n\nAndroid/Chrome: Tap Chrome menu (⋮) -> Add to Home Screen.\niOS/Safari: Tap Share button -> Add to Home Screen.');
+            const modalEl = document.getElementById('adminPwaInstallModal');
+            if (modalEl && window.bootstrap) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                alert('To install Yadav Admin App:\n\nAndroid/Chrome: Tap Chrome menu (⋮) -> Add to Home Screen.\niOS/Safari: Tap Share button -> Add to Home Screen.');
+            }
+        }
+    };
+
+    window.triggerAdminDirectInstall = function () {
+        if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            window.deferredPrompt.userChoice.then(choice => {
+                if (choice.outcome === 'accepted') {
+                    window.showAdminToast('Installed', 'Yadav Admin Control Center installed successfully!');
+                }
+                window.deferredPrompt = null;
+            });
+            const modalEl = document.getElementById('adminPwaInstallModal');
+            if (modalEl && window.bootstrap) {
+                const bsModal = bootstrap.Modal.getInstance(modalEl);
+                if (bsModal) bsModal.hide();
+            }
+        } else {
+            alert('Follow the instructions below to install on your mobile home screen:\n\n1. Tap Chrome menu (⋮) or Safari Share button\n2. Tap "Add to Home Screen"');
         }
     };
 

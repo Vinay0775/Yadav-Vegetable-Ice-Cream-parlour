@@ -42,6 +42,16 @@
     // Priority: Cloud theme (if exists), then localStorage
     (function(){
         const local = localStorage.getItem('yadav_theme_preset');
+        const rawCss = localStorage.getItem('yadav_theme_css');
+        if (rawCss) {
+            // If exact CSS override saved by admin, inject it immediately and skip further checks
+            try {
+                let s = document.getElementById('themeOverrideStyles');
+                if (!s) { s = document.createElement('style'); s.id = 'themeOverrideStyles'; document.head.appendChild(s); }
+                s.innerHTML = rawCss;
+            } catch(e) { /* ignore */ }
+            return;
+        }
         try {
             if (window && window.db) {
                 // fetch cloud theme doc if possible
