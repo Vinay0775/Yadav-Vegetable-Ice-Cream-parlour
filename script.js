@@ -620,11 +620,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Local Catalog Sync
+        // 3. Local Catalog Sync (Prioritize Admin Panel edited products from localStorage)
         const localProducts = JSON.parse(localStorage.getItem('yadav_products') || '[]');
-        if (localProducts.length > 0 && (!window.CATALOG || window.CATALOG.length === 0)) {
+        if (localProducts.length > 0) {
             window.CATALOG = localProducts;
             window.catalogProducts = localProducts;
+            if (typeof CATALOG !== 'undefined') CATALOG = localProducts;
         }
     }
 
@@ -2043,10 +2044,15 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn("Firestore order save (local fallback):", dbErr);
         }
 
-        // Save to LocalStorage My Orders as persistent backup
+        // Save to LocalStorage My Orders as persistent backup for customer
         const myOrders = JSON.parse(localStorage.getItem('yadavMyOrders')) || [];
         myOrders.unshift(orderData);
         localStorage.setItem('yadavMyOrders', JSON.stringify(myOrders));
+
+        // Save to Admin Orders so new order appears instantly in Admin Dashboard
+        const adminOrders = JSON.parse(localStorage.getItem('yadav_orders')) || [];
+        adminOrders.unshift(orderData);
+        localStorage.setItem('yadav_orders', JSON.stringify(adminOrders));
 
         cart = [];
         saveCart();
