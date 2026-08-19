@@ -5138,9 +5138,9 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             .btn-success:hover { filter: brightness(0.95); }
             /* Navbar and header */
             .navbar, .admin-topbar { background-color: ${p.primary} !important; }
-            .navbar .nav-link, .admin-topbar .nav-link, .admin-topbar .btn { color: ${p.accentText} !important; }
+            .navbar .nav-link, .admin-topbar .nav-link, .admin-topbar .btn { color: ${primaryIsLight ? '#0f172a' : (p.accentText || '#ffffff')} !important; }
             .card, .admin-card { border-color: ${shadeColor(p.primary, 10)} !important; }
-            .card-header, .admin-card h5 { background: ${p.primary} !important; color: ${p.accentText} !important; }
+            .card-header, .admin-card h5 { background: ${p.primary} !important; color: ${primaryIsLight ? '#0f172a' : (p.accentText || '#ffffff')} !important; }
             a { color: ${p.accent} !important; }
             .text-primary { color: ${p.accent} !important; }
             .bg-primary { background-color: ${p.accent} !important; }
@@ -5150,7 +5150,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             h1,h2,h3,h4,h5,h6, .fw-bold { color: ${headingText} !important; }
             .text-muted { color: ${primaryIsLight ? '#6b7280' : '#cbd5e1'} !important; }
             .lead, p, li, span, label { color: ${bodyText} !important; }
-            .nav-link { color: ${p.accentText} !important; }
+            .nav-link { color: ${primaryIsLight ? '#0f172a' : (p.accentText || '#ffffff')} !important; }
         `;
         if (!s) {
             s = document.createElement('style'); s.id = themeCssId; document.head.appendChild(s);
