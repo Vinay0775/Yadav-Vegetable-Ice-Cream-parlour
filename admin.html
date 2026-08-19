@@ -1122,11 +1122,22 @@
                         <div class="col-lg-6">
                             <div class="admin-card p-4">
                                 <h5 class="fw-bold mb-3">Theme Color Presets</h5>
-                                <div class="d-flex gap-2 flex-wrap mb-4">
+                                <div class="d-flex gap-2 flex-wrap mb-2">
                                     <button class="btn btn-outline-success btn-sm" onclick="window.applyThemePreset('green')">Green Grocery</button>
                                     <button class="btn btn-outline-primary btn-sm" onclick="window.applyThemePreset('fresh')">Fresh Market</button>
                                     <button class="btn btn-outline-dark btn-sm" onclick="window.applyThemePreset('minimal')">Minimal Dark</button>
                                     <button class="btn btn-outline-danger btn-sm" onclick="window.applyThemePreset('pink')">Berry Pink</button>
+                                    <button class="btn btn-outline-warning btn-sm" onclick="window.applyThemePreset('sunset')">Sunset</button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="window.applyThemePreset('mint')">Mint Ocean</button>
+                                </div>
+
+                                <div id="themePreviewGrid" class="d-flex gap-2 flex-wrap align-items-center mb-3">
+                                    <!-- Thumbnails injected by script.js on load -->
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success btn-sm" id="saveThemeCloudBtn" onclick="(window.saveThemeToFirestore && window.saveThemeToFirestore(localStorage.getItem('yadav_theme_preset')||'green'))">Save to Cloud</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="window.applyThemePreset(localStorage.getItem('yadav_theme_preset')||'green')">Re-apply</button>
                                 </div>
                             </div>
                         </div>

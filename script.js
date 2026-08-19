@@ -4952,10 +4952,146 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     };
 
     window.applyThemePreset = function (presetName) {
+        const presets = {
+            green: { accent: '#10b981', success: '#10b981', primary: '#0f172a', accentText: '#ffffff' },
+            fresh: { accent: '#0ea5a4', success: '#0ea5a4', primary: '#071427', accentText: '#ffffff' },
+            minimal: { accent: '#111827', success: '#4b5563', primary: '#f8fafc', accentText: '#ffffff' },
+            pink: { accent: '#ec4899', success: '#ec4899', primary: '#0b1220', accentText: '#ffffff' },
+            sunset: { accent: '#f97316', success: '#f97316', primary: '#071427', accentText: '#ffffff' },
+            mint: { accent: '#06b6d4', success: '#06b6d4', primary: '#071427', accentText: '#ffffff' }
+        };
+
+        if (!presets[presetName]) presetName = 'green';
         localStorage.setItem('yadav_theme_preset', presetName);
+
+        const p = presets[presetName];
+
+        // Update CSS variables used by admin styles
+        try {
+            document.documentElement.style.setProperty('--admin-accent', p.accent);
+            document.documentElement.style.setProperty('--admin-sidebar-bg', p.primary);
+            document.documentElement.style.setProperty('--admin-sidebar-hover', shadeColor(p.primary, 8));
+            document.documentElement.style.setProperty('--admin-sidebar-active', shadeColor(p.primary, -6));
+        } catch (e) { console.warn('Theme variables apply failed', e); }
+
+        // Inject/replace a stylesheet that overrides key bootstrap colors to reflect theme
+        const themeCssId = 'themeOverrideStyles';
+        let s = document.getElementById(themeCssId);
+        const css = `
+            /* Theme overrides injected by admin preset */
+            .btn-success, .bg-success { background-color: ${p.success} !important; border-color: ${p.success} !important; }
+            .text-success { color: ${p.success} !important; }
+            a.text-success { color: ${p.accent} !important; }
+            .badge.bg-success { background-color: ${p.success} !important; }
+            .badge-soft-success { background: ${p.success}22 !important; color: ${p.success} !important; }
+            .admin-sidebar { background: linear-gradient(180deg, ${shadeColor(p.primary, -8)} 0%, ${p.primary} 60%) !important; }
+            .btn-success:hover { filter: brightness(0.95); }
+            /* Navbar and header */
+            .navbar, .admin-topbar { background-color: ${p.primary} !important; }
+            .navbar .nav-link, .admin-topbar .nav-link, .admin-topbar .btn { color: ${p.accentText} !important; }
+            .card, .admin-card { border-color: ${shadeColor(p.primary, 10)} !important; }
+            .card-header, .admin-card h5 { background: ${p.primary} !important; color: ${p.accentText} !important; }
+            a { color: ${p.accent} !important; }
+            .text-primary { color: ${p.accent} !important; }
+            .bg-primary { background-color: ${p.accent} !important; }
+        `;
+        if (!s) {
+            s = document.createElement('style'); s.id = themeCssId; document.head.appendChild(s);
+        }
+        s.innerHTML = css;
+
         logAdminActivity(`Applied Storefront Theme Preset: ${presetName}`);
         window.showAdminToast('Theme Applied', `Storefront color preset updated to ${presetName}`);
     };
+
+    // Save selected preset to Firestore (settings/theme)
+    window.saveThemeToFirestore = async function (presetName) {
+        if (!presetName) presetName = localStorage.getItem('yadav_theme_preset') || 'green';
+        if (!window.db) {
+            window.showAdminToast && window.showAdminToast('Offline', 'Firebase not initialized. Theme saved locally only.', true);
+            return;
+        }
+        try {
+            await window.db.collection('settings').doc('theme').set({ preset: presetName, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            window.showAdminToast && window.showAdminToast('Saved', 'Theme saved to cloud successfully.');
+            logAdminActivity && logAdminActivity(`Saved theme preset to Firestore: ${presetName}`);
+        } catch (e) {
+            console.warn('Could not save theme to Firestore', e);
+            window.showAdminToast && window.showAdminToast('Error', 'Could not save theme to cloud.', true);
+        }
+    };
+
+    // Render small preview thumbnails inside admin theme section
+    window.renderThemePreviews = function () {
+        const presets = {
+            green: { accent: '#10b981', primary: '#0f172a' , label: 'Green Grocery'},
+            fresh: { accent: '#0ea5a4', primary: '#071427', label: 'Fresh Market'},
+            minimal: { accent: '#111827', primary: '#f8fafc', label: 'Minimal Dark'},
+            pink: { accent: '#ec4899', primary: '#0b1220', label: 'Berry Pink'},
+            sunset: { accent: '#f97316', primary: '#071427', label: 'Sunset'},
+            mint: { accent: '#06b6d4', primary: '#071427', label: 'Mint Ocean'}
+        };
+        const container = document.getElementById('themePreviewGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        Object.keys(presets).forEach(key => {
+            const p = presets[key];
+            const thumb = document.createElement('button');
+            thumb.type = 'button';
+            thumb.className = 'btn p-0 border rounded-3';
+            thumb.style.width = '120px';
+            thumb.style.height = '56px';
+            thumb.style.display = 'flex';
+            thumb.style.alignItems = 'center';
+            thumb.style.justifyContent = 'space-between';
+            thumb.style.padding = '6px';
+            thumb.title = p.label || key;
+            thumb.innerHTML = `
+                <div style="flex:1;height:100%;background:${p.primary};border-radius:8px 0 0 8px;border-right:4px solid rgba(255,255,255,0.06);"></div>
+                <div style="width:36px;height:100%;background:${p.accent};border-radius:0 8px 8px 0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">A</div>
+            `;
+            thumb.addEventListener('click', () => { window.applyThemePreset(key); });
+            container.appendChild(thumb);
+        });
+    };
+
+    // Render previews on load (if admin page)
+    try { if (document.getElementById('themePreviewGrid')) window.renderThemePreviews(); } catch(e) {}
+
+    // Listen for cloud-saved theme changes and auto-apply
+    try {
+        if (window.db) {
+            window.db.collection('settings').doc('theme').onSnapshot(doc => {
+                if (!doc.exists) return;
+                const data = doc.data();
+                if (data && data.preset) {
+                    try { window.applyThemePreset(data.preset); } catch (e) { console.warn('Auto-apply cloud theme failed', e); }
+                }
+            }, err => { /* ignore listener errors */ });
+        }
+    } catch(e) {}
+
+    // Utility: shade color hex by percent (-100..100)
+    function shadeColor(hex, percent) {
+        try {
+            let c = hex.replace('#','');
+            if (c.length === 3) c = c.split('').map(ch=>ch+ch).join('');
+            const num = parseInt(c,16);
+            let r = (num >> 16) + Math.round(255 * percent/100);
+            let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent/100);
+            let b = (num & 0x0000FF) + Math.round(255 * percent/100);
+            r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+            return `#${(r<<16 | g<<8 | b).toString(16).padStart(6,'0')}`;
+        } catch (e) { return hex; }
+    }
+
+    // Apply saved preset on load
+    (function(){
+        const saved = localStorage.getItem('yadav_theme_preset');
+        if (saved) {
+            try { window.applyThemePreset(saved); } catch(e){ console.warn('Auto-apply theme preset failed', e); }
+        }
+    })();
 
     // --- 12. CMS, SUPPORT & REPORTS ENGINE ---
     window.loadCmsPageContent = function (pageKey) {
