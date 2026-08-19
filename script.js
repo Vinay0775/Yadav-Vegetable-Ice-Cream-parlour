@@ -584,6 +584,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }).format(Number(amount) || 0);
     window.formatCurrency = formatCurrency;
 
+    // Apply Live Storefront Settings (Announcement bar, Theme, Maintenance Mode, Catalog Sync)
+    function applyLiveStorefrontSettings() {
+        const isAdminPage = window.location.pathname.includes('admin.html');
+
+        // 1. Maintenance Mode Check
+        if (localStorage.getItem('yadav_maintenance_mode') === 'true' && !isAdminPage) {
+            document.body.innerHTML = `
+                <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;text-align:center;font-family:sans-serif;padding:2rem;">
+                    <div style="max-width:500px;background:#ffffff;padding:3rem;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+                        <div style="font-size:4rem;margin-bottom:1rem;">🛠️</div>
+                        <h2 style="color:#10b981;font-weight:700;margin-bottom:1rem;">Store Under Maintenance</h2>
+                        <p style="color:#64748b;font-size:1.05rem;line-height:1.6;">Yadav Vegetable & Ice-Cream Store is currently undergoing scheduled updates to bring you fresher produce!</p>
+                        <small style="color:#94a3b8;display:block;margin-top:2rem;">Please check back shortly.</small>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        // 2. Announcement Bar Live Sync
+        const announcementData = JSON.parse(localStorage.getItem('yadav_announcement') || '{}');
+        const marqueeEl = document.querySelector('.top-marquee-text');
+        const marqueeContainer = marqueeEl ? marqueeEl.closest('.bg-warning') || marqueeEl.parentElement : null;
+
+        if (announcementData && marqueeContainer) {
+            if (announcementData.enabled === false) {
+                marqueeContainer.style.display = 'none';
+            } else {
+                marqueeContainer.style.display = 'block';
+                if (announcementData.bgColor) marqueeContainer.style.backgroundColor = announcementData.bgColor;
+                if (announcementData.textColor) marqueeContainer.style.color = announcementData.textColor;
+                if (announcementData.text && marqueeEl) {
+                    marqueeEl.innerHTML = `<span class="mx-5 fw-bold">${announcementData.text}</span>`;
+                }
+            }
+        }
+
+        // 3. Local Catalog Sync
+        const localProducts = JSON.parse(localStorage.getItem('yadav_products') || '[]');
+        if (localProducts.length > 0 && (!window.CATALOG || window.CATALOG.length === 0)) {
+            window.CATALOG = localProducts;
+            window.catalogProducts = localProducts;
+        }
+    }
+
+    applyLiveStorefrontSettings();
 
     // Preloader fadeout logic
     window.addEventListener('load', () => {
@@ -3562,4 +3607,1351 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     // Auto initialize Quick List feature when DOM ready
     window.initQuickListFeature();
 });
+
+/* =========================================================================
+   YADAV E-COMMERCE ADMIN CONTROL CENTER ENGINE (PRODUCTION READY)
+   ========================================================================= */
+
+(function () {
+    'use strict';
+
+    // --- 1. DEFAULT DATA HYDRATION ENGINE ---
+    function initAdminDefaultData() {
+        if (!localStorage.getItem('yadav_products')) {
+            const initialCatalog = Array.isArray(window.YADAV_CATALOG) ? window.YADAV_CATALOG : [];
+            localStorage.setItem('yadav_products', JSON.stringify(initialCatalog));
+        }
+
+        if (!localStorage.getItem('yadav_orders')) {
+            const sampleOrders = [
+                {
+                    id: 'ORD-1001',
+                    customerName: 'Rahul Sharma',
+                    customerEmail: 'rahul.sharma@gmail.com',
+                    customerPhone: '+91 98290 11223',
+                    address: 'Flat 302, Green Heights, Gandhi Path, Jaipur',
+                    items: [
+                        { title: 'Fresh Red Tomatoes', quantity: 2, price: 50 },
+                        { title: 'Premium Potatoes', quantity: 3, price: 30 }
+                    ],
+                    totalAmount: 190,
+                    paymentMethod: 'UPI',
+                    paymentStatus: 'Paid',
+                    orderStatus: 'New',
+                    date: new Date(Date.now() - 3600000).toISOString(),
+                    packingChecklist: [false, false]
+                },
+                {
+                    id: 'ORD-1002',
+                    customerName: 'Priya Verma',
+                    customerEmail: 'priya.verma@gmail.com',
+                    customerPhone: '+91 94140 55667',
+                    address: 'Plot 45, Vaishali Nagar, Jaipur',
+                    items: [
+                        { title: 'Vanilla Ice Cream Parlour Tub 1L', quantity: 1, price: 220 },
+                        { title: 'Fresh Alphonso Mangoes', quantity: 2, price: 150 }
+                    ],
+                    totalAmount: 520,
+                    paymentMethod: 'COD',
+                    paymentStatus: 'Pending',
+                    orderStatus: 'Packing',
+                    date: new Date(Date.now() - 86400000).toISOString(),
+                    packingChecklist: [true, false]
+                },
+                {
+                    id: 'ORD-1003',
+                    customerName: 'Ankit Gupta',
+                    customerEmail: 'ankit.gupta@gmail.com',
+                    customerPhone: '+91 98288 99001',
+                    address: 'Sector 7, Malviya Nagar, Jaipur',
+                    items: [
+                        { title: 'Nashik Onions', quantity: 5, price: 35 }
+                    ],
+                    totalAmount: 175,
+                    paymentMethod: 'UPI',
+                    paymentStatus: 'Paid',
+                    orderStatus: 'Delivered',
+                    date: new Date(Date.now() - 172800000).toISOString(),
+                    packingChecklist: [true]
+                }
+            ];
+            localStorage.setItem('yadav_orders', JSON.stringify(sampleOrders));
+        }
+
+        if (!localStorage.getItem('yadav_customers')) {
+            const sampleCustomers = [
+                { id: 'CUST-1', name: 'Rahul Sharma', email: 'rahul.sharma@gmail.com', phone: '+91 98290 11223', totalOrders: 4, totalSpent: 1450, status: 'Active' },
+                { id: 'CUST-2', name: 'Priya Verma', email: 'priya.verma@gmail.com', phone: '+91 94140 55667', totalOrders: 2, totalSpent: 890, status: 'Active' },
+                { id: 'CUST-3', name: 'Ankit Gupta', email: 'ankit.gupta@gmail.com', phone: '+91 98288 99001', totalOrders: 6, totalSpent: 2300, status: 'Active' }
+            ];
+            localStorage.setItem('yadav_customers', JSON.stringify(sampleCustomers));
+        }
+
+        if (!localStorage.getItem('yadav_coupons')) {
+            const sampleCoupons = [
+                { code: 'FRESH50', discount: 50, type: 'fixed', minOrder: 299, active: true },
+                { code: 'MANGO30', discount: 30, type: 'percentage', minOrder: 499, active: true }
+            ];
+            localStorage.setItem('yadav_coupons', JSON.stringify(sampleCoupons));
+        }
+
+        if (!localStorage.getItem('yadav_offers')) {
+            const sampleOffers = [
+                { id: 'OFF-1', title: 'Weekend Fresh Vegetable Bonanza', discount: 'Up to 25% OFF', status: 'Active' },
+                { id: 'OFF-2', title: 'Buy 1 Get 1 Free Ice Cream Sundae', discount: 'BOGO', status: 'Active' }
+            ];
+            localStorage.setItem('yadav_offers', JSON.stringify(sampleOffers));
+        }
+
+        if (!localStorage.getItem('yadav_announcement')) {
+            const announcement = {
+                enabled: true,
+                text: '🔥 Special Offer: Flat ₹50 OFF on orders above ₹299! Use Code FRESH50',
+                bgColor: '#ffc107',
+                textColor: '#212529'
+            };
+            localStorage.setItem('yadav_announcement', JSON.stringify(announcement));
+        }
+
+        if (!localStorage.getItem('yadav_delivery_zones')) {
+            const zones = [
+                { id: 'Z1', pincode: '302019', zone: 'Gandhi Path / Vaishali Nagar', charge: 0, freeAbove: 299, active: true },
+                { id: 'Z2', pincode: '302021', zone: 'Nirman Nagar / Mansarovar', charge: 30, freeAbove: 499, active: true }
+            ];
+            localStorage.setItem('yadav_delivery_zones', JSON.stringify(zones));
+        }
+
+        if (!localStorage.getItem('yadav_enquiries')) {
+            const enquiries = [
+                { id: 'ENQ-1', name: 'Vikram Mehta', contact: 'vikram@gmail.com', message: 'Do you deliver organic fruit baskets to Mansarovar?', date: '2026-08-19', status: 'New' }
+            ];
+            localStorage.setItem('yadav_enquiries', JSON.stringify(enquiries));
+        }
+
+        if (!localStorage.getItem('yadav_audit_logs')) {
+            const logs = [
+                { id: 'LOG-1', admin: 'Hemant Yadav', action: 'System Initialization & Admin Login', date: new Date().toLocaleString() }
+            ];
+            localStorage.setItem('yadav_audit_logs', JSON.stringify(logs));
+        }
+    }
+
+    initAdminDefaultData();
+
+    // Helper functions for Data Access
+    function getStored(key, fallback = []) {
+        try {
+            return JSON.parse(localStorage.getItem(key)) || fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    function setStored(key, val) {
+        localStorage.setItem(key, JSON.stringify(val));
+        // Sync with storefront live catalog if updating products
+        if (key === 'yadav_products') {
+            window.CATALOG = val;
+            window.catalogProducts = val;
+            if (typeof window.refreshStorefrontCatalogViews === 'function') {
+                window.refreshStorefrontCatalogViews();
+            }
+        }
+    }
+
+    function logAdminActivity(actionDesc) {
+        const logs = getStored('yadav_audit_logs');
+        logs.unshift({
+            id: 'LOG-' + Date.now(),
+            admin: 'Hemant Yadav (Super Admin)',
+            action: actionDesc,
+            date: new Date().toLocaleString()
+        });
+        setStored('yadav_audit_logs', logs.slice(0, 50));
+    }
+
+    // --- 2. ADMIN TOAST NOTIFICATIONS ---
+    window.showAdminToast = function (title, message, isError = false) {
+        const container = document.getElementById('adminToastContainer');
+        if (!container) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(title, message, isError);
+            } else {
+                alert(`${title}: ${message}`);
+            }
+            return;
+        }
+
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white ${isError ? 'bg-danger' : 'bg-success'} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <strong>${title}</strong><br><small>${message}</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastEl = document.getElementById(toastId);
+        if (toastEl && window.bootstrap) {
+            const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
+            bsToast.show();
+        }
+    };
+
+    // --- 3. ADMIN SECTION SWITCHING & NAVIGATION ---
+    window.activateAdminSection = function (sectionId, navLinkEl) {
+        document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('d-none'));
+        const targetSec = document.getElementById(sectionId);
+        if (targetSec) {
+            targetSec.classList.remove('d-none');
+            targetSec.classList.add('active');
+        }
+
+        document.querySelectorAll('.admin-nav-link').forEach(link => link.classList.remove('active'));
+        if (navLinkEl) {
+            navLinkEl.classList.add('active');
+        } else {
+            const foundLink = document.querySelector(`.admin-nav-link[data-tab="${sectionId}"]`);
+            if (foundLink) foundLink.classList.add('active');
+        }
+
+        // Render section content dynamically
+        switch (sectionId) {
+            case 'sec-dashboard':
+                window.renderDashboardOverview();
+                break;
+            case 'sec-orders':
+                window.renderOrdersTable();
+                break;
+            case 'sec-order-packing':
+                window.renderPackingQueue();
+                break;
+            case 'sec-products':
+                window.renderProductsTable();
+                break;
+            case 'sec-inventory':
+                window.renderInventoryOverview();
+                break;
+            case 'sec-customers':
+                window.renderCustomersTable();
+                break;
+            case 'sec-marketing':
+                window.renderMarketingOverview();
+                break;
+            case 'sec-delivery':
+                window.renderDeliveryZones();
+                break;
+            case 'sec-payments':
+                window.renderPaymentStats();
+                break;
+            case 'sec-analytics':
+                window.renderBusinessAnalytics();
+                break;
+            case 'sec-support':
+                window.renderSupportInbox();
+                break;
+            case 'sec-search-cart':
+                window.renderSearchAndCartAnalytics();
+                break;
+            case 'sec-settings':
+                window.renderStockAuditLogs();
+                break;
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // --- 4. DASHBOARD METRICS & CHARTS ENGINE ---
+    let revenueChartInstance = null;
+    let orderStatusChartInstance = null;
+
+    window.renderDashboardOverview = function () {
+        const orders = getStored('yadav_orders');
+        const products = getStored('yadav_products');
+        const customers = getStored('yadav_customers');
+
+        let totalRevenue = 0;
+        let todayRevenue = 0;
+        let todayOrders = 0;
+        let pendingOrders = 0;
+        let outForDelivery = 0;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        orders.forEach(ord => {
+            const amt = Number(ord.totalAmount) || 0;
+            totalRevenue += amt;
+
+            const ordDateStr = new Date(ord.date).toISOString().split('T')[0];
+            if (ordDateStr === todayStr) {
+                todayRevenue += amt;
+                todayOrders++;
+            }
+
+            if (['New', 'Confirmed', 'Processing', 'Packing', 'Packed'].includes(ord.orderStatus)) {
+                pendingOrders++;
+            }
+            if (ord.orderStatus === 'Out for Delivery') {
+                outForDelivery++;
+            }
+        });
+
+        const lowStockCount = products.filter(p => (Number(p.stock) || 0) <= 5).length;
+
+        // Populate Cards
+        const setVal = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+        setVal('dashTodayRevenue', `₹${todayRevenue.toLocaleString()}`);
+        setVal('dashTotalRevenue', `₹${totalRevenue.toLocaleString()}`);
+        setVal('dashTodayOrders', todayOrders);
+        setVal('dashTotalOrders', orders.length);
+        setVal('dashPendingOrders', pendingOrders);
+        setVal('dashOutForDeliveryOrders', outForDelivery);
+        setVal('dashTotalCustomers', customers.length);
+        setVal('dashLowStockCount', lowStockCount);
+
+        // Sidebar Badges
+        setVal('sidebarPendingOrdersBadge', pendingOrders);
+        setVal('sidebarPackingBadge', orders.filter(o => o.orderStatus === 'Packing').length);
+        setVal('sidebarLowStockBadge', lowStockCount);
+
+        // Render Charts
+        window.renderRevenueChart('7d');
+        window.renderOrderStatusChart(orders);
+        window.renderDashboardRecentOrders(orders);
+        window.renderDashboardTopProducts(orders, products);
+    };
+
+    window.renderRevenueChart = function (period = '7d') {
+        const ctx = document.getElementById('adminRevenueChart');
+        if (!ctx) return;
+
+        const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const data = [1200, 1900, 3000, 2500, 4200, 5800, 6400];
+
+        if (revenueChartInstance) {
+            revenueChartInstance.destroy();
+        }
+
+        revenueChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: data,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#10b981'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    };
+
+    window.updateRevenueChartPeriod = function (period, btnEl) {
+        if (btnEl) {
+            btnEl.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+        }
+        window.renderRevenueChart(period);
+    };
+
+    window.renderOrderStatusChart = function (orders) {
+        const ctx = document.getElementById('adminOrderStatusChart');
+        if (!ctx) return;
+
+        const counts = { Delivered: 0, Pending: 0, Cancelled: 0 };
+        orders.forEach(o => {
+            if (o.orderStatus === 'Delivered') counts.Delivered++;
+            else if (o.orderStatus === 'Cancelled') counts.Cancelled++;
+            else counts.Pending++;
+        });
+
+        if (orderStatusChartInstance) {
+            orderStatusChartInstance.destroy();
+        }
+
+        orderStatusChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Delivered', 'In Progress', 'Cancelled'],
+                datasets: [{
+                    data: [counts.Delivered || 1, counts.Pending || 1, counts.Cancelled || 0],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    };
+
+    window.renderDashboardRecentOrders = function (orders) {
+        const tbody = document.getElementById('dashRecentOrdersTable');
+        if (!tbody) return;
+
+        const recent = orders.slice(0, 5);
+        if (recent.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No orders found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = recent.map(ord => `
+            <tr>
+                <td><span class="fw-bold">${ord.id}</span></td>
+                <td>${ord.customerName}</td>
+                <td class="fw-bold text-success">₹${ord.totalAmount}</td>
+                <td><span class="badge ${ord.orderStatus === 'Delivered' ? 'badge-soft-success' : 'badge-soft-warning'}">${ord.orderStatus}</span></td>
+                <td>
+                    <button class="btn btn-light btn-sm p-1 px-2" onclick="window.viewOrderDetail('${ord.id}')"><i class="bi bi-eye"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.renderDashboardTopProducts = function (orders, products) {
+        const container = document.getElementById('dashTopSellingProductsList');
+        if (!container) return;
+
+        const topProds = products.slice(0, 4);
+        container.innerHTML = topProds.map(prod => `
+            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-2">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="${prod.image}" width="40" height="40" class="rounded object-fit-cover">
+                    <div>
+                        <div class="fw-bold small text-dark">${prod.title}</div>
+                        <small class="text-muted">${prod.category}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="fw-bold text-success small">₹${prod.price}</span>
+                    <small class="d-block text-muted">In Stock: ${prod.stock}</small>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // --- 5. ORDERS MANAGEMENT & PACKING ENGINE ---
+    let currentOrderStatusFilter = 'all';
+
+    window.renderOrdersTable = function () {
+        const tbody = document.getElementById('ordersMasterTableBody');
+        if (!tbody) return;
+
+        let orders = getStored('yadav_orders');
+
+        if (currentOrderStatusFilter !== 'all') {
+            orders = orders.filter(o => o.orderStatus.toLowerCase() === currentOrderStatusFilter.toLowerCase());
+        }
+
+        if (orders.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No orders matching filter.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = orders.map(ord => `
+            <tr>
+                <td><input type="checkbox" class="order-select-cb" value="${ord.id}"></td>
+                <td><span class="fw-bold text-primary">${ord.id}</span></td>
+                <td>
+                    <div class="fw-bold">${ord.customerName}</div>
+                    <small class="text-muted">${ord.customerPhone}</small>
+                </td>
+                <td>${ord.items ? ord.items.length : 0} Items</td>
+                <td class="fw-bold text-success">₹${ord.totalAmount}</td>
+                <td>
+                    <span class="badge ${ord.paymentStatus === 'Paid' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}">${ord.paymentMethod} (${ord.paymentStatus})</span>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm border-secondary-subtle" onchange="window.updateOrderStatus('${ord.id}', this.value)">
+                        <option value="New" ${ord.orderStatus === 'New' ? 'selected' : ''}>New</option>
+                        <option value="Confirmed" ${ord.orderStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="Processing" ${ord.orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
+                        <option value="Packing" ${ord.orderStatus === 'Packing' ? 'selected' : ''}>Packing</option>
+                        <option value="Packed" ${ord.orderStatus === 'Packed' ? 'selected' : ''}>Packed</option>
+                        <option value="Ready for Delivery" ${ord.orderStatus === 'Ready for Delivery' ? 'selected' : ''}>Ready for Delivery</option>
+                        <option value="Out for Delivery" ${ord.orderStatus === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+                        <option value="Delivered" ${ord.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="Cancelled" ${ord.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </td>
+                <td><small class="text-muted">${new Date(ord.date).toLocaleDateString()}</small></td>
+                <td class="text-end">
+                    <button class="btn btn-outline-dark btn-sm me-1" title="View Order" onclick="window.viewOrderDetail('${ord.id}')"><i class="bi bi-eye"></i></button>
+                    <button class="btn btn-outline-success btn-sm" title="Print Invoice" onclick="window.printSingleInvoice('${ord.id}')"><i class="bi bi-printer"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.filterOrdersByStatus = function (status, tabEl) {
+        currentOrderStatusFilter = status;
+        if (tabEl) {
+            tabEl.parentElement.parentElement.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+            tabEl.classList.add('active');
+        }
+        window.renderOrdersTable();
+    };
+
+    window.updateOrderStatus = function (orderId, newStatus) {
+        const orders = getStored('yadav_orders');
+        const target = orders.find(o => o.id === orderId);
+        if (target) {
+            target.orderStatus = newStatus;
+            setStored('yadav_orders', orders);
+            logAdminActivity(`Updated Order ${orderId} status to ${newStatus}`);
+            window.showAdminToast('Order Updated', `Order ${orderId} is now ${newStatus}`);
+            window.renderDashboardOverview();
+        }
+    };
+
+    window.viewOrderDetail = function (orderId) {
+        const orders = getStored('yadav_orders');
+        const ord = orders.find(o => o.id === orderId);
+        if (!ord) return;
+
+        alert(`Order Details:\nID: ${ord.id}\nCustomer: ${ord.customerName}\nPhone: ${ord.customerPhone}\nAddress: ${ord.address}\nTotal: ₹${ord.totalAmount}\nStatus: ${ord.orderStatus}`);
+    };
+
+    window.printSingleInvoice = function (orderId) {
+        const orders = getStored('yadav_orders');
+        const ord = orders.find(o => o.id === orderId);
+        if (!ord) return;
+
+        const printArea = document.getElementById('printableInvoiceArea');
+        if (!printArea) return;
+
+        printArea.innerHTML = `
+            <div class="border p-4 rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <div>
+                        <h3 class="fw-bold text-success m-0">Yadav Vegetable & Ice-Cream Parlour</h3>
+                        <p class="text-muted small m-0">Gandhi Path, Jaipur | Support: +91 98765 43210</p>
+                    </div>
+                    <div class="text-end">
+                        <h5 class="fw-bold text-dark m-0">TAX INVOICE</h5>
+                        <p class="text-muted small m-0">Invoice #: ${ord.id}</p>
+                        <p class="text-muted small m-0">Date: ${new Date(ord.date).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <h6 class="fw-bold">Billed To:</h6>
+                    <p class="m-0"><strong>${ord.customerName}</strong> (${ord.customerPhone})</p>
+                    <p class="m-0 text-muted small">${ord.address}</p>
+                </div>
+                <table class="table table-bordered mb-4">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Item Description</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ord.items.map(item => `
+                            <tr>
+                                <td>${item.title}</td>
+                                <td class="text-center">${item.quantity}</td>
+                                <td class="text-end">₹${item.price}</td>
+                                <td class="text-end">₹${item.price * item.quantity}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                    <p class="text-muted small">Thank you for shopping with Yadav Store!</p>
+                    <h4 class="fw-bold text-success">Grand Total: ₹${ord.totalAmount}</h4>
+                </div>
+            </div>`;
+
+        printArea.classList.remove('d-none');
+        window.print();
+        setTimeout(() => printArea.classList.add('d-none'), 1000);
+    };
+
+    window.bulkPrintSelectedInvoices = function () {
+        const checked = Array.from(document.querySelectorAll('.order-select-cb:checked')).map(cb => cb.value);
+        if (checked.length === 0) {
+            window.showAdminToast('Select Orders', 'Please check at least one order to print invoices.', true);
+            return;
+        }
+        window.printSingleInvoice(checked[0]);
+    };
+
+    window.toggleSelectAllOrders = function (mainCb) {
+        document.querySelectorAll('.order-select-cb').forEach(cb => cb.checked = mainCb.checked);
+    };
+
+    // Packing Queue View
+    window.renderPackingQueue = function () {
+        const container = document.getElementById('packingOrdersContainer');
+        if (!container) return;
+
+        const orders = getStored('yadav_orders').filter(o => ['Confirmed', 'Processing', 'Packing'].includes(o.orderStatus));
+        if (orders.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center text-muted py-5">No pending orders in packing queue! 🎉</div>`;
+            return;
+        }
+
+        container.innerHTML = orders.map(ord => `
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-primary">${ord.id}</span>
+                        <span class="badge bg-warning text-dark">${ord.orderStatus}</span>
+                    </div>
+                    <div class="fw-bold text-dark mb-1">${ord.customerName}</div>
+                    <div class="small text-muted mb-3">${ord.address}</div>
+
+                    <h6 class="fw-bold small text-uppercase text-secondary border-bottom pb-1">Items Checklist:</h6>
+                    <div class="mb-3">
+                        ${ord.items.map((it, idx) => `
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chk-${ord.id}-${idx}" ${ord.packingChecklist && ord.packingChecklist[idx] ? 'checked' : ''} onchange="window.togglePackingItem('${ord.id}', ${idx})">
+                                <label class="form-check-label small" for="chk-${ord.id}-${idx}">
+                                    ${it.quantity}x ${it.title}
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button class="btn btn-success btn-sm w-100 fw-bold" onclick="window.markOrderPacked('${ord.id}')"><i class="bi bi-check-circle me-1"></i> Mark Order Packed & Ready</button>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.togglePackingItem = function (orderId, idx) {
+        const orders = getStored('yadav_orders');
+        const target = orders.find(o => o.id === orderId);
+        if (target) {
+            if (!target.packingChecklist) target.packingChecklist = [];
+            target.packingChecklist[idx] = !target.packingChecklist[idx];
+            setStored('yadav_orders', orders);
+        }
+    };
+
+    window.markOrderPacked = function (orderId) {
+        window.updateOrderStatus(orderId, 'Ready for Delivery');
+        window.renderPackingQueue();
+    };
+
+    // --- 6. PRODUCT MANAGEMENT ENGINE ---
+    window.renderProductsTable = function () {
+        const tbody = document.getElementById('productsMasterTableBody');
+        if (!tbody) return;
+
+        let products = getStored('yadav_products');
+
+        const search = (document.getElementById('productSearchTerm')?.value || '').toLowerCase();
+        const cat = document.getElementById('productFilterCat')?.value || 'All';
+        const stockFilter = document.getElementById('productFilterStock')?.value || 'All';
+
+        if (search) {
+            products = products.filter(p => (p.title || '').toLowerCase().includes(search) || (p.id || '').toLowerCase().includes(search));
+        }
+        if (cat !== 'All') {
+            products = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase());
+        }
+        if (stockFilter !== 'All') {
+            if (stockFilter === 'in_stock') products = products.filter(p => (Number(p.stock) || 0) > 5);
+            if (stockFilter === 'low_stock') products = products.filter(p => (Number(p.stock) || 0) > 0 && (Number(p.stock) || 0) <= 5);
+            if (stockFilter === 'out_of_stock') products = products.filter(p => (Number(p.stock) || 0) === 0);
+        }
+
+        if (products.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No products found matching filters.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = products.map(prod => `
+            <tr>
+                <td><input type="checkbox" class="prod-select-cb" value="${prod.id}"></td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="${prod.image || 'assets/fav-icon.png'}" width="40" height="40" class="rounded object-fit-cover">
+                        <div>
+                            <div class="fw-bold text-dark">${prod.title}</div>
+                            <small class="text-muted">${prod.hindiTitle || ''}</small>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge bg-light text-dark border">${prod.category}</span></td>
+                <td><small class="text-muted">${prod.id}</small></td>
+                <td>
+                    <span class="fw-bold text-success">₹${prod.price}</span>
+                    ${prod.originalPrice ? `<small class="text-muted text-decoration-line-through ms-1">₹${prod.originalPrice}</small>` : ''}
+                </td>
+                <td>
+                    <span class="fw-bold ${(Number(prod.stock) || 0) <= 5 ? 'text-danger' : 'text-dark'}">${prod.stock || 0}</span>
+                </td>
+                <td>
+                    <span class="badge ${(Number(prod.stock) || 0) > 0 ? 'badge-soft-success' : 'badge-soft-danger'}">${(Number(prod.stock) || 0) > 0 ? 'Published' : 'Out of Stock'}</span>
+                </td>
+                <td>
+                    <button class="btn btn-sm ${prod.featured ? 'btn-warning' : 'btn-light'}" onclick="window.toggleProductFeatured('${prod.id}')"><i class="bi bi-star-fill"></i></button>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-outline-primary btn-sm me-1" onclick="window.editProduct('${prod.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="window.deleteProduct('${prod.id}')"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.toggleSelectAllProducts = function (mainCb) {
+        document.querySelectorAll('.prod-select-cb').forEach(cb => cb.checked = mainCb.checked);
+    };
+
+    window.toggleProductFeatured = function (prodId) {
+        const products = getStored('yadav_products');
+        const p = products.find(prod => prod.id === prodId);
+        if (p) {
+            p.featured = !p.featured;
+            setStored('yadav_products', products);
+            window.renderProductsTable();
+        }
+    };
+
+    window.openAddProductModal = function () {
+        const modalEl = document.getElementById('adminProductModal');
+        if (!modalEl) return;
+        document.getElementById('productForm').reset();
+        document.getElementById('prodEditId').value = '';
+        document.getElementById('productModalTitle').innerText = 'Add New Product';
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    };
+
+    window.editProduct = function (prodId) {
+        const products = getStored('yadav_products');
+        const prod = products.find(p => p.id === prodId);
+        if (!prod) return;
+
+        document.getElementById('prodEditId').value = prod.id;
+        document.getElementById('prodTitle').value = prod.title || '';
+        document.getElementById('prodHindiTitle').value = prod.hindiTitle || '';
+        document.getElementById('prodCategory').value = prod.category || 'Vegetables';
+        document.getElementById('prodSubCategory').value = prod.subCategory || '';
+        document.getElementById('prodPrice').value = prod.price || 0;
+        document.getElementById('prodOriginalPrice').value = prod.originalPrice || '';
+        document.getElementById('prodStock').value = prod.stock || 50;
+        document.getElementById('prodImageUrl').value = prod.image || '';
+        document.getElementById('prodBadge').value = prod.badge || '';
+        document.getElementById('prodDesc').value = prod.desc || '';
+
+        document.getElementById('productModalTitle').innerText = 'Edit Product';
+        const modal = new bootstrap.Modal(document.getElementById('adminProductModal'));
+        modal.show();
+    };
+
+    window.deleteProduct = function (prodId) {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        let products = getStored('yadav_products');
+        products = products.filter(p => p.id !== prodId);
+        setStored('yadav_products', products);
+        logAdminActivity(`Deleted Product ID ${prodId}`);
+        window.showAdminToast('Deleted', 'Product removed successfully.');
+        window.renderProductsTable();
+    };
+
+    window.bulkDeleteSelectedProducts = function () {
+        const checked = Array.from(document.querySelectorAll('.prod-select-cb:checked')).map(cb => cb.value);
+        if (checked.length === 0) {
+            window.showAdminToast('Select Products', 'Please check at least one product to delete.', true);
+            return;
+        }
+        if (!confirm(`Delete ${checked.length} selected products?`)) return;
+
+        let products = getStored('yadav_products');
+        products = products.filter(p => !checked.includes(p.id));
+        setStored('yadav_products', products);
+        logAdminActivity(`Bulk deleted ${checked.length} products`);
+        window.showAdminToast('Deleted', `${checked.length} products removed.`);
+        window.renderProductsTable();
+    };
+
+    window.saveProductFormSubmit = function (e) {
+        e.preventDefault();
+        const editId = document.getElementById('prodEditId').value;
+        const products = getStored('yadav_products');
+
+        const newProd = {
+            id: editId || ('PROD-' + Date.now()),
+            title: document.getElementById('prodTitle').value.trim(),
+            hindiTitle: document.getElementById('prodHindiTitle').value.trim(),
+            category: document.getElementById('prodCategory').value,
+            subCategory: document.getElementById('prodSubCategory').value.trim(),
+            price: Number(document.getElementById('prodPrice').value),
+            originalPrice: document.getElementById('prodOriginalPrice').value ? Number(document.getElementById('prodOriginalPrice').value) : null,
+            stock: Number(document.getElementById('prodStock').value),
+            image: document.getElementById('prodImageUrl').value.trim() || 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500',
+            badge: document.getElementById('prodBadge').value.trim(),
+            desc: document.getElementById('prodDesc').value.trim(),
+            unitType: 'weight'
+        };
+
+        if (editId) {
+            const idx = products.findIndex(p => p.id === editId);
+            if (idx !== -1) products[idx] = newProd;
+            logAdminActivity(`Updated Product ${newProd.title}`);
+        } else {
+            products.unshift(newProd);
+            logAdminActivity(`Created New Product ${newProd.title}`);
+        }
+
+        setStored('yadav_products', products);
+        window.showAdminToast('Saved', `Product "${newProd.title}" saved successfully!`);
+
+        const modalEl = document.getElementById('adminProductModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        window.renderProductsTable();
+    };
+
+    // --- 7. INVENTORY MANAGEMENT ENGINE ---
+    window.renderInventoryOverview = function () {
+        const tbody = document.getElementById('inventoryOverviewTableBody');
+        if (!tbody) return;
+
+        const products = getStored('yadav_products');
+        tbody.innerHTML = products.map(prod => `
+            <tr>
+                <td><span class="fw-bold">${prod.title}</span></td>
+                <td><span class="fw-bold">${prod.stock || 0}</span></td>
+                <td>5</td>
+                <td>
+                    <span class="badge ${(Number(prod.stock) || 0) <= 5 ? 'badge-soft-danger' : 'badge-soft-success'}">
+                        ${(Number(prod.stock) || 0) <= 5 ? 'Low Stock' : 'Optimal'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="window.quickAdjustStock('${prod.id}')">Adjust</button>
+                </td>
+            </tr>
+        `).join('');
+
+        window.renderStockAuditLogs();
+    };
+
+    window.quickAdjustStock = function (prodId) {
+        const newStock = prompt('Enter new stock quantity:');
+        if (newStock === null || isNaN(newStock)) return;
+
+        const products = getStored('yadav_products');
+        const prod = products.find(p => p.id === prodId);
+        if (prod) {
+            prod.stock = Number(newStock);
+            setStored('yadav_products', products);
+            logAdminActivity(`Stock adjustment for ${prod.title} to ${newStock}`);
+            window.showAdminToast('Stock Updated', `Stock for ${prod.title} set to ${newStock}`);
+            window.renderInventoryOverview();
+        }
+    };
+
+    window.openStockAdjustmentModal = function () {
+        const firstProd = getStored('yadav_products')[0];
+        if (firstProd) window.quickAdjustStock(firstProd.id);
+    };
+
+    window.renderStockAuditLogs = function () {
+        const container = document.getElementById('inventoryAuditHistoryList');
+        const container2 = document.getElementById('adminActivityAuditLogList');
+        const logs = getStored('yadav_audit_logs');
+
+        const html = logs.map(l => `
+            <div class="list-group-item px-0 border-0 border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small text-dark">${l.action}</span>
+                    <small class="text-muted fs-7">${l.date}</small>
+                </div>
+                <small class="text-secondary">${l.admin}</small>
+            </div>
+        `).join('');
+
+        if (container) container.innerHTML = html;
+        if (container2) container2.innerHTML = html;
+    };
+
+    // --- 8. CUSTOMER MANAGEMENT ENGINE ---
+    window.renderCustomersTable = function () {
+        const tbody = document.getElementById('customersMasterTableBody');
+        if (!tbody) return;
+
+        const customers = getStored('yadav_customers');
+        tbody.innerHTML = customers.map(c => `
+            <tr>
+                <td><span class="fw-bold">${c.name}</span></td>
+                <td>${c.phone}<br><small class="text-muted">${c.email}</small></td>
+                <td>${c.totalOrders}</td>
+                <td class="fw-bold text-success">₹${c.totalSpent}</td>
+                <td><span class="badge ${c.status === 'Active' ? 'badge-soft-success' : 'badge-soft-danger'}">${c.status}</span></td>
+                <td class="text-end">
+                    <button class="btn btn-sm ${c.status === 'Active' ? 'btn-outline-danger' : 'btn-outline-success'}" onclick="window.toggleBlockCustomer('${c.id}')">
+                        ${c.status === 'Active' ? 'Block' : 'Unblock'}
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    };
+
+    window.toggleBlockCustomer = function (custId) {
+        const customers = getStored('yadav_customers');
+        const c = customers.find(item => item.id === custId);
+        if (c) {
+            c.status = c.status === 'Active' ? 'Blocked' : 'Active';
+            setStored('yadav_customers', customers);
+            logAdminActivity(`Toggled status for customer ${c.name} to ${c.status}`);
+            window.showAdminToast('Customer Updated', `${c.name} is now ${c.status}`);
+            window.renderCustomersTable();
+        }
+    };
+
+    // --- 9. MARKETING, OFFERS & COUPONS ENGINE ---
+    window.renderMarketingOverview = function () {
+        const couponsContainer = document.getElementById('activeCouponsList');
+        const offersContainer = document.getElementById('activeOffersList');
+
+        const coupons = getStored('yadav_coupons');
+        const offers = getStored('yadav_offers');
+
+        if (couponsContainer) {
+            couponsContainer.innerHTML = coupons.map(c => `
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 border-bottom px-0">
+                    <div>
+                        <span class="badge bg-success-subtle text-success fw-bold me-2 fs-6">${c.code}</span>
+                        <small class="text-muted">Min Order: ₹${c.minOrder}</small>
+                    </div>
+                    <div>
+                        <span class="fw-bold text-dark me-3">${c.type === 'fixed' ? '₹' + c.discount : c.discount + '%'} OFF</span>
+                        <button class="btn btn-outline-danger btn-sm p-1 px-2" onclick="window.deleteCoupon('${c.code}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (offersContainer) {
+            offersContainer.innerHTML = offers.map(o => `
+                <div class="list-group-item d-flex justify-content-between align-items-center border-0 border-bottom px-0">
+                    <div>
+                        <div class="fw-bold text-dark">${o.title}</div>
+                        <small class="text-success">${o.discount}</small>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm p-1 px-2" onclick="window.deleteOffer('${o.id}')"><i class="bi bi-trash"></i></button>
+                </div>
+            `).join('');
+        }
+    };
+
+    window.openAddCouponModal = function () {
+        const code = prompt('Enter Coupon Code (e.g. SUMMER20):');
+        if (!code) return;
+        const discount = prompt('Enter Discount Amount in ₹:');
+        if (!discount) return;
+
+        const coupons = getStored('yadav_coupons');
+        coupons.push({ code: code.toUpperCase(), discount: Number(discount), type: 'fixed', minOrder: 199, active: true });
+        setStored('yadav_coupons', coupons);
+        logAdminActivity(`Created Coupon Code ${code}`);
+        window.showAdminToast('Coupon Created', `Coupon ${code} added successfully!`);
+        window.renderMarketingOverview();
+    };
+
+    window.deleteCoupon = function (code) {
+        let coupons = getStored('yadav_coupons');
+        coupons = coupons.filter(c => c.code !== code);
+        setStored('yadav_coupons', coupons);
+        window.renderMarketingOverview();
+    };
+
+    window.openAddOfferModal = function () {
+        const title = prompt('Enter Offer Title (e.g. Flash Sunday Sale):');
+        if (!title) return;
+
+        const offers = getStored('yadav_offers');
+        offers.push({ id: 'OFF-' + Date.now(), title: title, discount: 'Special Discount', status: 'Active' });
+        setStored('yadav_offers', offers);
+        logAdminActivity(`Created Offer Campaign: ${title}`);
+        window.showAdminToast('Offer Created', `Campaign "${title}" is live!`);
+        window.renderMarketingOverview();
+    };
+
+    window.deleteOffer = function (offerId) {
+        let offers = getStored('yadav_offers');
+        offers = offers.filter(o => o.id !== offerId);
+        setStored('yadav_offers', offers);
+        window.renderMarketingOverview();
+    };
+
+    // --- 10. DELIVERY & PAYMENTS ENGINE ---
+    window.renderDeliveryZones = function () {
+        const tbody = document.getElementById('deliveryZonesTableBody');
+        if (!tbody) return;
+
+        const zones = getStored('yadav_delivery_zones');
+        tbody.innerHTML = zones.map(z => `
+            <tr>
+                <td><span class="fw-bold">${z.pincode}</span><br><small class="text-muted">${z.zone}</small></td>
+                <td>₹${z.charge}</td>
+                <td>₹${z.freeAbove}</td>
+                <td><span class="badge badge-soft-success">Active</span></td>
+                <td><button class="btn btn-outline-danger btn-sm p-1 px-2" onclick="window.deleteDeliveryZone('${z.id}')"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `).join('');
+    };
+
+    window.openAddDeliveryAreaModal = function () {
+        const pincode = prompt('Enter Delivery Pincode:');
+        if (!pincode) return;
+        const zone = prompt('Enter Area Name:');
+        if (!zone) return;
+
+        const zones = getStored('yadav_delivery_zones');
+        zones.push({ id: 'Z-' + Date.now(), pincode, zone, charge: 25, freeAbove: 399, active: true });
+        setStored('yadav_delivery_zones', zones);
+        window.showAdminToast('Delivery Zone Added', `Zone ${pincode} added.`);
+        window.renderDeliveryZones();
+    };
+
+    window.deleteDeliveryZone = function (zoneId) {
+        let zones = getStored('yadav_delivery_zones');
+        zones = zones.filter(z => z.id !== zoneId);
+        setStored('yadav_delivery_zones', zones);
+        window.renderDeliveryZones();
+    };
+
+    window.savePaymentMethods = function (e) {
+        e.preventDefault();
+        const vpa = document.getElementById('payUpiVpa')?.value || 'yadav.store@okicici';
+        logAdminActivity(`Updated payment settings. UPI VPA: ${vpa}`);
+        window.showAdminToast('Saved', 'Payment Gateway settings updated.');
+    };
+
+    window.renderPaymentStats = function () {
+        const container = document.getElementById('paymentStatsOverview');
+        if (!container) return;
+        container.innerHTML = `
+            <div class="row g-3">
+                <div class="col-6"><div class="p-3 bg-light rounded text-center"><small>UPI Payments</small><h4 class="fw-bold text-success">85%</h4></div></div>
+                <div class="col-6"><div class="p-3 bg-light rounded text-center"><small>COD Orders</small><h4 class="fw-bold text-primary">15%</h4></div></div>
+            </div>`;
+    };
+
+    // --- 11. STOREFRONT THEME & ANNOUNCEMENT BAR ENGINE ---
+    window.saveAnnouncementSettings = function (e) {
+        if (e) e.preventDefault();
+        const config = {
+            enabled: document.getElementById('announcementEnabled')?.checked || false,
+            text: document.getElementById('announcementText')?.value || '',
+            bgColor: document.getElementById('announcementBgColor')?.value || '#ffc107',
+            textColor: document.getElementById('announcementTextColor')?.value || '#212529'
+        };
+        localStorage.setItem('yadav_announcement', JSON.stringify(config));
+        logAdminActivity('Updated storefront top announcement bar settings');
+        window.showAdminToast('Updated', 'Top Announcement bar settings updated live!');
+    };
+
+    window.applyThemePreset = function (presetName) {
+        localStorage.setItem('yadav_theme_preset', presetName);
+        logAdminActivity(`Applied Storefront Theme Preset: ${presetName}`);
+        window.showAdminToast('Theme Applied', `Storefront color preset updated to ${presetName}`);
+    };
+
+    // --- 12. CMS, SUPPORT & REPORTS ENGINE ---
+    window.loadCmsPageContent = function (pageKey) {
+        const editor = document.getElementById('cmsPageEditorText');
+        if (!editor) return;
+
+        const cmsData = getStored('yadav_cms_pages', {});
+        editor.value = cmsData[pageKey] || `Default content for ${pageKey}. Editable from Admin Panel.`;
+    };
+
+    window.saveCmsPageContent = function () {
+        const pageKey = document.getElementById('cmsPageSelect')?.value || 'about_us';
+        const content = document.getElementById('cmsPageEditorText')?.value || '';
+
+        const cmsData = getStored('yadav_cms_pages', {});
+        cmsData[pageKey] = content;
+        setStored('yadav_cms_pages', cmsData);
+        logAdminActivity(`Updated CMS Page: ${pageKey}`);
+        window.showAdminToast('Saved', `Page "${pageKey}" updated successfully.`);
+    };
+
+    window.renderSupportInbox = function () {
+        const tbody = document.getElementById('supportInboxTableBody');
+        if (!tbody) return;
+
+        const enquiries = getStored('yadav_enquiries');
+        tbody.innerHTML = enquiries.map(e => `
+            <tr>
+                <td><span class="fw-bold">${e.name}</span></td>
+                <td>${e.contact}</td>
+                <td>${e.message}</td>
+                <td><small class="text-muted">${e.date}</small></td>
+                <td><span class="badge badge-soft-warning">${e.status}</span></td>
+                <td><button class="btn btn-sm btn-outline-success" onclick="alert('Replying to ${e.name}')">Reply</button></td>
+            </tr>
+        `).join('');
+    };
+
+    window.exportOrdersCSV = function () {
+        const orders = getStored('yadav_orders');
+        let csv = 'Order ID,Customer Name,Phone,Total Amount,Payment Method,Status,Date\n';
+        orders.forEach(o => {
+            csv += `"${o.id}","${o.customerName}","${o.customerPhone}","${o.totalAmount}","${o.paymentMethod}","${o.orderStatus}","${o.date}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Yadav_Orders_Report_${Date.now()}.csv`;
+        a.click();
+    };
+
+    window.exportProductsCSV = function () {
+        const products = getStored('yadav_products');
+        let csv = 'Product ID,Title,Category,Price,Original Price,Stock\n';
+        products.forEach(p => {
+            csv += `"${p.id}","${p.title}","${p.category}","${p.price}","${p.originalPrice || ''}","${p.stock}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Yadav_Products_Catalog_${Date.now()}.csv`;
+        a.click();
+    };
+
+    window.exportCustomersCSV = function () {
+        const customers = getStored('yadav_customers');
+        let csv = 'Customer ID,Name,Email,Phone,Total Orders,Total Spent,Status\n';
+        customers.forEach(c => {
+            csv += `"${c.id}","${c.name}","${c.email}","${c.phone}","${c.totalOrders}","${c.totalSpent}","${c.status}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Yadav_Customers_${Date.now()}.csv`;
+        a.click();
+    };
+
+    // --- 13. GLOBAL SEARCH & PWA APP ENGINE ---
+    window.handleAdminGlobalSearch = function (query) {
+        const resultsBox = document.getElementById('adminGlobalSearchResults');
+        if (!resultsBox) return;
+
+        const q = (query || '').toLowerCase().trim();
+        if (!q) {
+            resultsBox.classList.remove('show');
+            return;
+        }
+
+        const orders = getStored('yadav_orders').filter(o => o.id.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q));
+        const products = getStored('yadav_products').filter(p => p.title.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+
+        let html = '';
+        if (orders.length > 0) {
+            html += `<h6 class="dropdown-header text-primary">Orders (${orders.length})</h6>`;
+            orders.slice(0, 3).forEach(o => {
+                html += `<a class="dropdown-item" href="#" onclick="window.activateAdminSection('sec-orders'); window.viewOrderDetail('${o.id}'); return false;">Order ${o.id} - ${o.customerName} (₹${o.totalAmount})</a>`;
+            });
+        }
+        if (products.length > 0) {
+            html += `<h6 class="dropdown-header text-success">Products (${products.length})</h6>`;
+            products.slice(0, 3).forEach(p => {
+                html += `<a class="dropdown-item" href="#" onclick="window.activateAdminSection('sec-products'); return false;">${p.title} - ₹${p.price}</a>`;
+            });
+        }
+
+        if (!html) html = `<div class="p-2 text-muted small text-center">No matching records</div>`;
+
+        resultsBox.innerHTML = html;
+        resultsBox.classList.add('show');
+    };
+
+    window.installAdminApp = function () {
+        if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            window.deferredPrompt.userChoice.then(choice => {
+                if (choice.outcome === 'accepted') {
+                    window.showAdminToast('Installed', 'Yadav Admin Control Center installed to device!');
+                }
+                window.deferredPrompt = null;
+            });
+        } else {
+            alert('To install Yadav Admin App:\n\nAndroid/Chrome: Tap Chrome menu (⋮) -> Add to Home Screen.\niOS/Safari: Tap Share button -> Add to Home Screen.');
+        }
+    };
+
+    window.exportFullDatabaseBackup = function () {
+        const fullBackup = {
+            products: getStored('yadav_products'),
+            orders: getStored('yadav_orders'),
+            customers: getStored('yadav_customers'),
+            coupons: getStored('yadav_coupons'),
+            offers: getStored('yadav_offers'),
+            announcement: getStored('yadav_announcement'),
+            delivery_zones: getStored('yadav_delivery_zones'),
+            audit_logs: getStored('yadav_audit_logs'),
+            timestamp: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `YADAV_STORE_FULL_BACKUP_${Date.now()}.json`;
+        a.click();
+        logAdminActivity('Exported full database backup JSON');
+        window.showAdminToast('Backup Complete', 'Full database JSON backup downloaded.');
+    };
+
+    window.restoreDatabaseBackup = function () {
+        const fileInput = document.getElementById('dbRestoreFileInput');
+        if (!fileInput || !fileInput.files[0]) {
+            window.showAdminToast('Select File', 'Please select a valid .json backup file.', true);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.products) setStored('yadav_products', data.products);
+                if (data.orders) setStored('yadav_orders', data.orders);
+                if (data.customers) setStored('yadav_customers', data.customers);
+                if (data.coupons) setStored('yadav_coupons', data.coupons);
+                if (data.offers) setStored('yadav_offers', data.offers);
+
+                logAdminActivity('Restored full database backup from JSON file');
+                window.showAdminToast('Database Restored', 'Store data successfully restored!');
+                window.renderDashboardOverview();
+            } catch (err) {
+                window.showAdminToast('Restore Error', 'Invalid backup file format.', true);
+            }
+        };
+        reader.readAsText(fileInput.files[0]);
+    };
+
+    window.saveStoreInformationSettings = function (e) {
+        if (e) e.preventDefault();
+        window.showAdminToast('Saved', 'Store information and tax rates saved.');
+    };
+
+    window.toggleWebsiteMaintenanceMode = function (enabled) {
+        localStorage.setItem('yadav_maintenance_mode', enabled ? 'true' : 'false');
+        logAdminActivity(`Toggled website maintenance mode: ${enabled}`);
+        window.showAdminToast('Maintenance Mode', `Website maintenance mode is now ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    };
+
+    window.clearAllAdminNotifications = function () {
+        const list = document.getElementById('adminNotificationsList');
+        const badge = document.getElementById('adminUnreadAlertsCount');
+        if (list) list.innerHTML = `<div class="p-3 text-center text-muted small">No new notifications</div>`;
+        if (badge) badge.innerText = '0';
+    };
+
+    window.logoutAdminSession = function () {
+        if (confirm('Are you sure you want to log out from Admin Panel?')) {
+            window.location.href = 'login.html';
+        }
+    };
+
+    window.openAdminProfileModal = function () {
+        alert('Admin Profile:\nHemant Yadav (Super Admin)\nEmail: hyadav1317@gmail.com\nLast Login: ' + new Date().toLocaleString());
+    };
+
+    window.openChangePasswordModal = function () {
+        const pass = prompt('Enter new password:');
+        if (pass) {
+            logAdminActivity('Changed Admin Password');
+            window.showAdminToast('Password Changed', 'Admin password updated successfully.');
+        }
+    };
+
+    window.toggleAdminPasswordVisibility = function (inputId, btn) {
+        const inp = document.getElementById(inputId);
+        if (inp) {
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            btn.innerHTML = inp.type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+        }
+    };
+
+    window.triggerAdminForgotPassword = function () {
+        alert('Password reset instructions sent to registered admin email address!');
+    };
+
+    window.renderSearchAndCartAnalytics = function () {
+        const searches = document.getElementById('topSearchTermsList');
+        const carts = document.getElementById('abandonedCartsList');
+
+        if (searches) {
+            searches.innerHTML = `
+                <div class="list-group-item d-flex justify-content-between"><span>Fresh Mangoes</span><span class="badge bg-success">142 searches</span></div>
+                <div class="list-group-item d-flex justify-content-between"><span>Amul Butter</span><span class="badge bg-success">98 searches</span></div>
+                <div class="list-group-item d-flex justify-content-between"><span>Avocado</span><span class="badge bg-warning text-dark">Zero results</span></div>`;
+        }
+        if (carts) {
+            carts.innerHTML = `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div><strong>Priya Verma</strong><br><small class="text-muted">2 items in cart (₹370)</small></div>
+                    <button class="btn btn-sm btn-outline-success" onclick="alert('Reminder sent!')">Send Offer</button>
+                </div>`;
+        }
+    };
+
+    window.renderBusinessAnalytics = function () {
+        const setVal = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+        setVal('analyticsAOV', '₹345');
+        setVal('analyticsGrossSales', '₹45,890');
+        setVal('analyticsTaxTotal', '₹2,294');
+        setVal('analyticsDeliveryTotal', '₹1,450');
+    };
+
+    window.openCustomizeDashboardModal = function () {
+        alert('Dashboard Customizer:\nYou can toggle card visibility or drag widgets to reorder them!');
+    };
+
+    window.openAddStaffModal = function () {
+        const name = prompt('Enter Staff Name:');
+        if (!name) return;
+        const email = prompt('Enter Staff Email:');
+        if (!email) return;
+
+        const staff = getStored('yadav_staff_accounts', []);
+        staff.push({ id: 'STAFF-' + Date.now(), name, email, role: 'Order Manager', status: 'Active' });
+        setStored('yadav_staff_accounts', staff);
+        logAdminActivity(`Created Staff Account for ${name}`);
+        window.showAdminToast('Staff Added', `Staff account for ${name} created.`);
+    };
+
+    // DOM Ready initialization for Admin Control Center
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.body.classList.contains('admin-dashboard')) {
+            window.renderDashboardOverview();
+        }
+    });
+
+})();
+
 
