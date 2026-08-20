@@ -222,6 +222,10 @@
                                 <input type="text" id="chkCity" class="chk-input" placeholder="City" required>
                                 <input type="tel" id="chkin" class="chk-input" placeholder="PIN Code" required pattern="[0-9]{6}">
                             </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="saveAddress">
+                                <label class="form-check-label small text-muted" for="saveAddress">Save this address for future orders</label>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -302,6 +306,10 @@
             };
             
             localStorage.setItem('yadavCheckoutDetails', JSON.stringify(checkoutData));
+            const savedAddressKey = `yadavSavedAddress:${window.auth?.currentUser?.uid || 'guest'}`;
+            if (document.getElementById('saveAddress').checked) {
+                localStorage.setItem(savedAddressKey, JSON.stringify(checkoutData));
+            }
             
             if (action === 'whatsapp') {
                 if (typeof window.processWhatsAppOrder === 'function') {

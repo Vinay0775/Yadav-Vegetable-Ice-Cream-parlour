@@ -370,6 +370,9 @@ if (!firebase.apps.length) {
 window.auth = firebase.auth();
 window.db = firebase.firestore();
 window.YADAV_OWNER_EMAIL = 'hyadav1317@gmail.com';
+window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((error) => {
+    console.warn('Could not enable persistent login:', error);
+});
 
 window.normalizeEmail = function (email) {
     return String(email || '').trim().toLowerCase();
@@ -949,6 +952,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             currentUser = user;
+            if (document.getElementById('checkoutForm') && typeof window.renderCheckoutPage === 'function') {
+                window.renderCheckoutPage();
+            }
 
             // Sync Wishlist collection
             window.favoriteUnsubscribe = window.db.collection('users').doc(user.uid).collection('wishlist').onSnapshot(snap => {
@@ -2264,7 +2270,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
         if (!isMobile) {
             if (window.showToast) {
-                window.showToast('Mobile Only', 'UPI payment requires a mobile device. Please use your phone or scan the QR code.', true);
+                window.showToast('Mobile Only', 'UPI payment requires a mobile device. Please use your phone or copy the UPI ID.', true);
             } else {
                 alert('UPI payment is only available on mobile devices. Please use your phone to complete this payment.');
             }
@@ -2339,10 +2345,9 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             window.showToast('Order Saved', `Order ${savedOrderId} saved. Opening UPI app...`);
         }
         
-        // After 3 seconds, check if user might need to fallback to QR code
         setTimeout(() => {
             if (window.showToast) {
-                window.showToast('Payment Pending', 'If the app didn\'t open, please scan the QR code or copy the UPI ID.', true);
+                window.showToast('Payment Pending', 'If the app didn\'t open, please copy the UPI ID and pay from your UPI app.', true);
             }
         }, 3000);
     };
@@ -2351,6 +2356,25 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     window.renderCheckoutPage = function() {
         const cartItemsEl = document.getElementById('checkoutCartItems');
         if (!cartItemsEl) return;
+
+        const savedAddressKey = `yadavSavedAddress:${window.auth?.currentUser?.uid || 'guest'}`;
+        const savedAddress = JSON.parse(localStorage.getItem(savedAddressKey) || 'null');
+        if (savedAddress) {
+            const fields = {
+                chkEmail: savedAddress.email,
+                chkFirstName: savedAddress.firstName,
+                chkLastName: savedAddress.lastName,
+                chkAddress: savedAddress.address,
+                chkCity: savedAddress.city,
+                chkin: savedAddress.pin
+            };
+            Object.entries(fields).forEach(([id, value]) => {
+                const field = document.getElementById(id);
+                if (field && value) field.value = value;
+            });
+            const saveAddress = document.getElementById('saveAddress');
+            if (saveAddress) saveAddress.checked = true;
+        }
         
         let localCart = JSON.parse(localStorage.getItem('yadavCart')) || [];
         let subtotal = localCart.reduce((s, item) => s + (item.price * item.quantity), 0);
