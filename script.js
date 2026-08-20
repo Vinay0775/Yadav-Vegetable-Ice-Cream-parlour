@@ -2988,28 +2988,66 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                 return { text: "⏳ लाइव रेट लोड हो रहे हैं, कृपया एक सेकंड बाद फिर पूछें।", chips: [] };
             }
 
-            const queryWords = input.split(/[\s,?!।]+/).filter(word => word.length > 2);
-            const ignoredWords = new Set(['what', 'whats', 'price', 'rate', 'rates', 'bhav', 'ka', 'ki', 'ke', 'kya', 'how', 'much', 'today', 'please', 'batao', 'btao', 'hai', 'hain', 'do', 'show', 'tell', 'the', 'of', 'mein', 'me', 'का', 'की', 'के', 'भाव', 'रेट', 'बताओ']);
+            const normalizeToken = value => String(value || '')
+                .toLowerCase()
+                .replace(/[.,!?;:()\[\]{}'"`]/g, '')
+                .replace(/aaloo|aalu|alu|आलू/g, 'aloo')
+                .replace(/tamatar|tamatarr|टमाटर/g, 'tomato')
+                .replace(/pyaz|pyaaz|piaz|प्याज|प्याज़/g, 'onion')
+                .replace(/gajjar|gajar|गाजर/g, 'carrot')
+                .replace(/bhindi|bhindii|भिंडी/g, 'bhindi')
+                .replace(/baingan|baigan|baingun|बैंगन|बैगन/g, 'baingan')
+                .replace(/lahsun|lahson|lahasun|लहसुन/g, 'garlic')
+                .replace(/palak|paalak|पालक/g, 'spinach')
+                .trim();
+            const levenshteinDistance = (left, right) => {
+                if (left === right) return 0;
+                if (!left.length) return right.length;
+                if (!right.length) return left.length;
+                const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+                for (let row = 1; row <= left.length; row += 1) {
+                    let diagonal = previous[0];
+                    previous[0] = row;
+                    for (let column = 1; column <= right.length; column += 1) {
+                        const above = previous[column];
+                        previous[column] = left[row - 1] === right[column - 1]
+                            ? diagonal
+                            : Math.min(diagonal + 1, previous[column] + 1, previous[column - 1] + 1);
+                        diagonal = above;
+                    }
+                }
+                return previous[right.length];
+            };
+            const queryWords = input.split(/[\s,?!।]+/).map(normalizeToken).filter(word => word.length > 1);
+            const ignoredWords = new Set(['what', 'whats', 'which', 'who', 'are', 'is', 'available', 'price', 'rate', 'rates', 'bhav', 'ka', 'ki', 'ke', 'kya', 'how', 'much', 'today', 'please', 'batao', 'btao', 'hai', 'hain', 'do', 'show', 'tell', 'the', 'of', 'mein', 'me', 'kaun', 'si', 'se', 'all', 'list', 'दिखाओ', 'बताओ', 'कौन', 'कौनसी', 'क्या', 'है', 'हैं', 'का', 'की', 'के', 'भाव', 'रेट']);
             const specificWords = queryWords.filter(word => !ignoredWords.has(word));
             const liveAliases = {
-                potato: ['aloo', 'आलू'], potatoes: ['aloo', 'आलू'],
-                tomato: ['tamatar', 'टमाटर'], tomatoes: ['tamatar', 'टमाटर'],
-                onion: ['pyaj', 'pyaaz', 'प्याज', 'प्याज़'], onions: ['pyaj', 'pyaaz', 'प्याज', 'प्याज़'],
-                carrot: ['gajar', 'गाजर'], carrots: ['gajar', 'गाजर'],
+                potato: ['aloo'], potatoes: ['aloo'],
+                tomato: ['tomato'], tomatoes: ['tomato'],
+                onion: ['onion'], onions: ['onion'],
+                carrot: ['carrot'], carrots: ['carrot'],
                 apple: ['apple', 'सेब'], apples: ['apple', 'सेब'],
                 banana: ['banana', 'केला'], bananas: ['banana', 'केला']
             };
-            const expandedWords = specificWords.flatMap(word => [word, ...(liveAliases[word] || [])]);
+            const expandedWords = specificWords.flatMap(word => [word, ...(liveAliases[word] || [])].map(normalizeToken));
 
             const matchedProducts = catalog.filter(p => {
                 const searchableNames = [p.title, p.hindiTitle, ...(Array.isArray(p.synonyms) ? p.synonyms : [])]
                     .filter(Boolean)
-                    .map(value => String(value).toLowerCase());
-                return expandedWords.some(word => searchableNames.some(name => name.includes(word) || word.includes(name)));
+                    .flatMap(value => String(value).toLowerCase().split(/[\s,()/-]+/))
+                    .map(normalizeToken)
+                    .filter(Boolean);
+                return expandedWords.some(word => searchableNames.some(name => name === word ||
+                    (word.length >= 4 && name.length >= 4 && levenshteinDistance(name, word) <= (word.length >= 6 ? 2 : 1))));
             });
 
             // Category Level Queries
-            if (matchedProducts.length === 0 && (input.includes('sabzi') || input.includes('veggie') || input.includes('vegetable') || input.includes('सब्जी') || input.includes('सब्जियां'))) {
+            const hasVegetableIntent = /sabzi|sabji|veggie|vegetable|सब्जी|सब्जियां/i.test(input);
+            const hasFruitIntent = /fruit|fruits|फल/i.test(input);
+            const hasIceCreamIntent = /ice\s*cream|icecream|आइसक्रीम/i.test(input);
+            const categoryWordsOnly = specificWords.every(word => ['sabzi', 'sabji', 'sabjiya', 'veggie', 'vegetable', 'vegetables', 'सब्जी', 'सब्जियां', 'सब्जियाँ', 'fruit', 'fruits', 'फल', 'ice', 'cream', 'icecream', 'आइसक्रीम'].includes(word));
+
+            if (matchedProducts.length === 0 && hasVegetableIntent && categoryWordsOnly) {
                 const vegItems = catalog.filter(p => p.category === 'Vegetables').slice(0, 6);
                 let res = "🥦 <strong>आज की ताज़ा सब्ज़ियों के रेट (Today's Vegetable Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
                 vegItems.forEach(p => {
@@ -3020,7 +3058,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                 return { text: res, chips: ["टमाटर का भाव", "आलू का भाव", "प्याज का भाव"] };
             }
 
-            if (matchedProducts.length === 0 && (input.includes('fruit') || input.includes('फल')) && specificWords.every(word => ['fruit', 'fruits', 'फल'].includes(word))) {
+            if (matchedProducts.length === 0 && hasFruitIntent && categoryWordsOnly) {
                 const fruitItems = catalog.filter(p => p.category === 'Fruits').slice(0, 6);
                 let res = "🍎 <strong>आज के ताज़ा फलों के रेट (Fresh Fruit Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
                 fruitItems.forEach(p => {
@@ -3031,8 +3069,11 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                 return { text: res, chips: ["आम का भाव", "सेब का भाव", "तरबूज का भाव"] };
             }
 
-            if (matchedProducts.length === 0 && (input.includes('ice cream') || input.includes('icecream') || input.includes('आइसक्रीम')) && specificWords.every(word => ['ice', 'cream', 'icecream', 'आइसक्रीम'].includes(word))) {
+            if (matchedProducts.length === 0 && hasIceCreamIntent && categoryWordsOnly) {
                 const iceItems = catalog.filter(p => p.category === 'Ice-Creams').slice(0, 6);
+                if (iceItems.length === 0) {
+                    return { text: "🍦 Maaf kijiye, abhi live database me koi ice-cream product available nahi hai.", chips: ["सब्जियों के रेट", "फलों के रेट"] };
+                }
                 let res = "🍦 <strong>प्रीमियम आइसक्रीम रेट्स (Ice-Cream Parlour Rates):</strong><br><ul class='ps-3 mb-2 mt-2 me-0 text-start small'>";
                 iceItems.forEach(p => {
                     res += `<li class="mb-1"><strong>${p.emoji || '🍨'} ${p.title}</strong>: <span class="text-pink fw-bold">₹${p.price}</span></li>`;
