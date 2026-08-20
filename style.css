@@ -3530,7 +3530,38 @@ body.dark-mode .pwa-install-banner {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     cursor: pointer;
     z-index: 1049;
+    padding-right: 36px;
     animation: teaserPulse 2.5s infinite ease-in-out;
+}
+
+.ai-chatbot-teaser-badge.dismissed {
+    display: none;
+}
+
+.ai-chatbot-teaser-close {
+    position: absolute;
+    top: -11px;
+    right: -9px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid #198754;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #198754;
+    font-size: 1.1rem;
+    line-height: 1;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.ai-chatbot-teaser-close:hover {
+    background: #198754;
+    color: #ffffff;
 }
 
 .teaser-dot {
@@ -3623,6 +3654,12 @@ body.dark-mode .ai-chatbot-teaser-badge {
         right: 12px;
         font-size: 0.75rem;
         padding: 6px 12px;
+        padding-right: 32px;
+    }
+
+    .ai-chatbot-teaser-close {
+        top: -10px;
+        right: -7px;
     }
 }
 

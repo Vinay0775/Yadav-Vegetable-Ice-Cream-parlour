@@ -2909,6 +2909,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         <div id="aiChatbotContainer">
             <!-- Proactive Teaser Badge Popup -->
             <div id="aiChatbotTeaserBadge" class="ai-chatbot-teaser-badge shadow-sm" onclick="window.toggleAIChatbot(true)">
+                <button type="button" id="aiChatbotTeaserCloseBtn" class="ai-chatbot-teaser-close" aria-label="Close chatbot message">&times;</button>
                 <span class="teaser-dot"></span> 👋 जानिए आज किस सब्जी, फल या आइसक्रीम का क्या रेट है!
             </div>
 
@@ -2942,6 +2943,13 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         const chatMsgs = document.getElementById('chatMsgs');
         const chatInput = document.getElementById('chatInput');
         const chatSendBtn = document.getElementById('chatSendBtn');
+        const teaserBadge = document.getElementById('aiChatbotTeaserBadge');
+        const teaserCloseBtn = document.getElementById('aiChatbotTeaserCloseBtn');
+
+        teaserCloseBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            teaserBadge.classList.add('dismissed');
+        });
 
         function scrollToBottom() {
             chatMsgs.scrollTop = chatMsgs.scrollHeight;
