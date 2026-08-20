@@ -4043,13 +4043,10 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
     // --- 2. ADMIN TOAST NOTIFICATIONS ---
     window.showAdminToast = function (title, message, isError = false) {
+        if (!document.body.classList.contains('admin-dashboard')) return;
+
         const container = document.getElementById('adminToastContainer');
         if (!container) {
-            if (typeof window.showToast === 'function') {
-                window.showToast(title, message, isError);
-            } else {
-                alert(`${title}: ${message}`);
-            }
             return;
         }
 
@@ -5086,7 +5083,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         window.showAdminToast('Updated', 'Top Announcement bar settings updated live!');
     };
 
-    window.applyThemePreset = function (presetName) {
+    window.applyThemePreset = function (presetName, options = {}) {
         const presets = {
             green: { accent: '#10b981', success: '#10b981', primary: '#0f172a', accentText: '#ffffff' },
             fresh: { accent: '#0ea5a4', success: '#0ea5a4', primary: '#071427', accentText: '#ffffff' },
@@ -5161,8 +5158,12 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             localStorage.setItem('yadav_theme_css', css);
         } catch (e) { console.warn('Could not persist theme CSS to localStorage', e); }
 
-        logAdminActivity(`Applied Storefront Theme Preset: ${presetName}`);
-        window.showAdminToast('Theme Applied', `Storefront color preset updated to ${presetName}`);
+        if (document.body.classList.contains('admin-dashboard')) {
+            logAdminActivity(`Applied Storefront Theme Preset: ${presetName}`);
+            if (!options.silent) {
+                window.showAdminToast('Theme Applied', `Storefront color preset updated to ${presetName}`);
+            }
+        }
     };
 
     // Save selected preset to Firestore (settings/theme)
@@ -5174,7 +5175,6 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         }
         try {
             await window.db.collection('settings').doc('theme').set({ preset: presetName, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-            window.showAdminToast && window.showAdminToast('Saved', 'Theme saved to cloud successfully.');
             logAdminActivity && logAdminActivity(`Saved theme preset to Firestore: ${presetName}`);
         } catch (e) {
             console.warn('Could not save theme to Firestore', e);
@@ -5226,7 +5226,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                 if (!doc.exists) return;
                 const data = doc.data();
                 if (data && data.preset) {
-                    try { window.applyThemePreset(data.preset); } catch (e) { console.warn('Auto-apply cloud theme failed', e); }
+                    try { window.applyThemePreset(data.preset, { silent: true }); } catch (e) { console.warn('Auto-apply cloud theme failed', e); }
                 }
             }, err => { /* ignore listener errors */ });
         }
@@ -5250,7 +5250,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     (function(){
         const saved = localStorage.getItem('yadav_theme_preset');
         if (saved) {
-            try { window.applyThemePreset(saved); } catch(e){ console.warn('Auto-apply theme preset failed', e); }
+            try { window.applyThemePreset(saved, { silent: true }); } catch(e){ console.warn('Auto-apply theme preset failed', e); }
         }
     })();
 

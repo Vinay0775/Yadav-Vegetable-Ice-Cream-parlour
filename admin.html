@@ -53,7 +53,28 @@
         }
 
         .admin-sidebar.collapsed {
-            width: 80px !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            border-right: 0 !important;
+            box-shadow: none !important;
+            overflow-x: hidden;
+        }
+
+        .admin-sidebar.collapsed #adminSidebarCollapseBtn {
+            position: fixed;
+            left: 0;
+            top: 24px;
+            z-index: 1060;
+            width: 44px;
+            height: 52px;
+            border: 1px solid #94a3b8;
+            border-left: 0;
+            border-radius: 0 8px 8px 0;
+            background: #64748b;
+            color: #ffffff;
+            box-shadow: 4px 4px 14px rgba(15, 23, 42, 0.25);
         }
 
         .admin-sidebar .brand-title {
@@ -1516,6 +1537,11 @@
                     const panel = document.getElementById('pageErrorConsole');
                     panel.classList.toggle('open');
                     btn.textContent = panel.classList.contains('open') ? 'Hide Console' : 'Show Console';
+                });
+            });
+        })();
+    </script>
+
     <!-- Admin App PWA Mobile Installer Modal -->
     <div class="modal fade" id="adminPwaInstallModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -1566,7 +1592,6 @@
         </div>
     </div>
 
-    <script>
     <!-- Firebase (Compat) SDK - required by script.js which uses namespaced firebase API -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
