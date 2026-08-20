@@ -3069,10 +3069,10 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             });
 
             // Category Level Queries
-            const hasVegetableIntent = /sabzi|sabji|veggie|vegetable|सब्जी|सब्जियां/i.test(input);
-            const hasFruitIntent = /fruit|fruits|फल/i.test(input);
+            const hasVegetableIntent = /sabzi|sabji|veggie|vegetable|सब्जी|सब्जियां|सब्जियाँ|सब्जियों/i.test(input);
+            const hasFruitIntent = /fruit|fruits|फल|फलों/i.test(input);
             const hasIceCreamIntent = /ice\s*cream|icecream|आइसक्रीम/i.test(input);
-            const categoryWordsOnly = specificWords.every(word => ['sabzi', 'sabji', 'sabjiya', 'veggie', 'vegetable', 'vegetables', 'सब्जी', 'सब्जियां', 'सब्जियाँ', 'fruit', 'fruits', 'फल', 'ice', 'cream', 'icecream', 'आइसक्रीम'].includes(word));
+            const categoryWordsOnly = specificWords.every(word => ['sabzi', 'sabji', 'sabjiya', 'veggie', 'vegetable', 'vegetables', 'सब्जी', 'सब्जियां', 'सब्जियाँ', 'सब्जियों', 'fruit', 'fruits', 'फल', 'फलों', 'ice', 'cream', 'icecream', 'आइसक्रीम'].includes(word));
 
             if (matchedProducts.length === 0 && hasVegetableIntent && categoryWordsOnly) {
                 const vegItems = catalog.filter(p => p.category === 'Vegetables').slice(0, 6);
