@@ -2946,9 +2946,15 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         const teaserBadge = document.getElementById('aiChatbotTeaserBadge');
         const teaserCloseBtn = document.getElementById('aiChatbotTeaserCloseBtn');
 
+        if (sessionStorage.getItem('yadav_chatbot_teaser_dismissed') === 'true') {
+            teaserBadge.classList.add('dismissed');
+        }
+
         teaserCloseBtn.addEventListener('click', (event) => {
             event.stopPropagation();
+            event.preventDefault();
             teaserBadge.classList.add('dismissed');
+            sessionStorage.setItem('yadav_chatbot_teaser_dismissed', 'true');
         });
 
         function scrollToBottom() {

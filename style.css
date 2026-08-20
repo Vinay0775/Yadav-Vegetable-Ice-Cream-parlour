@@ -3530,6 +3530,7 @@ body.dark-mode .pwa-install-banner {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     cursor: pointer;
     z-index: 1049;
+    pointer-events: auto;
     padding-right: 36px;
     animation: teaserPulse 2.5s infinite ease-in-out;
 }
@@ -3557,6 +3558,7 @@ body.dark-mode .pwa-install-banner {
     font-weight: 700;
     cursor: pointer;
     z-index: 1;
+    pointer-events: auto;
 }
 
 .ai-chatbot-teaser-close:hover {
