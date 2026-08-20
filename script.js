@@ -5148,6 +5148,26 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             .text-muted { color: ${primaryIsLight ? '#6b7280' : '#cbd5e1'} !important; }
             .lead, p, li, span, label { color: ${bodyText} !important; }
             .nav-link { color: ${primaryIsLight ? '#0f172a' : (p.accentText || '#ffffff')} !important; }
+
+            /* Keep the dark admin navigation readable after global theme overrides. */
+            body.admin-dashboard .admin-sidebar .admin-nav-link,
+            body.admin-dashboard .admin-sidebar .admin-nav-link > span,
+            body.admin-dashboard .admin-sidebar .admin-nav-link .bi { color: #cbd5e1 !important; }
+            body.admin-dashboard .admin-sidebar .admin-nav-link:hover,
+            body.admin-dashboard .admin-sidebar .admin-nav-link:hover > span,
+            body.admin-dashboard .admin-sidebar .admin-nav-link:hover .bi,
+            body.admin-dashboard .admin-sidebar .admin-nav-link.active,
+            body.admin-dashboard .admin-sidebar .admin-nav-link.active > span { color: #ffffff !important; }
+            body.admin-dashboard .admin-sidebar .admin-nav-link.active .bi { color: #34d399 !important; }
+            body.admin-dashboard .admin-sidebar .sidebar-category-header { color: #38bdf8 !important; }
+            body.admin-dashboard .admin-sidebar .brand-title {
+                background: linear-gradient(135deg, #ffffff 0%, #34d399 100%) !important;
+                -webkit-background-clip: text !important;
+                background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
+            }
+            body.admin-dashboard .admin-sidebar #adminSidebarName { color: #ffffff !important; }
+            body.admin-dashboard .admin-sidebar #adminSidebarRole { color: #bbf7d0 !important; }
         `;
         if (!s) {
             s = document.createElement('style'); s.id = themeCssId; document.head.appendChild(s);
