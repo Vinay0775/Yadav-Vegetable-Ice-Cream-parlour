@@ -2866,24 +2866,57 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         if (activeSlide) typeHeroTitle(activeSlide);
     })();
 
+    // Shared product resolver for chatbot, quick lists, and future catalog items.
+    window.resolveCatalogProduct = function (query, sourceCatalog = null) {
+        const catalog = Array.isArray(sourceCatalog) ? sourceCatalog : (window.liveFirestoreCatalog?.length ? window.liveFirestoreCatalog : (window.CATALOG || []));
+        const normalize = value => String(value || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\u0900-\u097f]+/g, ' ').replace(/(.)\1+/g, '$1').trim();
+        const needle = normalize(query);
+        if (!needle) return null;
+        const words = needle.split(/\s+/).filter(word => word.length > 1);
+        const score = product => {
+            const names = [product.title, product.hindiTitle, ...(Array.isArray(product.synonyms) ? product.synonyms : [])]
+                .filter(Boolean).map(normalize);
+            let best = 0;
+            names.forEach(name => {
+                if (name === needle) best = Math.max(best, 100);
+                if (name.includes(needle) || needle.includes(name)) best = Math.max(best, 85);
+                words.forEach(word => {
+                    if (name.includes(word)) best = Math.max(best, word.length >= 4 ? 70 : 45);
+                });
+            });
+            return best;
+        };
+        return catalog.map(product => ({ product, score: score(product) })).filter(item => item.score > 0)
+            .sort((left, right) => right.score - left.score)[0]?.product || null;
+    };
+
+    window.getProductUnitOptions = function (product) {
+        const productText = `${product?.title || ''} ${product?.hindiTitle || ''} ${(product?.synonyms || []).join(' ')}`.toLowerCase();
+        const supportsPieces = product?.unitType === 'pcs_or_weight' || product?.unitType === 'pcs' || /watermelon|tarbooj|muskmelon|kharbooja|pumpkin|kaddu|gourd|gobiya|keri|mango|banana|तरबूज|खरबूजा|कद्दू/.test(productText);
+        const options = supportsPieces
+            ? [{ value: '1kg', label: '1 kg' }, { value: '500g', label: '500g' }, { value: '1 Pcs', label: '1 piece' }, { value: '2 Pcs', label: '2 pieces' }]
+                : [{ value: '1kg', label: '1 kg' }, { value: '500g', label: '500g' }, { value: '250g', label: '250g' }, { value: '100g', label: '100g' }, { value: '2kg', label: '2 kg' }];
+        return options;
+    };
+
+    window.calculateProductUnitPrice = function (product, unitValue) {
+        const pieces = unitValue.toLowerCase().includes('pcs');
+        if (pieces) return (product.pricePerPiece || product.price) * (parseInt(unitValue, 10) || 1);
+        const multiplier = { '100g': 0.1, '200g': 0.2, '250g': 0.25, '500g': 0.5, '1kg': 1, '2kg': 2, '3kg': 3 }[unitValue] || 1;
+        return Math.max(1, Math.round(Number(product.price || 0) * multiplier));
+    };
+
     // Helper: Add product directly to cart by ID
     window.addToCartById = function(id, customWeight = null) {
-        const catalog = window.catalogProducts || window.YADAV_CATALOG || [];
+        const catalog = window.liveFirestoreCatalog?.length ? window.liveFirestoreCatalog : (window.catalogProducts || window.YADAV_CATALOG || []);
         const prod = catalog.find(p => (p.id || p.title) === id);
         if (!prod) {
             if (window.showToast) window.showToast("Error", "Product not found!", true);
             return;
         }
-        const selectedWeight = customWeight || (prod.unitType === 'pc' ? (prod.pcWeight || '1 pc') : '1kg');
-        let itemPrice = prod.price;
-        if (prod.unitType !== 'pc' && selectedWeight) {
-            if (selectedWeight === '100g') itemPrice = Math.round(prod.price * 0.1);
-            else if (selectedWeight === '200g') itemPrice = Math.round(prod.price * 0.2);
-            else if (selectedWeight === '250g') itemPrice = Math.round(prod.price * 0.25);
-            else if (selectedWeight === '500g') itemPrice = Math.round(prod.price * 0.5);
-            else if (selectedWeight === '2kg') itemPrice = Math.round(prod.price * 2);
-            else if (selectedWeight === '3kg') itemPrice = Math.round(prod.price * 3);
-        }
+        const selectedWeight = customWeight || (prod.unitType === 'pcs' ? (prod.pcWeight || '1 Pcs') : '1kg');
+        const itemPrice = window.calculateProductUnitPrice(prod, selectedWeight);
         const payload = {
             id: prod.id || prod.title,
             title: prod.title,
@@ -2896,6 +2929,31 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         if (window.addToCartGlobal) {
             window.addToCartGlobal(encodeURIComponent(JSON.stringify(payload)));
         }
+    };
+
+    window.openProductUnitPicker = function (productId) {
+        const product = (window.liveFirestoreCatalog || window.CATALOG || []).find(item => (item.id || item.title) === productId);
+        if (!product) return window.showToast('Error', 'Product not found!', true);
+        const modalId = 'chatbotUnitPicker';
+        document.getElementById(modalId)?.remove();
+        const buttons = window.getProductUnitOptions(product).map(option => `
+            <button type="button" class="btn btn-outline-success w-100 mb-2" data-unit-value="${option.value}">${option.label} - ₹${window.calculateProductUnitPrice(product, option.value)}</button>
+        `).join('');
+        document.body.insertAdjacentHTML('beforeend', `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header"><h5 class="modal-title">${product.title} quantity</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body">${buttons}</div>
+                </div></div>
+            </div>`);
+        const modalEl = document.getElementById(modalId);
+        const modal = new bootstrap.Modal(modalEl);
+        modalEl.querySelectorAll('[data-unit-value]').forEach(button => button.addEventListener('click', () => {
+            window.addToCartById(productId, button.dataset.unitValue);
+            modal.hide();
+        }));
+        modalEl.addEventListener('hidden.bs.modal', () => modalEl.remove(), { once: true });
+        modal.show();
     };
 
     // ==========================================
@@ -3121,7 +3179,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                             <div class="small text-muted">${p.hindiTitle || ''}</div>
                             <div class="text-success fw-bold fs-6">${unitStr}</div>
                         </div>
-                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold text-nowrap" onclick="window.addToCartById('${p.id}')">
+                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold text-nowrap" onclick="window.openProductUnitPicker('${p.id}')">
                             <i class="bi bi-cart-plus me-1"></i> Add
                         </button>
                     </div>`;
@@ -3318,9 +3376,11 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                                             <div class="row g-2 mb-3">
                                                 <div class="col-md-7">
                                                     <label class="form-label small text-muted">Item Name (Search Hindi / English)</label>
-                                                    <select id="quickSelectProduct" class="form-select border-success rounded-3" onchange="window.onQuickProductSelected()">
-                                                        <option value="">-- Choose Vegetable or Fruit --</option>
-                                                    </select>
+                                                    <div class="position-relative">
+                                                        <input id="quickSelectProductSearch" class="form-control border-success rounded-3" autocomplete="off" placeholder="Type product name e.g. aaloo" oninput="window.refreshQuickProductSuggestions && window.refreshQuickProductSuggestions()">
+                                                        <input id="quickSelectProduct" type="hidden" value="">
+                                                        <div id="quickProductSuggestions" class="list-group position-absolute w-100 shadow-sm" style="z-index:1080; max-height:220px; overflow-y:auto;"></div>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-5">
                                                     <label class="form-label small text-muted">Quantity / Weight</label>
@@ -3395,14 +3455,36 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
         }
 
         // Populate catalog options in Quick Select Dropdown
-        const selectEl = document.getElementById('quickSelectProduct');
-        if (selectEl && selectEl.options.length <= 1 && window.CATALOG) {
-            window.CATALOG.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.innerText = `${p.emoji || '🥦'} ${p.title} ${p.hindiTitle ? '(' + p.hindiTitle + ')' : ''} - ₹${p.price}/${p.unitType === 'pcs' ? 'pc' : 'kg'}`;
-                selectEl.appendChild(opt);
-            });
+        const searchInput = document.getElementById('quickSelectProductSearch');
+        const hiddenProduct = document.getElementById('quickSelectProduct');
+        const suggestions = document.getElementById('quickProductSuggestions');
+        if (searchInput) {
+            const renderSuggestions = () => {
+                const products = window.liveFirestoreCatalog?.length ? window.liveFirestoreCatalog : (window.CATALOG || []);
+                const query = searchInput.value.trim().toLowerCase();
+                const fuzzyMatch = query ? window.resolveCatalogProduct(query, products) : null;
+                const filtered = (query ? [fuzzyMatch, ...products.filter(product => [product.title, product.hindiTitle, ...(product.synonyms || [])].filter(Boolean).join(' ').toLowerCase().includes(query))] : products)
+                    .filter(Boolean)
+                    .filter((product, index, list) => list.findIndex(item => item.id === product.id) === index)
+                    .slice(0, 12);
+                suggestions.innerHTML = filtered.map(product => `<button type="button" class="list-group-item list-group-item-action" data-product-id="${product.id}">${product.emoji || '🥦'} ${product.title} - ₹${product.price}/kg</button>`).join('');
+                suggestions.querySelectorAll('[data-product-id]').forEach(button => button.addEventListener('click', () => {
+                    const product = products.find(item => item.id === button.dataset.productId);
+                    hiddenProduct.value = product.id;
+                    searchInput.value = product.title;
+                    suggestions.innerHTML = '';
+                    window.onQuickProductSelected();
+                }));
+            };
+            searchInput.renderSuggestions = renderSuggestions;
+            window.refreshQuickProductSuggestions = renderSuggestions;
+            if (!searchInput.dataset.bound) {
+                searchInput.dataset.bound = 'true';
+                searchInput.addEventListener('input', renderSuggestions);
+                searchInput.addEventListener('keyup', renderSuggestions);
+                searchInput.addEventListener('change', renderSuggestions);
+                searchInput.addEventListener('focus', renderSuggestions);
+            }
         }
     };
 
@@ -3439,8 +3521,8 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
 
     window.onQuickProductSelected = function () {
         const pid = document.getElementById('quickSelectProduct').value;
-        const prod = window.CATALOG?.find(p => p.id === pid);
-        if (prod && prod.unitType === 'pcs') {
+        const prod = (window.liveFirestoreCatalog || window.CATALOG || []).find(p => p.id === pid);
+        if (prod && (prod.unitType === 'pcs' || prod.unitType === 'pcs_or_weight')) {
             window.setQuickWeight('1 Pcs', document.querySelector('.weight-pill-btn.pill-pcs'));
         }
     };
@@ -3509,15 +3591,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             }
 
             // Search product match in catalog
-            const matchedProd = window.CATALOG.find(p => {
-                const pTitle = p.title.toLowerCase();
-                const pHindi = (p.hindiTitle || '').toLowerCase();
-                const pSyns = (p.synonyms || []).map(s => s.toLowerCase());
-
-                return pSyns.some(syn => lineLower.includes(syn)) ||
-                    (pHindi && lineLower.includes(pHindi)) ||
-                    pTitle.split(' ').some(word => word.length > 3 && lineLower.includes(word));
-            });
+            const matchedProd = window.resolveCatalogProduct(line.replace(/\d+(?:\.\d+)?\s*(?:kg|kilo|किलो|g|gm|gram|ग्राम|pcs|pc|piece|pieces|पीस|नग)/gi, '').trim());
 
             if (matchedProd) {
                 let calculatedPrice = 0;
@@ -3544,27 +3618,28 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
     };
 
     window.addQuickSelectedItemToList = function () {
-        const pid = document.getElementById('quickSelectProduct').value;
+        const searchInput = document.getElementById('quickSelectProductSearch');
+        const hiddenProduct = document.getElementById('quickSelectProduct');
+        let pid = hiddenProduct.value;
+        if (!pid && searchInput?.value) {
+            const resolved = window.resolveCatalogProduct(searchInput.value);
+            if (resolved) {
+                pid = resolved.id;
+                hiddenProduct.value = pid;
+            }
+        }
         const weightVal = document.getElementById('quickSelectWeight').value;
         if (!pid) {
             window.showToast('Select Item', 'Please select a vegetable or fruit first.', true);
             return;
         }
 
-        const prod = window.CATALOG?.find(p => p.id === pid);
+        const prod = (window.liveFirestoreCatalog || window.CATALOG || []).find(p => (p.id || p.firestoreId || p.title) === pid || p.firestoreId === pid);
         if (!prod) return;
 
-        let calculatedPrice = prod.price;
-        if (weightVal.toLowerCase().includes('pcs')) {
-            const pcs = parseInt(weightVal) || 1;
-            calculatedPrice = (prod.pricePerPiece || prod.price) * pcs;
-        } else if (weightVal === '250g') calculatedPrice = Math.round(prod.price * 0.25);
-        else if (weightVal === '500g') calculatedPrice = Math.round(prod.price * 0.5);
-        else if (weightVal === '100g') calculatedPrice = Math.round(prod.price * 0.1);
-        else if (weightVal === '200g') calculatedPrice = Math.round(prod.price * 0.2);
-        else if (weightVal === '2kg') calculatedPrice = Math.round(prod.price * 2);
-        else if (weightVal === '3kg') calculatedPrice = Math.round(prod.price * 3);
+        const calculatedPrice = window.calculateProductUnitPrice(prod, weightVal);
 
+        if (!Array.isArray(window.quickListItems)) window.quickListItems = [];
         window.quickListItems.push({
             product: prod,
             selectedWeightLabel: weightVal,
