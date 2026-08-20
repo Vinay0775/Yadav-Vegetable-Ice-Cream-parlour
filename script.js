@@ -2991,14 +2991,35 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             const normalizeToken = value => String(value || '')
                 .toLowerCase()
                 .replace(/[.,!?;:()\[\]{}'"`]/g, '')
-                .replace(/aaloo|aalu|alu|आलू/g, 'aloo')
-                .replace(/tamatar|tamatarr|टमाटर/g, 'tomato')
-                .replace(/pyaz|pyaaz|piaz|प्याज|प्याज़/g, 'onion')
-                .replace(/gajjar|gajar|गाजर/g, 'carrot')
-                .replace(/bhindi|bhindii|भिंडी/g, 'bhindi')
-                .replace(/baingan|baigan|baingun|बैंगन|बैगन/g, 'baingan')
-                .replace(/lahsun|lahson|lahasun|लहसुन/g, 'garlic')
-                .replace(/palak|paalak|पालक/g, 'spinach')
+                .normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/aa+/g, 'a')
+                .replace(/ee+/g, 'i')
+                .replace(/oo+/g, 'u')
+                .replace(/(.)\1+/g, '$1')
+                .replace(/aal?u|alu|आलू/g, 'potato')
+                .replace(/tama?tar|tomato|tometo|टमाटर/g, 'tomato')
+                .replace(/pya?[jz]|piaz|onion|प्याज|प्याज़/g, 'onion')
+                .replace(/gajjar|gajar|carrot|गाजर/g, 'carrot')
+                .replace(/bhindi|bhindii|okra|ladyfinger|भिंडी/g, 'bhindi')
+                .replace(/baingan|baigan|baingun|brinjal|eggplant|बैंगन|बैगन/g, 'baingan')
+                .replace(/lahsun|lahson|lahasun|garlic|लहसुन/g, 'garlic')
+                .replace(/adrak|adarak|ginger|अदरक/g, 'ginger')
+                .replace(/palak|paalak|spinach|पालक/g, 'spinach')
+                .replace(/phul.?gobhi|phool.?gobhi|cauliflower|फूलगोभी/g, 'cauliflower')
+                .replace(/patta.?gobhi|cabbage|पत्तागोभी/g, 'cabbage')
+                .replace(/kheera|khira|cucumber|खीरा/g, 'cucumber')
+                .replace(/nimbu|neembu|lemon|नींबू|निंबू/g, 'lemon')
+                .replace(/loki|lauki|bottle.?gourd|लौकी/g, 'bottlegourd')
+                .replace(/shimla.?mirch|capsicum|bell.?pepper|शिमला.?मिर्च/g, 'capsicum')
+                .replace(/kaddu|pumpkin|कद्दू/g, 'pumpkin')
+                .replace(/keri|kairi|raw.?mango|कच्चा.?आम/g, 'rawmango')
+                .replace(/tarbooj|watermelon|तरबूज/g, 'watermelon')
+                .replace(/chikoo|sapota|चीकू/g, 'sapota')
+                .replace(/aam|mango|आम/g, 'mango')
+                .replace(/seb|apple|सेब/g, 'apple')
+                .replace(/kela|banana|केला/g, 'banana')
+                .replace(/angur|grape|grapes|अंगूर/g, 'grape')
                 .trim();
             const levenshteinDistance = (left, right) => {
                 if (left === right) return 0;
@@ -3022,12 +3043,12 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
             const ignoredWords = new Set(['what', 'whats', 'which', 'who', 'are', 'is', 'available', 'price', 'rate', 'rates', 'bhav', 'ka', 'ki', 'ke', 'kya', 'how', 'much', 'today', 'please', 'batao', 'btao', 'hai', 'hain', 'do', 'show', 'tell', 'the', 'of', 'mein', 'me', 'kaun', 'si', 'se', 'all', 'list', 'दिखाओ', 'बताओ', 'कौन', 'कौनसी', 'क्या', 'है', 'हैं', 'का', 'की', 'के', 'भाव', 'रेट']);
             const specificWords = queryWords.filter(word => !ignoredWords.has(word));
             const liveAliases = {
-                potato: ['aloo'], potatoes: ['aloo'],
+                potato: ['potato'], potatoes: ['potato'],
                 tomato: ['tomato'], tomatoes: ['tomato'],
                 onion: ['onion'], onions: ['onion'],
                 carrot: ['carrot'], carrots: ['carrot'],
-                apple: ['apple', 'सेब'], apples: ['apple', 'सेब'],
-                banana: ['banana', 'केला'], bananas: ['banana', 'केला']
+                apple: ['apple'], apples: ['apple'],
+                banana: ['banana'], bananas: ['banana']
             };
             const expandedWords = specificWords.flatMap(word => [word, ...(liveAliases[word] || [])].map(normalizeToken));
 
@@ -3038,7 +3059,7 @@ Please confirm my order and share delivery timing. Thank you! 🙏`;
                     .map(normalizeToken)
                     .filter(Boolean);
                 return expandedWords.some(word => searchableNames.some(name => name === word ||
-                    (word.length >= 4 && name.length >= 4 && levenshteinDistance(name, word) <= (word.length >= 6 ? 2 : 1))));
+                    (word.length >= 3 && name.length >= 3 && levenshteinDistance(name, word) <= Math.max(1, Math.floor(Math.min(name.length, word.length) / 4)))));
             });
 
             // Category Level Queries
