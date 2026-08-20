@@ -608,14 +608,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const marqueeContainer = marqueeEl ? marqueeEl.closest('.bg-warning') || marqueeEl.parentElement : null;
 
         if (announcementData && marqueeContainer) {
+            marqueeContainer.dataset.yadavAnnouncement = 'true';
             if (announcementData.enabled === false) {
                 marqueeContainer.style.display = 'none';
             } else {
                 marqueeContainer.style.display = 'block';
-                if (announcementData.bgColor) marqueeContainer.style.backgroundColor = announcementData.bgColor;
-                if (announcementData.textColor) marqueeContainer.style.color = announcementData.textColor;
-                if (announcementData.text && marqueeEl) {
-                    marqueeEl.innerHTML = `<span class="mx-5 fw-bold">${announcementData.text}</span>`;
+                if (announcementData.bgColor) {
+                    marqueeContainer.style.setProperty('background-color', announcementData.bgColor, 'important');
+                }
+                if (announcementData.textColor) {
+                    marqueeContainer.style.setProperty('color', announcementData.textColor, 'important');
+                    marqueeEl.style.setProperty('color', announcementData.textColor, 'important');
+                }
+                if (typeof announcementData.text === 'string' && marqueeEl) {
+                    marqueeEl.textContent = announcementData.text;
+                    marqueeEl.style.setProperty('color', announcementData.textColor || '#212529', 'important');
                 }
             }
         }
